@@ -48,7 +48,7 @@ def setpos(v):
     text = D.lines[line-1]
     D.lineno = line
     val = text + "\0"*(4-len(text)%4)
-    code_16(POS,len(val)/4,line)
+    code_16(POS,int(len(val)/4),line)
     write(val)
 def code(i,a=0,b=0,c=0):
     if not istype(i,'number'): raise

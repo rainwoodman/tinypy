@@ -1,6 +1,5 @@
 import os
 import sys
-import math
 
 VARS = {'$CPYTHON':''}
 TOPDIR = os.path.abspath(os.path.dirname(__file__))
@@ -387,7 +386,7 @@ def shrink(fname):
         if len(line.strip()) == 0: continue
         line = line.rstrip()
         l1,l2 = len(line),len(line.lstrip())
-        line = "\t"*math.floor((l1-l2)/4)+line.lstrip()
+        line = "\t"*int((l1-l2)/4)+line.lstrip()
         
         #remove comments
         if '.c' in fname or '.h' in fname:
