@@ -171,11 +171,11 @@ def build_bc(opt=False):
         fname = mod+".tpc"
         data = open(fname,'rb').read()
         cols = 16
-        for n in xrange(0,len(data),cols):
-            out.append(",".join([str(ord(v)) for v in data[n:n+cols]])+',')
+        for n in range(0,len(data),cols):
+            out.append(",".join([str(v) for v in data[n:n+cols]])+',')
         out.append("""};""")
     out.append("")
-    f = open('bc.c','wb')
+    f = open('bc.c','w')
     f.write('\n'.join(out))
     f.close()
     
@@ -296,12 +296,14 @@ def build_gcc():
         do_cmd("gcc $WFLAGS -O3 tpmain.c $FLAGS -lm -o tinypy")
         do_cmd('$TINYPY tests.py $SYS')
     if DEBUG:
-        do_cmd("gcc $WFLAGS -g mymain.c $FLAGS -lm -o ../build/tinypy")
+        do_cmd("gcc $WFLAGS -g mymain.c $FLAGS -lm -o tinypy")
     else:
-        do_cmd("gcc $WFLAGS -O3 mymain.c $FLAGS -lm -o ../build/tinypy")
+        do_cmd("gcc $WFLAGS -O3 mymain.c $FLAGS -lm -o tinypy")
     if TEST:
-        do_cmd(os.path.join('..','build','tinypy')+' tests.py $SYS')
-        test_mods(os.path.join('..','build','tinypy')+' $TESTS')
+        #do_cmd(os.path.join('..','build','tinypy')+' tests.py $SYS')
+        do_cmd('tinypy tests.py $SYS')
+        #test_mods(os.path.join('..','build','tinypy')+' $TESTS')
+        test_mods('tinypy $TESTS')
     
     do_chdir('..')
     print("# OK")

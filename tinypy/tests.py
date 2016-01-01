@@ -221,7 +221,9 @@ def showerror(cmd, ss, ex, res):
 
 def t_render(ss,ex,exact=True):
     import tokenize, parse, encode
-        
+    if not is_tinypy:
+        #ss = ss.encode('latin1')
+        ex = ex.encode('latin1')
     if not istype(ss,'list'): ss =[ss]
     n = 1
     for s in ss:
@@ -1143,7 +1145,8 @@ def t_boot(ss,ex,exact=True):
         n += 1
     system_rm('tmp.txt')
     #system(TINYPY+fname+' > tmp.txt')
-    system("../build/tinypy "+fname+' > tmp.txt')
+    #system("../build/tinypy "+fname+' > tmp.txt')
+    system("tinypy "+fname+' > tmp.txt')
     res = load(TMP).strip()
     print(ss,ex,res)
     if exact: assert(res == ex)

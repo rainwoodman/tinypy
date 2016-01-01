@@ -658,6 +658,7 @@ def encode(fname,s,t):
     do(t)
     D.end()
     map_tags()
+    #print(D.out)
     out = D.out; D = None
-    return ''.join(out)
+    return join(out)
 

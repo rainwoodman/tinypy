@@ -459,12 +459,12 @@ void tp_builtins(TP) {
     {"import",tp_import_}, {"len",tp_len_}, {"assert",tp_assert},
     {"str",tp_str2}, {"float",tp_float}, {"system",tp_system},
     {"istype",tp_istype}, {"chr",tp_chr}, {"save",tp_save},
-    {"load",tp_load}, {"fpack",tp_fpack}, {"abs",tp_abs},
+    {"load",tp_load}, {"read",tp_load}, {"fpack",tp_fpack}, {"abs",tp_abs},
     {"int",tp_int}, {"exec",tp_exec_}, {"exists",tp_exists},
     {"mtime",tp_mtime}, {"number",tp_float}, {"round",tp_round},
     {"ord",tp_ord}, {"merge",tp_merge}, {"getraw",tp_getraw},
     {"setmeta",tp_setmeta}, {"getmeta",tp_getmeta},
-    {"bool", tp_builtins_bool},
+    {"bool", tp_builtins_bool}, {"join", tp_builtins_join},
     #ifdef TP_SANDBOX
     {"sandbox",tp_sandbox_},
     #endif
