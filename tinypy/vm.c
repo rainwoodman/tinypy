@@ -335,7 +335,7 @@ int tp_step(TP) {
             tp_params_v(tp,3,tp_string("DEBUG:"),tp_number(VA),RA); tp_print(tp);
             break;
         case TP_INONE: RA = tp_None; break;
-        case TP_ILINE:
+        case TP_ILINE: {
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,VA);
             #endif
@@ -345,6 +345,7 @@ int tp_step(TP) {
             f->line = tp_string_sub(tp,f->code,a,a+VA*4-1);
 /*             fprintf(stderr,"%7d: %s\n",UVBC,f->line.string.val);*/
             cur += VA; f->lineno = UVBC;
+            }
             break;
         case TP_IFILE: f->fname = RA; break;
         case TP_INAME: f->name = RA; break;

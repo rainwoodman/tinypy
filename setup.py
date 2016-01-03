@@ -224,7 +224,7 @@ def build_blob():
             out.append(line)
     out.append("#endif")
     out.append('')
-    dest = os.path.join(TOPDIR,'build','tinypy.h')
+    dest = 'tinypy.h' #os.path.join(TOPDIR,'build','tinypy.h')
     print('writing %s'%dest)
     f = open(dest,'w')
     f.write('\n'.join(out))
@@ -246,7 +246,7 @@ def build_blob():
             if line.find('#include "') != -1: continue
             out.append(line)
     out.append('')
-    dest = os.path.join(TOPDIR,'build','tinypy.c')
+    dest = 'tinypy.c' #os.path.join(TOPDIR,'build','tinypy.c')
     print('writing %s'%dest)
     f = open(dest,'w')
     f.write('\n'.join(out))

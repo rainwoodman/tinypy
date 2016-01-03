@@ -12,7 +12,7 @@ tp_obj tp_str(TP,tp_obj self) {
     if (type == TP_STRING) { return self; }
     if (type == TP_NUMBER) {
         tp_num v = self.number.val;
-        if ((fabs(v)-fabs((long)v)) < 0.000001) { return tp_printf(tp,"%ld",(long)v); }
+        if ((fabs(v-(long)v)) < 0.000001) { return tp_printf(tp,"%ld",(long)v); }
         return tp_printf(tp,"%f",v);
     } else if(type == TP_DICT) {
         return tp_printf(tp,"<dict 0x%x>",self.dict.val);

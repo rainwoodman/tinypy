@@ -658,7 +658,8 @@ def encode(fname,s,t):
     do(t)
     D.end()
     map_tags()
-    #print(D.out)
     out = D.out; D = None
+    # Use a function instead of ''.join() so that bytes and
+    # strings during bootstrap
     return join(out)
 

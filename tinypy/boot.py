@@ -8,9 +8,6 @@ def _boot_init():
     ARGV = sys.argv
 _boot_init()
 
-#def chr(v):
-#    return bytes([v])
-
 def join(v):
     out = b''
     for el in v:
