@@ -1,8 +1,18 @@
 CC=gcc
-CFLAGS=-std=c89 -Wall
+CFLAGS=-std=c99 -Wall
 LIBS=-lm
 TARGET=build/tinypy
-OBJS=tinypy/mymain.o
+OBJS=	tinypy/list.o 		\
+	tinypy/gc.o		\
+	tinypy/vm.o		\
+	tinypy/dict.o		\
+	tinypy/string.o 	\
+	tinypy/misc.o		\
+	tinypy/builtins.o 	\
+	tinypy/ops.o		\
+	tinypy/tp.o		\
+	tinypy/mymain.o
+
 TEST=examples/hw.py
 
 all: $(TARGET)

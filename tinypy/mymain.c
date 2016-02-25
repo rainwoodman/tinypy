@@ -1,4 +1,13 @@
-#include "tp.c"
+#include "tp.h"
+#include "dict.h"
+#include "misc.h"
+#include "string.h"
+#include "builtins.h"
+#include "gc.h"
+#include "ops.h"
+#include "vm.h"
+
+
 
 
 int main(int argc, char *argv[]) {

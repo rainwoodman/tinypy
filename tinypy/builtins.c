@@ -2,6 +2,10 @@
  * Builtin tinypy functions.
  */
 
+#include "builtins.h"
+#include "dict.h"
+#include "string.h"
+
 tp_obj tp_print(TP) {
     int n = 0;
     tp_obj e;
@@ -208,13 +212,6 @@ int _tp_lookup(TP,tp_obj self, tp_obj k, tp_obj *meta) {
     return _tp_lookup_(tp,self,k,meta,8);
 }
 
-#define TP_META_BEGIN(self,name) \
-    if (self.dict.dtype == 2) { \
-        tp_obj meta; if (_tp_lookup(tp,self,tp_string(name),&meta)) {
-
-#define TP_META_END \
-        } \
-    }
 
 /* Function: tp_setmeta
  * Set a "dict's meta".

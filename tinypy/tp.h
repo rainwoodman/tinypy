@@ -392,4 +392,6 @@ tp_inline static tp_obj tp_string_n(char const *v,int n) {
     return val;
 }
 
+void tp_compiler(TP);
+
 #endif

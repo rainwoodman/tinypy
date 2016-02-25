@@ -3,19 +3,18 @@
 #endif
 
 #include "tp.h"
-#include "list.c"
-#include "dict.c"
-#include "misc.c"
-#include "string.c"
-#include "builtins.c"
-#include "gc.c"
-#include "ops.c"
+#include "dict.h"
+#include "misc.h"
+#include "string.h"
+#include "builtins.h"
+#include "gc.h"
+#include "ops.h"
 #ifdef TP_SANDBOX
 #include "sandbox.c"
 #endif
 
 void tp_compiler(TP);
-#include "vm.c"
+#include "vm.h"
 
 tp_obj tp_None = {TP_NONE};
 

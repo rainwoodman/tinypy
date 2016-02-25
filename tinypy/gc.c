@@ -1,3 +1,6 @@
+#include "gc.h"
+#include "list.h"
+#include "dict.h"
 /* tp_obj tp_track(TP,tp_obj v) { return v; }
    void tp_grey(TP,tp_obj v) { }
    void tp_full(TP) { }
