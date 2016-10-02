@@ -135,7 +135,7 @@ tp_obj unmap_value(TP, char type, void* value) {
         case FLOAT_T: _unmap_value(float, tp_number);
         case DOUBLE_T: _unmap_value(double, tp_number);
         case LDOUBLE_T: _unmap_value(long double, tp_number);
-        case STRING_T: _unmap_value(char*, tp_string);
+        case STRING_T: if(*(char**)value == NULL) result = tp_None; else _unmap_value(char*, tp_string);
         case POINTER_T: result = tp_data(tp, 0, *(void**)value); break;
         default: tp_raise(tp_None, tp_printf(tp, "invalid type \"%c\""));
     }
@@ -297,6 +297,10 @@ tp_obj dl_load(TP) {
     return output;
 }
 
+tp_obj dl_exception(TP) {
+    return tp->ex;
+}
+
 /*
  * dl_mod_init()
  *
@@ -320,6 +324,7 @@ void dl_init(TP)
     tp_set(tp, mod, tp_string("size"),        tp_fnc(tp, dl_size)); /* size of data according to signature */
     tp_set(tp, mod, tp_string("pack"),        tp_fnc(tp, dl_pack));
     tp_set(tp, mod, tp_string("unpack"),      tp_fnc(tp, dl_unpack));
+    tp_set(tp, mod, tp_string("exception"),   tp_fnc(tp, dl_exception)); /* get current exception */
 
     /*
      * bind special attributes to random module
