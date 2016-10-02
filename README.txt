@@ -2,6 +2,9 @@
 "batteries not (yet) included"
 Copyright (c) 2008 Phil Hassey
 
+This version adds:
+- dl module
+
 Check it out:
 
 $ python setup.py linux pygame

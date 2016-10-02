@@ -1,0 +1,231 @@
+#include <dlfcn.h>
+#include <ffi.h>
+#include <stdint.h>
+
+/* handle = dl.open("library") */
+tp_obj dl_dlopen(TP) {
+    tp_obj name = TP_STR();
+    tp_obj handle = tp_data(tp, 0, NULL);
+    handle.data.val = dlopen(name.string.val, RTLD_LAZY);
+    if (handle.data.val == NULL) {
+        tp_raise(tp_None, tp_printf(tp, "%s", dlerror()));
+    }
+    return handle;
+}
+
+/* dl.close(handle) */
+tp_obj dl_dlclose(TP) {
+    tp_obj handle = TP_TYPE(TP_DATA);
+    dlclose(handle.data.val);
+    return tp_None;
+}
+
+/* sym = dl.sym(handle, "name") */
+tp_obj dl_dlsym(TP) {
+    tp_obj handle = TP_TYPE(TP_DATA);
+    tp_obj name = TP_STR();
+    tp_obj result = tp_data(tp, 0, NULL);
+    void* sym = dlsym(handle.data.val, name.string.val);
+    result.data.val = sym;
+    /*fprintf(stderr, "%s => %p\n", name.string.val, sym);*/
+    if(result.data.val == NULL) {
+        tp_raise(tp_None, tp_printf(tp, "%s", dlerror()));
+    }
+    return result;
+}
+
+ffi_type* map_type(TP, char type) {
+    switch(type) {
+        case 'V': return &ffi_type_void; break;
+        case '8': return &ffi_type_uint8; break;
+        case '9': return &ffi_type_sint8; break;
+        case '6': return &ffi_type_uint16; break;
+        case '7': return &ffi_type_sint16; break;
+        case '2': return &ffi_type_uint32; break;
+        case '3': return &ffi_type_sint32; break;
+        case '4': return &ffi_type_uint64; break;
+        case '5': return &ffi_type_sint64; break;
+        case 'f': return &ffi_type_float; break;
+        case 'd': return &ffi_type_double; break;
+        case 'c': return &ffi_type_uchar; break;
+        case 'C': return &ffi_type_schar; break;
+        case 't': return &ffi_type_ushort; break;
+        case 'T': return &ffi_type_sshort; break;
+        case 'i': return &ffi_type_uint; break;
+        case 'I': return &ffi_type_sint; break;
+        case 'l': return &ffi_type_ulong; break;
+        case 'L': return &ffi_type_slong; break;
+        case 'D': return &ffi_type_longdouble; break;
+        case 'S':
+        case '*': return &ffi_type_pointer; break;
+        default: tp_raise(&ffi_type_void, tp_printf(tp, "invalid type \"%c\""));
+    }
+}
+
+#define _map_value(type, value) result = malloc(sizeof(type)); *((type*)result) = (type) value; break
+void* map_value(TP, char type, tp_obj value) {
+    void* result = NULL;
+    switch(type) {
+        case 'c':
+        case '8': _map_value(uint8_t, value.number.val);
+        case 'C':
+        case '9': _map_value(int8_t, value.number.val);
+        case 't':
+        case '6': _map_value(uint16_t, value.number.val);
+        case 'T':
+        case '7': _map_value(int16_t, value.number.val);
+        case 'i':
+        case '2': _map_value(uint32_t, value.number.val);
+        case 'I':
+        case '3': _map_value(int32_t, value.number.val);
+        case 'l':
+        case '4': _map_value(uint64_t, value.number.val);
+        case 'L':
+        case '5': _map_value(int64_t, value.number.val);
+        case 'f': _map_value(float, value.number.val);
+        case 'd': _map_value(double, value.number.val);
+        case 'D': _map_value(long double, value.number.val);
+        case 'S': _map_value(char*, value.string.val);
+        case '*': _map_value(void*, value.data.val);
+        default: tp_raise(&ffi_type_void, tp_printf(tp, "invalid type \"%c\""));
+    }
+    return result;
+}
+
+#define _unmap_value(cast, mapper) result = mapper(*(cast*)value); break;
+tp_obj unmap_value(TP, char type, void* value) {
+    tp_obj result;
+    switch(type) {
+        case 'c':
+        case '8': _unmap_value(uint8_t, tp_number);
+        case 'C':
+        case '9': _unmap_value(int8_t, tp_number);
+        case 't':
+        case '6': _unmap_value(uint16_t, tp_number);
+        case 'T':
+        case '7': _unmap_value(int16_t, tp_number);
+        case 'i':
+        case '2': _unmap_value(uint32_t, tp_number);
+        case 'I':
+        case '3': _unmap_value(int32_t, tp_number);
+        case 'l':
+        case '4': _unmap_value(uint64_t, tp_number);
+        case 'L':
+        case '5': _unmap_value(int64_t, tp_number);
+        case 'f': _unmap_value(float, tp_number);
+        case 'd': _unmap_value(double, tp_number);
+        case 'D': _unmap_value(long double, tp_number);
+        case 'S': _unmap_value(char*, tp_string);
+        case '*': result = tp_data(tp, 0, *(void**)value); break;
+        default: tp_raise(tp_None, tp_printf(tp, "invalid type \"%c\""));
+    }
+    free(value);
+    return result;
+}
+
+/* result = dl.call(sym, 'return_type', 'signature', [args]) */
+tp_obj dl_call(TP) {
+    tp_obj method = TP_TYPE(TP_DATA);
+    tp_obj return_type = TP_STR();
+    tp_obj signature = TP_STR();
+    tp_obj arguments = TP_TYPE(TP_LIST);
+
+    int num_args = signature.string.len;
+    ffi_type *args[num_args];
+    void* values[num_args];
+    int i;
+    ffi_cif cif;
+
+    for(i = 0; i < num_args; i++) {
+        args[i] = map_type(tp, signature.string.val[i]);
+        values[i] = map_value(tp, signature.string.val[i], arguments.list.val->items[i]);
+        /*printf("%d: %c => %p %p %d\n", i, signature.string.val[i], *(void**)values[i], arguments.list.val->items[i].data.val, (int)arguments.list.val->items[i].number.val);*/
+    }
+
+    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, num_args, map_type(tp, return_type.string.val[0]), args) == FFI_OK) {
+        void* result = NULL;
+        if(return_type.string.val[0] != 'V') result = map_value(tp, return_type.string.val[0], tp_None);
+        /*if(result != NULL) printf("result>%f\n", *(double*) result);*/
+        ffi_call(&cif, (void (*)(void))method.data.val, result, values);
+        /*printf("result<%f\n", *(double*) result);*/
+        for(i = 0; i < num_args; i++) free(values[i]);
+        if(result != NULL) {
+            return unmap_value(tp, return_type.string.val[0], result);
+        }
+        return tp_None;
+    }
+
+    tp_raise(tp_None, tp_printf(tp, "dl.call: not implemented"));
+}
+
+tp_obj call_method(TP) {
+    tp_obj self = TP_OBJ();
+    tp_obj args = _tp_list_copy(tp, tp->params);
+
+    tp_obj symbol = tp_get(tp, self, tp_string("symbol"));
+    tp_obj return_type = tp_get(tp, self, tp_string("return_type"));
+    tp_obj signature = tp_get(tp, self, tp_string("signature"));
+
+    tp_params_v(tp, 4, symbol, return_type, signature, args);
+    return dl_call(tp);
+}
+
+/* Returns an object which calls the method */
+tp_obj dl_load(TP) {
+    tp_obj library = TP_STR();
+    tp_obj name = TP_STR();
+    tp_obj return_type = TP_STR();
+    tp_obj signature = TP_STR();
+
+    tp_params_v(tp, 1, library);
+    tp_obj handle = dl_dlopen(tp);
+
+    tp_obj output = tp_object(tp);
+
+    tp_params_v(tp, 2, handle, name);
+    tp_set(tp, output, tp_string("__name__"), name);
+    tp_set(tp, output, tp_string("symbol"), dl_dlsym(tp));
+    tp_set(tp, output, tp_string("return_type"), return_type);
+    tp_set(tp, output, tp_string("signature"), signature);
+    tp_set(tp, output, tp_string("__call__"), tp_method(tp, output, call_method));
+
+    tp_params_v(tp, 1, handle);
+    dl_dlclose(tp);
+    return output;
+}
+
+/*
+ * dl_mod_init()
+ *
+ * dl module initialization function
+ */
+void dl_init(TP)
+{
+    /*
+     * module dict for dl
+     */
+    tp_obj mod = tp_dict(tp);
+
+    /*
+     * bind functions to dl module
+     */
+    tp_set(tp, mod, tp_string("open"),        tp_fnc(tp, dl_dlopen));
+    tp_set(tp, mod, tp_string("close"),       tp_fnc(tp, dl_dlclose));
+    tp_set(tp, mod, tp_string("sym"),         tp_fnc(tp, dl_dlsym));
+    tp_set(tp, mod, tp_string("call"),        tp_fnc(tp, dl_call));
+    tp_set(tp, mod, tp_string("load"),        tp_fnc(tp, dl_load)); 
+    /*tp_set(tp, mod, tp_string("pack"),        tp_fnc(tp, dl_pack));
+    tp_set(tp, mod, tp_string("unpack"),      tp_fnc(tp, dl_unpack));*/
+
+    /*
+     * bind special attributes to random module
+     */
+    tp_set(tp, mod, tp_string("__doc__"),  tp_string("Dynamic library loader."));
+    tp_set(tp, mod, tp_string("__name__"), tp_string("dl"));
+    tp_set(tp, mod, tp_string("__FILE__"), tp_string(__FILE__));
+
+    /*
+     * bind random module to tinypy modules[]
+     */
+    tp_set(tp, tp->modules, tp_string("dl"), mod);
+}

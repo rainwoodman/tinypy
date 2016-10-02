@@ -116,6 +116,9 @@ def vars_osx():
     if 'pygame' in MODULES:
         VARS['$FLAGS'] += ' `sdl-config --cflags --libs` '
 
+    if 'dl' in MODULES:
+        VARS['$FLAGS'] += ' -ldl -lffi '
+
 def vars_linux():
     VARS['$RM'] = 'rm -f'
     VARS['$VM'] = './vm'
@@ -128,6 +131,9 @@ def vars_linux():
     
     if 'pygame' in MODULES:
         VARS['$FLAGS'] += ' `sdl-config --cflags --libs` '
+
+    if 'dl' in MODULES:
+        VARS['$FLAGS'] += ' -ldl -I/usr/lib/libffi-3.2.1/include/ -lffi '
 
     if SANDBOX:
         VARS['$SYS'] += " -sandbox "
