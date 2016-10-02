@@ -2,6 +2,10 @@
 
 #include "tp.c"
 
+/* Compile with: "gcc -o repl tinypy/repl.c -lm -Wall"
+   Supports basic one-line instructions. No module included.
+*/
+
 tp_obj run_protected(TP, char* source, tp_obj globals) {
     if(setjmp(tp->nextexpr)) {
         --(tp->cur);
