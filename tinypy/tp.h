@@ -211,6 +211,7 @@ typedef struct tp_vm {
 #endif
     int jmp;
     tp_obj ex;
+    tp_obj last_result;
     char chars[256][2];
     int cur;
     /* gc */

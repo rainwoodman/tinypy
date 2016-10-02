@@ -242,7 +242,7 @@ int tp_step(TP) {
        int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(regs[i])); }
     */
     switch (e.i) {
-        case TP_IEOF: tp_return(tp,tp_None); SR(0); break;
+        case TP_IEOF: tp->last_result = RA; tp_return(tp,tp_None); SR(0); break;
         case TP_IADD: RA = tp_add(tp,RB,RC); break;
         case TP_ISUB: RA = tp_sub(tp,RB,RC); break;
         case TP_IMUL: RA = tp_mul(tp,RB,RC); break;
@@ -452,6 +452,8 @@ tp_obj tp_import_(TP) {
     return r;
 }
 
+tp_obj tp_eval_(TP);
+
 void tp_builtins(TP) {
     tp_obj o;
     struct {const char *s;void *f;} b[] = {
@@ -461,7 +463,7 @@ void tp_builtins(TP) {
     {"str",tp_str2}, {"float",tp_float}, {"system",tp_system},
     {"istype",tp_istype}, {"chr",tp_chr}, {"save",tp_save},
     {"load",tp_load}, {"read",tp_load}, {"fpack",tp_fpack}, {"abs",tp_abs},
-    {"int",tp_int}, {"exec",tp_exec_}, {"exists",tp_exists},
+    {"int",tp_int}, {"eval",tp_eval_}, {"exec",tp_exec_}, {"exists",tp_exists},
     {"mtime",tp_mtime}, {"number",tp_float}, {"round",tp_round},
     {"ord",tp_ord}, {"merge",tp_merge}, {"getraw",tp_getraw},
     {"setmeta",tp_setmeta}, {"getmeta",tp_getmeta},
@@ -513,7 +515,18 @@ tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
 
 tp_obj tp_eval(TP, const char *text, tp_obj globals) {
     tp_obj code = tp_compile(tp,tp_string(text),tp_string("<eval>"));
-    return tp_exec(tp,code,globals);
+    tp_exec(tp,code,globals);
+    return tp->last_result;
+}
+
+tp_obj tp_eval_(TP) {
+    tp_obj text = TP_STR();
+    tp_obj globals = TP_TYPE(TP_DICT);
+
+    tp_obj code = tp_compile(tp, text, tp_string("<eval>"));
+
+    tp_exec(tp,code,globals);
+    return tp->last_result;
 }
 
 /* Function: tp_init
