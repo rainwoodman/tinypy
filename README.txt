@@ -4,6 +4,7 @@ Copyright (c) 2008 Phil Hassey
 
 This version adds:
 - dl module
+- jni module + java interface
 
 Check it out:
 
