@@ -468,7 +468,7 @@ void tp_builtins(TP) {
     {"mtime",tp_mtime}, {"number",tp_float}, {"round",tp_round},
     {"ord",tp_ord}, {"merge",tp_merge}, {"getraw",tp_getraw},
     {"setmeta",tp_setmeta}, {"getmeta",tp_getmeta},
-    {"bool", tp_builtins_bool}, {"join", tp_builtins_join},
+    {"bool", tp_builtins_bool}, {"join", tp_builtins_join}, {"repr", tp_repr2},
     #ifdef TP_SANDBOX
     {"sandbox",tp_sandbox_},
     #endif

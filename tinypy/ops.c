@@ -2,17 +2,96 @@
  * Various tinypy operations.
  */
 
+tp_obj tp_str_(TP, tp_obj self, tp_obj visited);
+tp_obj tp_has(TP,tp_obj self, tp_obj k);
+
+tp_obj tp_repr_(TP, tp_obj self, tp_obj visited) {
+    if(self.type == TP_STRING) {
+        tp_params_v(tp, 3, self, tp_string("'"), tp_string("\\'")); tp_obj replaced = tp_replace(tp);
+        return tp_printf(tp, "\'%s\'", replaced.string.val);
+        return self;
+    }
+    return tp_str_(tp, self, visited);
+}
+
+tp_obj tp_repr(TP, tp_obj self) {
+    tp_obj visited = tp_list(tp);
+    tp_obj result = tp_repr_(tp, self, visited);
+    return result;
+}
+
 /* Function: tp_str
  * String representation of an object.
+ * Checks for recursive data structures
  *
  * Returns a string object representating self.
  */
-tp_obj tp_str(TP,tp_obj self) {
+tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
+    int type = self.type;
+    if(type == TP_DICT) {
+        if(tp_has(tp, visited, tp_data(tp, 0, self.dict.val)).number.val) return tp_string("{...}");
+        _tp_list_append(tp, visited.list.val, tp_data(tp, 0, self.dict.val));
+    } else if(type == TP_LIST) {
+        if(tp_has(tp, visited, tp_data(tp, 0, self.list.val)).number.val) return tp_string("[...]");
+        _tp_list_append(tp, visited.list.val, tp_data(tp, 0, self.list.val));
+    }
+    tp_obj result = tp_None;
+    if (type == TP_STRING) { 
+        result = self; 
+    } else if (type == TP_NUMBER) {
+        tp_num v = self.number.val;
+        if ((fabs(v-(long)v)) < 0.000001) { return tp_printf(tp,"%ld",(long)v); }
+        result = tp_printf(tp,"%f",v);
+    } else if(type == TP_DICT) {
+        result = tp_string("{");
+        int i, n = 0;
+        for(i = 0; i < self.dict.val->alloc; i++) {
+            if(self.dict.val->items[i].used > 0) {
+                result = tp_add(tp, result, tp_repr_(tp, self.dict.val->items[i].key, visited));
+                result = tp_add(tp, result, tp_string(": "));
+                result = tp_add(tp, result, tp_repr_(tp, self.dict.val->items[i].val, visited));
+                if(n < self.dict.val->len - 1) result = tp_add(tp, result, tp_string(", "));
+                n += 1;
+            }
+        }
+        result = tp_add(tp, result, tp_string("}"));
+        /*result = tp_printf(tp,"<dict 0x%x>",self.dict.val);*/
+    } else if(type == TP_LIST) {
+        result = tp_string("[");
+        int i;
+        for(i = 0; i < self.list.val->len; i++) {
+            result = tp_add(tp, result, tp_repr_(tp, self.list.val->items[i], visited));
+            if(i < self.list.val->len - 1) result = tp_add(tp, result, tp_string(", "));
+        }
+        result = tp_add(tp, result, tp_string("]"));
+        /*result = tp_printf(tp,"<list 0x%x>",self.list.val);*/
+    } else if (type == TP_NONE) {
+        result = tp_string("None");
+    } else if (type == TP_DATA) {
+        result = tp_printf(tp,"<data 0x%x>",self.data.val);
+    } else if (type == TP_FNC) {
+        result = tp_printf(tp,"<fnc 0x%x>",self.fnc.info);
+    } else {
+        result = tp_string("<?>");
+    }
+    if(type == TP_DICT || type == TP_LIST) {
+        _tp_list_pop(tp, visited.list.val, visited.list.val->len - 1, "visited list is empty");
+    }
+    return result;
+}
+
+tp_obj tp_str(TP, tp_obj self) {
+    tp_obj visited = tp_list(tp);
+    tp_obj result = tp_str_(tp, self, visited);
+    return result;
+}
+
+tp_obj tp_str_old(TP,tp_obj self) {
     int type = self.type;
     if (type == TP_STRING) { return self; }
     if (type == TP_NUMBER) {
         tp_num v = self.number.val;
-        if ((fabs(v-(long)v)) < 0.000001) { return tp_printf(tp,"%ld",(long)v); }
+        if ((fabs(v)-fabs((long)v)) < 0.000001) { return tp_printf(tp,"%ld",(long)v); }
         return tp_printf(tp,"%f",v);
     } else if(type == TP_DICT) {
         return tp_printf(tp,"<dict 0x%x>",self.dict.val);
@@ -27,6 +106,7 @@ tp_obj tp_str(TP,tp_obj self) {
     }
     return tp_string("<?>");
 }
+
 
 /* Function: tp_bool
  * Check the truth value of an object
