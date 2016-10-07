@@ -214,6 +214,7 @@ typedef struct tp_vm {
     tp_obj last_result;
     char chars[256][2];
     int cur;
+    void (*echo)(const char* data, int length);
     /* gc */
     _tp_list *white;
     _tp_list *grey;
@@ -377,8 +378,8 @@ tp_inline static tp_obj tp_number(tp_num v) {
 tp_obj tp_str_old(TP, tp_obj self);
 
 tp_inline static void tp_echo(TP,tp_obj e) {
-    e = tp_str_old(tp,e);
-    fwrite(e.string.val,1,e.string.len,stdout);
+    e = tp_str(tp,e);
+    tp->echo(e.string.val, e.string.len);
 }
 
 /* Function: tp_string_n

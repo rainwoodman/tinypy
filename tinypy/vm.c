@@ -1,3 +1,9 @@
+/* write to standard output */
+void tp_default_echo(const char* string, int length) {
+    if(length < 0) length = strlen(string);
+    fwrite(string, 1, length, stdout);
+}
+
 /* File: VM
  * Functionality pertaining to the virtual machine.
  */
@@ -23,6 +29,7 @@ tp_vm *_tp_init(void) {
     tp->modules = tp_dict(tp);
     tp->_params = tp_list(tp);
     for (i=0; i<TP_FRAMES; i++) { tp_set(tp,tp->_params,tp_None,tp_list(tp)); }
+    tp->echo = tp_default_echo;
     tp_set(tp,tp->root,tp_None,tp->builtins);
     tp_set(tp,tp->root,tp_None,tp->modules);
     tp_set(tp,tp->root,tp_None,tp->_regs);
@@ -90,7 +97,7 @@ void _tp_raise(TP,tp_obj e) {
     /*char *x = 0; x[0]=0;*/
     if (!tp || !tp->jmp) {
 #ifndef CPYTHON_MOD
-        printf("\nException:\n"); tp_echo(tp,e); printf("\n");
+        tp->echo("\nException:\n", -1); tp_echo(tp,e); tp->echo("\n", -1);
         exit(-1);
 #else
         tp->ex = e;
@@ -104,15 +111,15 @@ void _tp_raise(TP,tp_obj e) {
 
 void tp_print_stack(TP) {
     int i;
-    printf("\n");
+    tp->echo("\n", -1);
     for (i=0; i<=tp->cur; i++) {
         if (!tp->frames[i].lineno) { continue; }
-        printf("File \""); tp_echo(tp,tp->frames[i].fname); printf("\", ");
-        printf("line %d, in ",tp->frames[i].lineno);
-        tp_echo(tp,tp->frames[i].name); printf("\n ");
-        tp_echo(tp,tp->frames[i].line); printf("\n");
+        tp->echo("File \"", -1); tp_echo(tp,tp->frames[i].fname); tp->echo("\", ", -1);
+        tp_echo(tp, tp_printf(tp, "line %d, in ",tp->frames[i].lineno));
+        tp_echo(tp,tp->frames[i].name); tp->echo("\n ", -1);
+        tp_echo(tp,tp->frames[i].line); tp->echo("\n", -1);
     }
-    printf("\nException:\n"); tp_echo(tp,tp->ex); printf("\n");
+    tp->echo("\nException:\n", -1); tp_echo(tp,tp->ex); tp->echo("\n", -1);
 }
 
 void tp_handle(TP) {

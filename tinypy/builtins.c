@@ -6,11 +6,11 @@ tp_obj tp_print(TP) {
     int n = 0;
     tp_obj e;
     TP_LOOP(e)
-        if (n) { printf(" "); }
+        if (n) { tp->echo(" ", -1); }
         tp_echo(tp,e);
         n += 1;
     TP_END;
-    printf("\n");
+    tp->echo("\n", -1);
     return tp_None;
 }
 
