@@ -55,6 +55,9 @@ def main():
         print "couldn't detect OS or incorrect compiler command. defaulting to GCC."
         build = build_gcc
     
+    if not os.path.isdir(os.path.join(TOPDIR,'build')):
+        os.mkdir(os.path.join(TOPDIR,'build'))
+
     cmd = sys.argv[1]
     if cmd == "tinypy":
         build()
@@ -165,15 +168,16 @@ def do_chdir(dest):
     os.chdir(dest)
 
 def build_bc(opt=False):
-    out = []
+    out = ["#if TP_COMPILER"]
     for mod in CORE:
-        out.append("""unsigned char tp_%s[] = {"""%mod)
+        out.append("""const unsigned char tp_%s[] = {"""%mod)
         fname = mod+".tpc"
         data = open(fname,'rb').read()
         cols = 16
         for n in xrange(0,len(data),cols):
             out.append(",".join([str(ord(v)) for v in data[n:n+cols]])+',')
         out.append("""};""")
+    out.append("#endif")
     out.append("")
     f = open('bc.c','wb')
     f.write('\n'.join(out))
@@ -222,6 +226,8 @@ def build_blob():
                         break
                 if got_already: continue
             out.append(line)
+    for mod in CORE:
+        out.append("""extern const unsigned char tp_%s[];"""%mod)
     out.append("#endif")
     out.append('')
     dest = os.path.join(TOPDIR,'build','tinypy.h')
@@ -233,14 +239,15 @@ def build_blob():
     # we leave all the tinypy.h stuff at the top so that
     # if someone wants to include tinypy.c they don't have to have
     # tinypy.h cluttering up their folder
-    
-    if not os.path.exists(os.path.join(TOPDIR, 'tinypy', 'bc.c')):
-        do_chdir(os.path.join(TOPDIR,'tinypy'))
-        build_bc()
-        do_chdir(os.path.join(TOPDIR))
+    bc_dot_c = os.path.join(TOPDIR, 'tinypy', 'bc.c')
+    if os.path.exists(bc_dot_c):
+        os.remove(bc_dot_c)
+    do_chdir(os.path.join(TOPDIR,'tinypy'))
+    build_bc()
+    do_chdir(os.path.join(TOPDIR))
 
     for fname in ['list.c','dict.c','misc.c','string.c','builtins.c',
-        'gc.c','ops.c','vm.c','bc.c','tp.c','sandbox.c']:
+        'gc.c','ops.c','vm.c','tp.c','bc.c','sandbox.c']:
         for line in open_tinypy(fname,'r'):
             line = line.rstrip()
             if line.find('#include "') != -1: continue

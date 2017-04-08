@@ -5,7 +5,7 @@
 #define TP_H
 
 #include <setjmp.h>
-#include <sys/stat.h>
+//#include <sys/stat.h>
 #ifndef __USE_ISOC99
 #define __USE_ISOC99
 #endif
@@ -29,18 +29,14 @@
 #endif
 #endif
 
+#ifdef __ICCARM__
+#define tp_inline inline
+#endif
+
 #ifndef tp_inline
 #error "Unsuported compiler"
 #endif
 
-/*  #define tp_malloc(x) calloc((x),1)
-    #define tp_realloc(x,y) realloc(x,y)
-    #define tp_free(x) free(x) */
-
-/* #include <gc/gc.h>
-   #define tp_malloc(x) GC_MALLOC(x)
-   #define tp_realloc(x,y) GC_REALLOC(x,y)
-   #define tp_free(x)*/
 
 enum {
     TP_NONE,TP_NUMBER,TP_STRING,TP_DICT,
@@ -172,10 +168,10 @@ typedef struct tp_frame_ {
 } tp_frame_;
 
 #define TP_GCMAX 4096
-#define TP_FRAMES 256
+#define TP_FRAMES 32    //256
 #define TP_REGS_EXTRA 2
 /* #define TP_REGS_PER_FRAME 256*/
-#define TP_REGS 16384
+#define TP_REGS 1024    //16384
 
 /* Type: tp_vm
  * Representation of a tinypy virtual machine instance.
