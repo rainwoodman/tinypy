@@ -90,7 +90,7 @@ tp_obj tp_range(TP) {
 //    int r = system(s);
 //    return tp_number(r);
 //}
-tp_existstp_existstp_obj tp_system(TP) {
+tp_obj tp_system(TP) {
     tp_raise(tp_None,tp_string("(tp_system) Unimplemented"));
     return tp_None;
 }
