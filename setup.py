@@ -327,7 +327,7 @@ def build_mymain():
         
     vs = []
     for m in MODULES:
-        vs.append('#include "../modules/%s/init.c"'%m)
+        vs.append('#include "../modules/%s/%s_init.c"'%(m,m))
     out = out.replace('/* INCLUDE */','\n'.join(vs))
     
     vs = []
