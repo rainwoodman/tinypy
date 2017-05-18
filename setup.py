@@ -27,9 +27,14 @@ def main():
     SANDBOX = 'sandbox' in sys.argv
     CLEAN = CLEAN or BOOT
     TEST = TEST or BOOT
-        
+
+    cmd = sys.argv[1]
+
     get_libs()
-    build_mymain()
+    if cmd == 'blob':
+        build_libs_blob()
+    else:
+        build_mymain()
 
     build = None
     
@@ -58,7 +63,6 @@ def main():
     if not os.path.isdir(os.path.join(TOPDIR,'build')):
         os.mkdir(os.path.join(TOPDIR,'build'))
 
-    cmd = sys.argv[1]
     if cmd == "tinypy":
         build()
     elif cmd == '64k':
@@ -179,7 +183,7 @@ def build_bc(opt=False):
         out.append("""};""")
     out.append("#endif")
     out.append("")
-    f = open('bc.c','wb')
+    f = open(os.path.join(TOPDIR, 'build/bc.c'),'wb')
     f.write('\n'.join(out))
     f.close()
     
@@ -239,7 +243,7 @@ def build_blob():
     # we leave all the tinypy.h stuff at the top so that
     # if someone wants to include tinypy.c they don't have to have
     # tinypy.h cluttering up their folder
-    bc_dot_c = os.path.join(TOPDIR, 'tinypy', 'bc.c')
+    bc_dot_c = os.path.join(TOPDIR, 'build', 'bc.c')
     if os.path.exists(bc_dot_c):
         os.remove(bc_dot_c)
     do_chdir(os.path.join(TOPDIR,'tinypy'))
@@ -247,7 +251,7 @@ def build_blob():
     do_chdir(os.path.join(TOPDIR))
 
     for fname in ['list.c','dict.c','misc.c','string.c','builtins.c',
-        'gc.c','ops.c','vm.c','tp.c','bc.c','sandbox.c']:
+        'gc.c','ops.c','vm.c','tp.c',bc_dot_c,'sandbox.c']:
         for line in open_tinypy(fname,'r'):
             line = line.rstrip()
             if line.find('#include "') != -1: continue
@@ -320,6 +324,20 @@ def get_libs():
     global MODULES
     MODULES = modules
 
+def build_libs_blob():     
+    out = ['#include "tinypy.h"']
+    for m in MODULES:
+        out.append('#include "%s_init.c"'%m)
+    out.append("")
+
+    dest = os.path.join(TOPDIR,'build','tinypy_libs.c')
+
+    print 'writing %s'%dest
+    f = open(dest,'w')
+    f.write('\n'.join(out))
+    f.close()
+    return True
+
 def build_mymain():
     src = os.path.join(TOPDIR,'tinypy','tpmain.c')
     out = open(src,'r').read()
@@ -339,7 +357,7 @@ def build_mymain():
     f.write(out)
     f.close()
     return True
-    
+     
 def test_mods(cmd):
     for m in MODULES:
         tests = os.path.join('..','modules',m,'tests.py')
