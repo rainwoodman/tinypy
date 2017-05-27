@@ -11,6 +11,7 @@ VALGRIND = False
 SANDBOX = False
 CORE = ['tokenize','parse','encode','py2bc']
 MODULES = []
+BUILD_PATH = os.path.join(TOPDIR, 'build')
 
 def main():
     chksize()
@@ -31,6 +32,8 @@ def main():
     cmd = sys.argv[1]
 
     get_libs()
+    if not os.path.isdir(BUILD_PATH):
+        os.mkdir(BUILD_PATH)
     if cmd == 'blob':
         build_libs_blob()
     else:
@@ -60,9 +63,6 @@ def main():
         print "couldn't detect OS or incorrect compiler command. defaulting to GCC."
         build = build_gcc
     
-    if not os.path.isdir(os.path.join(TOPDIR,'build')):
-        os.mkdir(os.path.join(TOPDIR,'build'))
-
     if cmd == "tinypy":
         build()
     elif cmd == '64k':
@@ -234,7 +234,7 @@ def build_blob():
         out.append("""extern const unsigned char tp_%s[];"""%mod)
     out.append("#endif")
     out.append('')
-    dest = os.path.join(TOPDIR,'build','tinypy.h')
+    dest = os.path.join(BUILD_PATH,'tinypy.h')
     print 'writing %s'%dest
     f = open(dest,'w')
     f.write('\n'.join(out))
@@ -243,7 +243,7 @@ def build_blob():
     # we leave all the tinypy.h stuff at the top so that
     # if someone wants to include tinypy.c they don't have to have
     # tinypy.h cluttering up their folder
-    bc_dot_c = os.path.join(TOPDIR, 'build', 'bc.c')
+    bc_dot_c = os.path.join(BUILD_PATH, 'bc.c')
     if os.path.exists(bc_dot_c):
         os.remove(bc_dot_c)
     do_chdir(os.path.join(TOPDIR,'tinypy'))
@@ -311,8 +311,8 @@ def build_gcc():
     else:
         do_cmd("gcc $WFLAGS -O3 mymain.c $FLAGS -lm -o ../build/tinypy")
     if TEST:
-        do_cmd(os.path.join('..','build','tinypy')+' tests.py $SYS')
-        test_mods(os.path.join('..','build','tinypy')+' $TESTS')
+        do_cmd(os.path.join(BUILD_PATH,'tinypy')+' tests.py $SYS')
+        test_mods(os.path.join(BUILD_PATH,'tinypy')+' $TESTS')
     
     do_chdir('..')
     print("# OK")
