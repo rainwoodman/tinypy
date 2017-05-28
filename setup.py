@@ -13,25 +13,25 @@ CORE = ['tokenize','parse','encode','py2bc']
 MODULES = []
 BUILD_PATH = os.path.join(TOPDIR, 'build')
 
-def main():
+def main(argv):
     chksize()
-    if len(sys.argv) < 2:
+    if len(argv) < 2:
         print HELP
         return
     
     global TEST,CLEAN,BOOT,DEBUG,VALGRIND,SANDBOX
-    TEST = 'test' in sys.argv
-    CLEAN = 'clean' in sys.argv
-    BOOT = 'boot' in sys.argv
-    DEBUG = 'debug' in sys.argv
-    VALGRIND = 'valgrind' in sys.argv
-    SANDBOX = 'sandbox' in sys.argv
+    TEST = 'test' in argv
+    CLEAN = 'clean' in argv
+    BOOT = 'boot' in argv
+    DEBUG = 'debug' in argv
+    VALGRIND = 'valgrind' in argv
+    SANDBOX = 'sandbox' in argv
     CLEAN = CLEAN or BOOT
     TEST = TEST or BOOT
 
-    cmd = sys.argv[1]
+    cmd = argv[1]
 
-    get_libs()
+    get_libs(argv)
     if not os.path.isdir(BUILD_PATH):
         os.mkdir(BUILD_PATH)
     if cmd == 'blob':
@@ -51,11 +51,11 @@ def main():
         build = build_vs
 
     #full list of compilers in distutils.ccompiler.show_compilers()
-    if "-cunix" in sys.argv:
+    if "-cunix" in argv:
         build = build_gcc
-    elif '-cmsvc' in sys.argv:
+    elif '-cmsvc' in argv:
         build = build_vs
-    elif '-cmingw32' in sys.argv:
+    elif '-cmingw32' in argv:
         vars_windows()
         build = build_gcc
 
@@ -317,10 +317,10 @@ def build_gcc():
     do_chdir('..')
     print("# OK")
     
-def get_libs():
-    modules = os.listdir('modules')
+def get_libs(cmd_line_options):
+    modules = os.listdir(os.path.join(TOPDIR,'modules'))
     for m in modules[:]:
-        if m not in sys.argv: modules.remove(m)
+        if m not in cmd_line_options: modules.remove(m)
     global MODULES
     MODULES = modules
 
@@ -489,4 +489,4 @@ def install_cpython():
       ext_modules = [Extension("tinypy", ["cpython.c"], define_macros = [('CPYTHON_MOD', None)])])
     
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
