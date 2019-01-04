@@ -254,6 +254,8 @@ def class_nud(t):
 def from_nud(t):
     items = t.items = []
     items.append(expression(0))
+    while not check(P.token, 'import'):
+        items.append(expression(0))
     advance('import')
     items.append(expression(0))
     return t
@@ -359,7 +361,7 @@ base_dmap = {
     '[':{'lbp':70,'nud':list_nud,
         'bp':80,'led':get_led,},
     '{':{'lbp':0,'nud':dict_nud,},
-    '.':{'lbp':80,'bp':80,'led':dot_led,'type':'get',},
+    '.':{'lbp':80,'bp':80,'led':dot_led,'type':'get', 'nud':itself},
     'break':{'lbp':0,'nud':itself,'type':'break'},
     'pass':{'lbp':0,'nud':itself,'type':'pass'},
     'continue':{'lbp':0,'nud':itself,'type':'continue'},
