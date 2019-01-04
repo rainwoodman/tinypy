@@ -1,3 +1,11 @@
+===============================================================================
+2017 - Eyob
+I forked the original tinypy for the following reasons:
+    - Development has stopped on the original
+    - To make it work with embbeded systems.
+    - To compenentize it... i.e. make it easy to import it into other components
+
+===============================================================================
 64k tinypy
 "batteries not (yet) included"
 Copyright (c) 2008 Phil Hassey

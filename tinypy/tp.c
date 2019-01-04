@@ -1,5 +1,5 @@
 #ifndef TP_COMPILER
-#define TP_COMPILER 1
+#define TP_COMPILER 0
 #endif
 
 #include "tp.h"

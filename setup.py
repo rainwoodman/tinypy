@@ -11,25 +11,33 @@ VALGRIND = False
 SANDBOX = False
 CORE = ['tokenize','parse','encode','py2bc']
 MODULES = []
+BUILD_PATH = os.path.join(TOPDIR, 'build')
 
-def main():
+def main(argv):
     chksize()
-    if len(sys.argv) < 2:
+    if len(argv) < 2:
         print HELP
         return
     
     global TEST,CLEAN,BOOT,DEBUG,VALGRIND,SANDBOX
-    TEST = 'test' in sys.argv
-    CLEAN = 'clean' in sys.argv
-    BOOT = 'boot' in sys.argv
-    DEBUG = 'debug' in sys.argv
-    VALGRIND = 'valgrind' in sys.argv
-    SANDBOX = 'sandbox' in sys.argv
+    TEST = 'test' in argv
+    CLEAN = 'clean' in argv
+    BOOT = 'boot' in argv
+    DEBUG = 'debug' in argv
+    VALGRIND = 'valgrind' in argv
+    SANDBOX = 'sandbox' in argv
     CLEAN = CLEAN or BOOT
     TEST = TEST or BOOT
-        
-    get_libs()
-    build_mymain()
+
+    cmd = argv[1]
+
+    get_libs(argv)
+    if not os.path.isdir(BUILD_PATH):
+        os.mkdir(BUILD_PATH)
+    if cmd == 'blob':
+        build_libs_blob()
+    else:
+        build_mymain()
 
     build = None
     
@@ -43,11 +51,11 @@ def main():
         build = build_vs
 
     #full list of compilers in distutils.ccompiler.show_compilers()
-    if "-cunix" in sys.argv:
+    if "-cunix" in argv:
         build = build_gcc
-    elif '-cmsvc' in sys.argv:
+    elif '-cmsvc' in argv:
         build = build_vs
-    elif '-cmingw32' in sys.argv:
+    elif '-cmingw32' in argv:
         vars_windows()
         build = build_gcc
 
@@ -55,7 +63,6 @@ def main():
         print "couldn't detect OS or incorrect compiler command. defaulting to GCC."
         build = build_gcc
     
-    cmd = sys.argv[1]
     if cmd == "tinypy":
         build()
     elif cmd == '64k':
@@ -165,17 +172,18 @@ def do_chdir(dest):
     os.chdir(dest)
 
 def build_bc(opt=False):
-    out = []
+    out = ["#if TP_COMPILER"]
     for mod in CORE:
-        out.append("""unsigned char tp_%s[] = {"""%mod)
+        out.append("""const unsigned char tp_%s[] = {"""%mod)
         fname = mod+".tpc"
         data = open(fname,'rb').read()
         cols = 16
         for n in xrange(0,len(data),cols):
             out.append(",".join([str(ord(v)) for v in data[n:n+cols]])+',')
         out.append("""};""")
+    out.append("#endif")
     out.append("")
-    f = open('bc.c','wb')
+    f = open(os.path.join(TOPDIR, 'build/bc.c'),'wb')
     f.write('\n'.join(out))
     f.close()
     
@@ -222,9 +230,11 @@ def build_blob():
                         break
                 if got_already: continue
             out.append(line)
+    for mod in CORE:
+        out.append("""extern const unsigned char tp_%s[];"""%mod)
     out.append("#endif")
     out.append('')
-    dest = os.path.join(TOPDIR,'build','tinypy.h')
+    dest = os.path.join(BUILD_PATH,'tinypy.h')
     print 'writing %s'%dest
     f = open(dest,'w')
     f.write('\n'.join(out))
@@ -233,14 +243,15 @@ def build_blob():
     # we leave all the tinypy.h stuff at the top so that
     # if someone wants to include tinypy.c they don't have to have
     # tinypy.h cluttering up their folder
-    
-    if not os.path.exists(os.path.join(TOPDIR, 'tinypy', 'bc.c')):
-        do_chdir(os.path.join(TOPDIR,'tinypy'))
-        build_bc()
-        do_chdir(os.path.join(TOPDIR))
+    bc_dot_c = os.path.join(BUILD_PATH, 'bc.c')
+    if os.path.exists(bc_dot_c):
+        os.remove(bc_dot_c)
+    do_chdir(os.path.join(TOPDIR,'tinypy'))
+    build_bc()
+    do_chdir(os.path.join(TOPDIR))
 
     for fname in ['list.c','dict.c','misc.c','string.c','builtins.c',
-        'gc.c','ops.c','vm.c','bc.c','tp.c','sandbox.c']:
+        'gc.c','ops.c','vm.c','tp.c',bc_dot_c,'sandbox.c']:
         for line in open_tinypy(fname,'r'):
             line = line.rstrip()
             if line.find('#include "') != -1: continue
@@ -300,18 +311,32 @@ def build_gcc():
     else:
         do_cmd("gcc $WFLAGS -O3 mymain.c $FLAGS -lm -o ../build/tinypy")
     if TEST:
-        do_cmd(os.path.join('..','build','tinypy')+' tests.py $SYS')
-        test_mods(os.path.join('..','build','tinypy')+' $TESTS')
+        do_cmd(os.path.join(BUILD_PATH,'tinypy')+' tests.py $SYS')
+        test_mods(os.path.join(BUILD_PATH,'tinypy')+' $TESTS')
     
     do_chdir('..')
     print("# OK")
     
-def get_libs():
-    modules = os.listdir('modules')
+def get_libs(cmd_line_options):
+    modules = os.listdir(os.path.join(TOPDIR,'modules'))
     for m in modules[:]:
-        if m not in sys.argv: modules.remove(m)
+        if m not in cmd_line_options: modules.remove(m)
     global MODULES
     MODULES = modules
+
+def build_libs_blob():     
+    out = ['#include "tinypy.h"']
+    for m in MODULES:
+        out.append('#include "%s_init.c"'%m)
+    out.append("")
+
+    dest = os.path.join(TOPDIR,'build','tinypy_libs.c')
+
+    print 'writing %s'%dest
+    f = open(dest,'w')
+    f.write('\n'.join(out))
+    f.close()
+    return True
 
 def build_mymain():
     src = os.path.join(TOPDIR,'tinypy','tpmain.c')
@@ -320,7 +345,7 @@ def build_mymain():
         
     vs = []
     for m in MODULES:
-        vs.append('#include "../modules/%s/init.c"'%m)
+        vs.append('#include "../modules/%s/%s_init.c"'%(m,m))
     out = out.replace('/* INCLUDE */','\n'.join(vs))
     
     vs = []
@@ -332,7 +357,7 @@ def build_mymain():
     f.write(out)
     f.close()
     return True
-    
+     
 def test_mods(cmd):
     for m in MODULES:
         tests = os.path.join('..','modules',m,'tests.py')
@@ -464,4 +489,4 @@ def install_cpython():
       ext_modules = [Extension("tinypy", ["cpython.c"], define_macros = [('CPYTHON_MOD', None)])])
     
 if __name__ == '__main__':
-    main()
+    main(sys.argv)

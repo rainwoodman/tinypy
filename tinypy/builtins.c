@@ -89,11 +89,16 @@ tp_obj tp_range(TP) {
  * The system builtin. A grave security flaw. If your version of tinypy
  * enables this, you better remove it before deploying your app :P
  */
+//tp_obj tp_system(TP) {
+//    char s[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),s,TP_CSTR_LEN);
+//    int r = system(s);
+//    return tp_number(r);
+//}
 tp_obj tp_system(TP) {
-    char s[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),s,TP_CSTR_LEN);
-    int r = system(s);
-    return tp_number(r);
+    tp_raise(tp_None,tp_string("(tp_system) Unimplemented"));
+    return tp_None;
 }
+
 
 tp_obj tp_istype(TP) {
     tp_obj v = TP_OBJ();
@@ -123,38 +128,46 @@ tp_obj tp_float(TP) {
 }
 
 
+//tp_obj tp_save(TP) {
+//    char fname[256]; tp_cstr(tp,TP_STR(),fname,256);
+//    tp_obj v = TP_OBJ();
+//    FILE *f;
+//    f = fopen(fname,"wb");
+//    if (!f) { tp_raise(tp_None,tp_string("(tp_save) IOError: ?")); }
+//    fwrite(v.string.val,v.string.len,1,f);
+//    fclose(f);
+//    return tp_None;
+//}
+//
+//tp_obj tp_load(TP) {
+//    FILE *f;
+//    long l;
+//    tp_obj r;
+//    char *s;
+//    char fname[256]; tp_cstr(tp,TP_STR(),fname,256);
+//    struct stat stbuf;
+//    stat(fname, &stbuf);
+//    l = stbuf.st_size;
+//    f = fopen(fname,"rb");
+//    if (!f) {
+//        tp_raise(tp_None,tp_string("(tp_load) IOError: ?"));
+//    }
+//    r = tp_string_t(tp,l);
+//    s = r.string.info->s;
+//    fread(s,1,l,f);
+///*    if (rr !=l) { printf("hmmn: %d %d\n",rr,(int)l); }*/
+//    fclose(f);
+//    return tp_track(tp,r);
+//}
 tp_obj tp_save(TP) {
-    char fname[256]; tp_cstr(tp,TP_STR(),fname,256);
-    tp_obj v = TP_OBJ();
-    FILE *f;
-    f = fopen(fname,"wb");
-    if (!f) { tp_raise(tp_None,tp_string("(tp_save) IOError: ?")); }
-    fwrite(v.string.val,v.string.len,1,f);
-    fclose(f);
+    tp_raise(tp_None,tp_string("(tp_save) Unimplemented"));
     return tp_None;
 }
 
 tp_obj tp_load(TP) {
-    FILE *f;
-    long l;
-    tp_obj r;
-    char *s;
-    char fname[256]; tp_cstr(tp,TP_STR(),fname,256);
-    struct stat stbuf;
-    stat(fname, &stbuf);
-    l = stbuf.st_size;
-    f = fopen(fname,"rb");
-    if (!f) {
-        tp_raise(tp_None,tp_string("(tp_load) IOError: ?"));
-    }
-    r = tp_string_t(tp,l);
-    s = r.string.info->s;
-    fread(s,1,l,f);
-/*    if (rr !=l) { printf("hmmn: %d %d\n",rr,(int)l); }*/
-    fclose(f);
-    return tp_track(tp,r);
+    tp_raise(tp_None,tp_string("(tp_load) Unimplemented"));
+    return tp_None;
 }
-
 
 tp_obj tp_fpack(TP) {
     tp_num v = TP_NUM();
@@ -178,16 +191,25 @@ tp_obj tp_round(TP) {
     return tp_number(_roundf(tp_float(tp).number.val));
 }
 
+//tp_obj tp_exists(TP) {
+//    char fname[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),fname,TP_CSTR_LEN);
+//    struct stat stbuf;
+//    return tp_number(!stat(fname,&stbuf));
+//}
+//tp_obj tp_mtime(TP) {
+//    char fname[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),fname,TP_CSTR_LEN);
+//    struct stat stbuf;
+//    if (!stat(fname,&stbuf)) { return tp_number(stbuf.st_mtime); }
+//    tp_raise(tp_None,tp_string("(tp_mtime) IOError: ?"));
+//}
 tp_obj tp_exists(TP) {
-    char fname[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),fname,TP_CSTR_LEN);
-    struct stat stbuf;
-    return tp_number(!stat(fname,&stbuf));
+    tp_raise(tp_None,tp_string("(tp_exists) Unimplemented"));
+    return tp_None;
 }
+
 tp_obj tp_mtime(TP) {
-    char fname[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),fname,TP_CSTR_LEN);
-    struct stat stbuf;
-    if (!stat(fname,&stbuf)) { return tp_number(stbuf.st_mtime); }
-    tp_raise(tp_None,tp_string("(tp_mtime) IOError: ?"));
+    tp_raise(tp_None,tp_string("(tp_mtime) Unimplemented"));
+    return tp_None;
 }
 
 int _tp_lookup_(TP,tp_obj self, tp_obj k, tp_obj *meta, int depth) {

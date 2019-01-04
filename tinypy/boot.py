@@ -1,8 +1,9 @@
 def _boot_init():
     global FTYPE 
-    f = open('tp.h','r').read()
-    FTYPE = 'f'
-    if 'double tp_num' in f: FTYPE = 'd'
+    #f = open('tp.h','r').read()
+    #FTYPE = 'f'
+    #if 'double tp_num' in f: FTYPE = 'd'
+    FTYPE = 'd'
     import sys
     global ARGV
     ARGV = sys.argv
