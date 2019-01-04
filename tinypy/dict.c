@@ -1,8 +1,6 @@
 /* File: Dict
  * Functions for dealing with dictionaries.
  */
-#include "dict.h"
-
 int tp_lua_hash(void const *v,int l) {
     int i,step = (l>>5)+1;
     int h = l + (l >= 4?*(int*)v:0);

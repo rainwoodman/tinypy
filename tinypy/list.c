@@ -1,5 +1,3 @@
-#include "list.h"
-
 void _tp_list_realloc(TP, _tp_list *self,int len) {
     if (!len) { len=1; }
     self->items = (tp_obj*)tp_realloc(tp, self->items,len*sizeof(tp_obj));

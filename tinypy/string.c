@@ -1,9 +1,6 @@
 /* File: String
  * String handling functions.
  */
-
-#include "string.h"
-#include "list.h"
  
 /*
  * Create a new empty string of a certain size.

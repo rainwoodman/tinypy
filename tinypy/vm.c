@@ -2,13 +2,6 @@
  * Functionality pertaining to the virtual machine.
  */
 
-#include "vm.h"
-#include "gc.h"
-#include "ops.h"
-#include "dict.h"
-#include "builtins.h"
-#include "list.h"
-
 tp_vm *_tp_init(void) {
     int i;
     tp_vm *tp = (tp_vm*)calloc(sizeof(tp_vm),1);

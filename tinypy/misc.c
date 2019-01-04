@@ -2,8 +2,6 @@
  * Various functions to help interface tinypy.
  */
 
-#include "misc.h"
-
 tp_obj _tp_dcall(TP,tp_obj fnc(TP)) {
     return fnc(tp);
 }
