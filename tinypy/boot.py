@@ -8,6 +8,15 @@ def _boot_init():
     ARGV = sys.argv
 _boot_init()
 
+def join(v):
+    out = b''
+    for el in v:
+        try:
+            out += el
+        except TypeError:
+            out += el.encode('latin1')
+    return out
+
 def merge(a,b):
     if isinstance(a,dict):
         for k in b: a[k] = b[k]
@@ -36,6 +45,12 @@ def system(cmd):
 
 def load(fname):
     f = open(fname,'rb')
+    r = f.read()
+    f.close()
+    return r
+
+def read(fname):
+    f = open(fname,'r')
     r = f.read()
     f.close()
     return r

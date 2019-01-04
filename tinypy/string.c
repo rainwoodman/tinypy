@@ -124,6 +124,13 @@ tp_obj tp_str2(TP) {
     return tp_str(tp,v);
 }
 
+tp_obj tp_repr(TP, tp_obj self);
+
+tp_obj tp_repr2(TP) {
+    tp_obj v = TP_OBJ();
+    return tp_repr(tp,v);
+}
+
 tp_obj tp_chr(TP) {
     int v = TP_NUM();
     return tp_string_n(tp->chars[(unsigned char)v],1);

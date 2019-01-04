@@ -47,16 +47,16 @@ def tinypy():
     return import_fname(ARGV[0],'__main__')
 
 def main(src,dest):
-    s = load(src)
+    s = read(src)
     r = _compile(s,src)
     save(dest,r)
 
 if __name__ == '__main__':
     main(ARGV[1],ARGV[2])
-    main(ARGV[1],ARGV[2])
-    main(ARGV[1],ARGV[2])
-    main(ARGV[1],ARGV[2])
-    main(ARGV[1],ARGV[2])
-    main(ARGV[1],ARGV[2])
-    main(ARGV[1],ARGV[2])
-    main(ARGV[1],ARGV[2])
+#    main(ARGV[1],ARGV[2])
+#    main(ARGV[1],ARGV[2])
+#    main(ARGV[1],ARGV[2])
+#    main(ARGV[1],ARGV[2])
+#    main(ARGV[1],ARGV[2])
+#    main(ARGV[1],ARGV[2])
+#    main(ARGV[1],ARGV[2])

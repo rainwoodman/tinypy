@@ -1,3 +1,9 @@
+/* write to standard output */
+void tp_default_echo(const char* string, int length) {
+    if(length < 0) length = strlen(string);
+    fwrite(string, 1, length, stdout);
+}
+
 /* File: VM
  * Functionality pertaining to the virtual machine.
  */
@@ -23,6 +29,7 @@ tp_vm *_tp_init(void) {
     tp->modules = tp_dict(tp);
     tp->_params = tp_list(tp);
     for (i=0; i<TP_FRAMES; i++) { tp_set(tp,tp->_params,tp_None,tp_list(tp)); }
+    tp->echo = tp_default_echo;
     tp_set(tp,tp->root,tp_None,tp->builtins);
     tp_set(tp,tp->root,tp_None,tp->modules);
     tp_set(tp,tp->root,tp_None,tp->_regs);
@@ -34,6 +41,7 @@ tp_vm *_tp_init(void) {
     tp_set(tp, sys, tp_string("version"), tp_string("tinypy 1.2+SVN"));
     tp_set(tp,tp->modules, tp_string("sys"), sys);
     tp->regs = tp->_regs.list.val->items;
+    tp->last_result = tp_None;
     tp_full(tp);
     return tp;
 }
@@ -89,7 +97,7 @@ void _tp_raise(TP,tp_obj e) {
     /*char *x = 0; x[0]=0;*/
     if (!tp || !tp->jmp) {
 #ifndef CPYTHON_MOD
-        printf("\nException:\n"); tp_echo(tp,e); printf("\n");
+        tp->echo("\nException:\n", -1); tp_echo(tp,e); tp->echo("\n", -1);
         exit(-1);
 #else
         tp->ex = e;
@@ -103,15 +111,15 @@ void _tp_raise(TP,tp_obj e) {
 
 void tp_print_stack(TP) {
     int i;
-    printf("\n");
+    tp->echo("\n", -1);
     for (i=0; i<=tp->cur; i++) {
         if (!tp->frames[i].lineno) { continue; }
-        printf("File \""); tp_echo(tp,tp->frames[i].fname); printf("\", ");
-        printf("line %d, in ",tp->frames[i].lineno);
-        tp_echo(tp,tp->frames[i].name); printf("\n ");
-        tp_echo(tp,tp->frames[i].line); printf("\n");
+        tp->echo("File \"", -1); tp_echo(tp,tp->frames[i].fname); tp->echo("\", ", -1);
+        tp_echo(tp, tp_printf(tp, "line %d, in ",tp->frames[i].lineno));
+        tp_echo(tp,tp->frames[i].name); tp->echo("\n ", -1);
+        tp_echo(tp,tp->frames[i].line); tp->echo("\n", -1);
     }
-    printf("\nException:\n"); tp_echo(tp,tp->ex); printf("\n");
+    tp->echo("\nException:\n", -1); tp_echo(tp,tp->ex); tp->echo("\n", -1);
 }
 
 void tp_handle(TP) {
@@ -242,7 +250,7 @@ int tp_step(TP) {
        int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(regs[i])); }
     */
     switch (e.i) {
-        case TP_IEOF: tp_return(tp,tp_None); SR(0); break;
+        case TP_IEOF: tp->last_result = RA; tp_return(tp,tp_None); SR(0); break;
         case TP_IADD: RA = tp_add(tp,RB,RC); break;
         case TP_ISUB: RA = tp_sub(tp,RB,RC); break;
         case TP_IMUL: RA = tp_mul(tp,RB,RC); break;
@@ -335,7 +343,7 @@ int tp_step(TP) {
             tp_params_v(tp,3,tp_string("DEBUG:"),tp_number(VA),RA); tp_print(tp);
             break;
         case TP_INONE: RA = tp_None; break;
-        case TP_ILINE:
+        case TP_ILINE: {
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,VA);
             #endif
@@ -345,6 +353,7 @@ int tp_step(TP) {
             f->line = tp_string_sub(tp,f->code,a,a+VA*4-1);
 /*             fprintf(stderr,"%7d: %s\n",UVBC,f->line.string.val);*/
             cur += VA; f->lineno = UVBC;
+            }
             break;
         case TP_IFILE: f->fname = RA; break;
         case TP_INAME: f->name = RA; break;
@@ -451,6 +460,8 @@ tp_obj tp_import_(TP) {
     return r;
 }
 
+tp_obj tp_eval_(TP);
+
 void tp_builtins(TP) {
     tp_obj o;
     struct {const char *s;void *f;} b[] = {
@@ -459,12 +470,12 @@ void tp_builtins(TP) {
     {"import",tp_import_}, {"len",tp_len_}, {"assert",tp_assert},
     {"str",tp_str2}, {"float",tp_float}, {"system",tp_system},
     {"istype",tp_istype}, {"chr",tp_chr}, {"save",tp_save},
-    {"load",tp_load}, {"fpack",tp_fpack}, {"abs",tp_abs},
-    {"int",tp_int}, {"exec",tp_exec_}, {"exists",tp_exists},
+    {"load",tp_load}, {"read",tp_load}, {"fpack",tp_fpack}, {"abs",tp_abs},
+    {"int",tp_int}, {"eval",tp_eval_}, {"exec",tp_exec_}, {"exists",tp_exists},
     {"mtime",tp_mtime}, {"number",tp_float}, {"round",tp_round},
     {"ord",tp_ord}, {"merge",tp_merge}, {"getraw",tp_getraw},
     {"setmeta",tp_setmeta}, {"getmeta",tp_getmeta},
-    {"bool", tp_builtins_bool},
+    {"bool", tp_builtins_bool}, {"join", tp_builtins_join}, {"repr", tp_repr2},
     #ifdef TP_SANDBOX
     {"sandbox",tp_sandbox_},
     #endif
@@ -512,7 +523,18 @@ tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
 
 tp_obj tp_eval(TP, const char *text, tp_obj globals) {
     tp_obj code = tp_compile(tp,tp_string(text),tp_string("<eval>"));
-    return tp_exec(tp,code,globals);
+    tp_exec(tp,code,globals);
+    return tp->last_result;
+}
+
+tp_obj tp_eval_(TP) {
+    tp_obj text = TP_STR();
+    tp_obj globals = TP_TYPE(TP_DICT);
+
+    tp_obj code = tp_compile(tp, text, tp_string("<eval>"));
+
+    tp_exec(tp,code,globals);
+    return tp->last_result;
 }
 
 /* Function: tp_init

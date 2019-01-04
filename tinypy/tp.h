@@ -171,7 +171,7 @@ typedef struct tp_frame_ {
     int cregs;
 } tp_frame_;
 
-#define TP_GCMAX 4096
+#define TP_GCMAX 16384 /* FIXME: increased so that gc doesn't get called while running tp_str() */
 #define TP_FRAMES 256
 #define TP_REGS_EXTRA 2
 /* #define TP_REGS_PER_FRAME 256*/
@@ -211,8 +211,10 @@ typedef struct tp_vm {
 #endif
     int jmp;
     tp_obj ex;
+    tp_obj last_result;
     char chars[256][2];
     int cur;
+    void (*echo)(const char* data, int length);
     /* gc */
     _tp_list *white;
     _tp_list *grey;
@@ -373,9 +375,11 @@ tp_inline static tp_obj tp_number(tp_num v) {
     return val;
 }
 
+tp_obj tp_str_old(TP, tp_obj self);
+
 tp_inline static void tp_echo(TP,tp_obj e) {
     e = tp_str(tp,e);
-    fwrite(e.string.val,1,e.string.len,stdout);
+    tp->echo(e.string.val, e.string.len);
 }
 
 /* Function: tp_string_n

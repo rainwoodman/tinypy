@@ -6,11 +6,11 @@ tp_obj tp_print(TP) {
     int n = 0;
     tp_obj e;
     TP_LOOP(e)
-        if (n) { printf(" "); }
+        if (n) { tp->echo(" ", -1); }
         tp_echo(tp,e);
         n += 1;
     TP_END;
-    printf("\n");
+    tp->echo("\n", -1);
     return tp_None;
 }
 
@@ -118,6 +118,24 @@ tp_obj tp_float(TP) {
     tp_raise(tp_None,tp_string("(tp_float) TypeError: ?"));
 }
 
+tp_obj tp_builtins_join(TP) {
+    tp_obj val = TP_OBJ();
+    int l=0,i;
+    tp_obj r;
+    char *s;
+    for (i=0; i<val.list.val->len; i++) {
+        l += tp_str(tp,val.list.val->items[i]).string.len;
+    }
+    r = tp_string_t(tp,l);
+    s = r.string.info->s;
+    l = 0;
+    for (i=0; i<val.list.val->len; i++) {
+        tp_obj e;
+        e = tp_str(tp,val.list.val->items[i]);
+        memcpy(s+l,e.string.val,e.string.len); l += e.string.len;
+    }
+    return tp_track(tp,r);
+}
 
 tp_obj tp_save(TP) {
     char fname[256]; tp_cstr(tp,TP_STR(),fname,256);
