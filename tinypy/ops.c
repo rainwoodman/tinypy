@@ -2,6 +2,10 @@
  * Various tinypy operations.
  */
 
+#include "ops.h"
+#include "dict.h"
+#include "builtins.h"
+
 /* Function: tp_str
  * String representation of an object.
  *
@@ -341,15 +345,6 @@ int tp_cmp(TP,tp_obj a, tp_obj b) {
     tp_raise(0,tp_string("(tp_cmp) TypeError: ?"));
 }
 
-#define TP_OP(name,expr) \
-    tp_obj name(TP,tp_obj _a,tp_obj _b) { \
-    if (_a.type == TP_NUMBER && _a.type == _b.type) { \
-        tp_num a = _a.number.val; tp_num b = _b.number.val; \
-        return tp_number(expr); \
-    } \
-    tp_raise(tp_None,tp_string("(" #name ") TypeError: unsupported operand type(s)")); \
-}
-
 TP_OP(tp_bitwise_and,((long)a)&((long)b));
 TP_OP(tp_bitwise_or,((long)a)|((long)b));
 TP_OP(tp_bitwise_xor,((long)a)^((long)b));
@@ -359,6 +354,7 @@ TP_OP(tp_rsh,((long)a)>>((long)b));
 TP_OP(tp_sub,a-b);
 TP_OP(tp_div,a/b);
 TP_OP(tp_pow,pow(a,b));
+
 
 tp_obj tp_bitwise_not(TP, tp_obj a) {
     if (a.type == TP_NUMBER) {
