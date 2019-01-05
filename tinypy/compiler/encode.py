@@ -348,7 +348,7 @@ def do_import(t):
 
     mod.type = 'string'
     v = do_call(Token(t.pos,'call',None,[
-        Token(t.pos,'name','import'),
+        Token(t.pos,'name','__import__'),
         mod]))
 
     name.type = 'name'
@@ -358,7 +358,7 @@ def do_from(t):
     mod = t.items[0]
     mod.type = 'string'
     v = do(Token(t.pos,'call',None,[
-        Token(t.pos,'name','import'),
+        Token(t.pos,'name','__import__'),
         mod]))
 
     un_tmp(v)

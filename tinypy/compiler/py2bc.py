@@ -10,29 +10,6 @@ def _compile(s,fname):
     r = encode.encode(fname,s,t)
     return r
 
-def _import(name):
-    if name in MODULES:
-        return MODULES[name]
-    py = name+".py"
-    tpc = name+".tpc"
-    if exists(py):
-        if not exists(tpc) or mtime(py) > mtime(tpc):
-            s = load(py)
-            code = _compile(s,py)
-            save(tpc,code)
-    if not exists(tpc): raise
-    code = load(tpc)
-    g = {'__name__':name,'__code__':code}
-    g['__dict__'] = g
-    MODULES[name] = g
-    exec(code,g)
-    return g
-    
-    
-def _init():
-    BUILTINS['compile'] = _compile
-    BUILTINS['import'] = _import
-
 def import_fname(fname,name):
     g = {}
     g['__name__'] = name

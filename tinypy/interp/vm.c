@@ -34,9 +34,7 @@ tp_vm *_tp_init(void) {
     tp_set(tp,tp->root,tp_None,tp->modules);
     tp_set(tp,tp->root,tp_None,tp->_regs);
     tp_set(tp,tp->root,tp_None,tp->_params);
-    tp_set(tp,tp->builtins,tp_string("MODULES"),tp->modules);
-    tp_set(tp,tp->modules,tp_string("BUILTINS"),tp->builtins);
-    tp_set(tp,tp->builtins,tp_string("BUILTINS"),tp->builtins);
+    
     tp_obj sys = tp_dict(tp);
     tp_set(tp, sys, tp_string("version"), tp_string("tinypy 1.2+SVN"));
     tp_set(tp,tp->modules, tp_string("sys"), sys);
@@ -411,7 +409,7 @@ tp_obj tp_main(TP,char *fname, void *code, int len) {
  *
  */
 tp_obj tp_compile(TP, tp_obj text, tp_obj fname) {
-    return tp_ez_call(tp,"BUILTINS","compile",tp_params_v(tp,2,text,fname));
+    return tp_ez_call(tp, "tinypy.language.builtins", "compile",tp_params_v(tp,2,text,fname));
 }
 
 /* Function: tp_exec
@@ -452,6 +450,7 @@ tp_obj tp_eval_(TP) {
 tp_vm *tp_init(int argc, char *argv[]) {
     tp_vm *tp = _tp_init();
     _tp_import_builtins(tp);
+    _tp_import_corelib(tp);
     tp_args(tp,argc,argv);
     _tp_import_compiler(tp);
     return tp;

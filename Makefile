@@ -4,10 +4,10 @@ CORELIB_FILES=builtins.py
 COMPILER_FILES=boot.py encode.py parse.py py2bc.py tokenize.py
 
 COMPILER_C_FILES=$(COMPILER_FILES:%.py=tinypy/compiler/%.c)
-CORELIB_C_FILES=$(CORELIB_FILES:%.py=tinypy/compiler/%.c)
+CORELIB_C_FILES=$(CORELIB_FILES:%.py=tinypy/corelib/%.c)
 
-VMLIB_FILES=interp.c dummy-compiler.c
-TPLIB_FILES=interp.c compiler.c
+VMLIB_FILES=interp.c dummy-compiler.c corelib.c
+TPLIB_FILES=interp.c compiler.c corelib.c
 
 %.c : %.py
 	$(TINYPYC) -co $@ $^

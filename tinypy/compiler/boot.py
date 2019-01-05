@@ -60,18 +60,4 @@ if not "tinypy" in sys.version:
         f.write(v)
         f.close()
 else:
-    def join(v): return BUILTINS.join(v)
-    def merge(a,b): return BUILTINS.merge(a, b)
-    def number(v): return BUILTINS.number(v)
-    def istype(v,t): return BUILTINS.istype(v, t)
-    def fpack(v): return BUILTINS.fpack(v)
-    def system(cmd): return BUILTINS.system(cmd)
-    def load(fname): return BUILTINS.load(fname)
-    def read(fname): return BUILTINS.read(fname)
-    def save(fname,v): return BUILTINS.save(fname, v)
-
-    class Exception:
-        def __init__(self, message):
-            self.message = message
-        def __repr__(self):
-            return self.message
+    from __builtins__ import *

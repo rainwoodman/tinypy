@@ -308,11 +308,15 @@ tp_obj tp_builtins_import(TP) {
 }
 
 void _tp_import_builtins(TP) {
+    tp_obj builtins = tp_dict(tp);
+    tp_set(tp, builtins, tp_string("MODULES"), tp->modules);
+    tp_set(tp,builtins, tp_string("__dict__"), tp->builtins);
+
     tp_obj o;
     struct {const char *s;void *f;} b[] = {
     {"print",tp_builtins_print}, {"range",tp_range}, {"min",tp_min},
     {"max",tp_max}, {"bind",tp_bind}, {"copy",tp_copy},
-    {"import",tp_builtins_import}, {"len",tp_builtins_len}, {"assert",tp_assert},
+    {"__import__",tp_builtins_import}, {"len",tp_builtins_len}, {"assert",tp_assert},
     {"str",tp_str2}, {"float",tp_float}, {"system",tp_system},
     {"istype",tp_istype}, {"isinstance",tp_isinstance}, 
     {"chr",tp_chr}, {"save",tp_save},
@@ -330,15 +334,16 @@ void _tp_import_builtins(TP) {
     {0,0},
     };
     int i; for(i=0; b[i].s; i++) {
-        tp_set(tp,tp->builtins,tp_string(b[i].s),tp_fnc(tp,(tp_obj (*)(tp_vm *))b[i].f));
+        tp_set(tp, builtins, tp_string(b[i].s), tp_fnc(tp,(tp_obj (*)(tp_vm *))b[i].f));
     }
     
     o = tp_object(tp);
     tp_set(tp,o,tp_string("__call__"),tp_fnc(tp,tp_object_call));
     tp_set(tp,o,tp_string("__new__"),tp_fnc(tp,tp_object_new));
-    tp_set(tp,tp->builtins,tp_string("object"),o);
+    tp_set(tp,builtins,tp_string("object"),o);
 
-    tp_set(tp,tp->builtins, tp_string("__dict__"),tp->builtins);
+    tp_set(tp,tp->modules, tp_string("tinypy.language.builtins"), builtins);
+    tp->builtins = builtins;
 }
 
 
