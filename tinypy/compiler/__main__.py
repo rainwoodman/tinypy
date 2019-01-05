@@ -1,21 +1,81 @@
 from tinypy.compiler import py2bc
 from tinypy.compiler.boot import *
 
+
+def do_shorts(opts, optstring, shortopts, args):
+    while optstring != '':
+        opt, optstring = optstring[0], optstring[1:]
+        if short_has_arg(opt, shortopts):
+            if optstring == '':
+                if not args:
+                    raise Exception('option -%s requires argument' % opt)
+                optstring, args = args[0], args[1:]
+            optarg, optstring = optstring, ''
+        else:
+            optarg = ''
+        opts.append(('-' + opt, optarg))
+    return opts, args
+
+def short_has_arg(opt, shortopts):
+    for i in range(len(shortopts)):
+        if opt == shortopts[i] != ':':
+            return shortopts.startswith(':', i+1)
+
+    raise Exception('option -%s not recognized' % opt)
+
+def getopt(args, shortopts):
+    opts = []
+    while args and args[0].startswith('-') and args[0] != '-':
+        if args[0] == '--':
+            args = args[1:]
+            break
+        opts, args = do_shorts(opts, args[0][1:], shortopts, args[1:])
+
+    return opts, args
+
+def basename(s):
+    for j in range(len(s) - 1, -1, -1):
+        if j == -1: break
+        if s[j] == '/': break
+    for i in range(len(s) - 1, 0, -1):
+        if s[i] == '.': break
+    return s[j+1:i]
+
 def main(args=None):
     if args is None: args = ARGV
-    if len(args) == 2:
-        src = args[1]
-        for i in range(len(args[1]) - 1, 0, -1):
-            if args[1][i] == '.': break
+    posargs = []
+    options = {} 
 
-        dest = args[1][:i] + '.tpc'
-    elif len(args) == 3:
-        src = args[1]
-        dest = args[2]
+    opts, args = getopt(args[1:], 'cn:o:')
+    opts = dict(opts)
+    if len(args) == 1:
+        src = args[0]
+        if '-o' in opts:
+            dest = opts['-o']
+        else:
+            if '-c' in opts:
+                dest = basename(args[0]) + '.c'
+            else:
+                dest = basename(args[0]) + '.tpc'
     else:
-        print("Usage : tinypyc source.py [target.tpc]")
-        return
-    py2bc.main(src, dest)
+        print('Usage tinypyc [-c] [-n variable] [-o output_file_name] src.py')
+        return 
+    s = read(src)
+    data = py2bc._compile(s, src)
+
+    if '-c' in opts:
+        out = []
+        cols = 16
+        name = opts.get('-n', '_tp_' + basename(src) + '_tpc')
+        out.append("""unsigned char %s[] = {""" % name)
+        for n in range(0, len(data), cols):
+            out.append(",".join(["0x%02x" % ord(v) for v in data[n:n+cols]]) + ',')
+
+        out.append("""};""")
+        out = '\n'.join(out)
+    else:
+        out = data
+    save(dest, out)
 
 if __name__ == '__main__':
     main()
