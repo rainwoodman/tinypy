@@ -129,14 +129,6 @@ tp_obj tp_float(TP) {
     tp_raise(tp_None,tp_string("(tp_float) TypeError: ?"));
 }
 
-tp_obj tp_builtins_load(TP) {
-    return tp_load(tp);
-}
-
-tp_obj tp_builtins_save(TP) {
-    return tp_save(tp);
-}
-
 tp_obj tp_builtins_join(TP) {
     tp_obj val = TP_OBJ();
     int l=0,i;
@@ -161,6 +153,15 @@ tp_obj tp_fpack(TP) {
     tp_obj r = tp_string_t(tp,sizeof(tp_num));
     *(tp_num*)r.string.val = v;
     return tp_track(tp,r);
+}
+
+tp_obj tp_funpack(TP) {
+    tp_obj v = TP_STR();
+    if (v.string.len != sizeof(tp_num)) {
+        tp_raise(tp_None, tp_string("funpack ValueError: length of string is incorrect."));
+    }
+    tp_num r = *((tp_num*) v.string.val);
+    return tp_number(r);
 }
 
 tp_obj tp_abs(TP) {
@@ -314,8 +315,10 @@ void _tp_import_builtins(TP) {
     {"import",tp_builtins_import}, {"len",tp_builtins_len}, {"assert",tp_assert},
     {"str",tp_str2}, {"float",tp_float}, {"system",tp_system},
     {"istype",tp_istype}, {"isinstance",tp_isinstance}, 
-    {"chr",tp_chr}, {"save",tp_builtins_save},
-    {"load",tp_builtins_load}, {"read",tp_builtins_load}, {"fpack",tp_fpack}, {"abs",tp_abs},
+    {"chr",tp_chr}, {"save",tp_save},
+    {"load",tp_load}, {"read",tp_load},
+    {"fpack",tp_fpack}, {"funpack", tp_funpack},
+    {"abs",tp_abs},
     {"int",tp_int}, {"eval",tp_eval_}, {"exec",tp_exec_}, {"exists",tp_exists},
     {"mtime",tp_mtime}, {"number",tp_float}, {"round",tp_round},
     {"ord",tp_ord}, {"merge",tp_merge}, {"getraw",tp_getraw},

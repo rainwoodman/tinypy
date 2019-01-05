@@ -75,20 +75,3 @@ else:
             self.message = message
         def __repr__(self):
             return self.message
-
-    def funpack(bytes):
-        def eat(x, bit):
-            y = int(x / 2 ** bit)
-            x -= y * 2 ** bit
-            return x, y
-        x = 0
-        for i in range(8):
-            x += ord(bytes[i]) * 2 ** (i * 8)
-        x, sign = eat(x, 63)
-        x, exponent = eat(x, 52)
-        x, mantissa1 = eat(x, 31)
-        x, mantissa2 = eat(x, 0)
-        mantissa = mantissa1 * 2 ** 31 + mantissa2
-        sign = sign * -2 + 1
-        x = sign * 2 ** (exponent - 1023) * (1 + mantissa / 2 ** 52)
-        return x
