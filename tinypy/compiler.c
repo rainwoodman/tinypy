@@ -1,5 +1,4 @@
-#include "core.h"
-#include "vm.h"
+#include "interp.h"
 
 #include "corelib/boot.c"
 #include "corelib/encode.c"

@@ -1,5 +1,3 @@
-#include "core.c"
-
 /* write to standard output */
 void tp_default_echo(const char* string, int length) {
     if(length < 0) length = strlen(string);
