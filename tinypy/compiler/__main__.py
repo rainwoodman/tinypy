@@ -1,6 +1,6 @@
 from tinypy.compiler import py2bc
 from tinypy.compiler.boot import *
-
+from tinypy.compiler import disasm
 
 def do_shorts(opts, optstring, shortopts, args):
     while optstring != '':
@@ -49,7 +49,7 @@ def main(args=None):
     posargs = []
     options = {} 
 
-    opts, args = getopt(args[1:], 'cn:o:')
+    opts, args = getopt(args[1:], 'cn:o:d')
     opts = dict(opts)
     if len(args) == 1:
         src = args[0]
@@ -65,7 +65,9 @@ def main(args=None):
         return 
     s = read(src)
     data = py2bc._compile(s, src)
-    if '-c' in opts:
+    if '-d' in opts:
+        out = disasm.disassemble(data)
+    elif '-c' in opts:
         out = []
         cols = 16
         name = opts.get('-n', '_tp_' + basename(src) + '_tpc')
@@ -77,7 +79,11 @@ def main(args=None):
         out = '\n'.join(out)
     else:
         out = data
-    save(dest, out)
+
+    if dest == '-':
+        print(out)
+    else:
+        save(dest, out)
 
 if __name__ == '__main__':
     main()
