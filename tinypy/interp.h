@@ -356,6 +356,7 @@ tp_inline static tp_obj tp_type(TP,int t,tp_obj v) {
  * >     TP_END
  * > }
  */
+tp_obj _tp_list_get(TP,_tp_list *self,int k,const char *error);
 #define TP_LOOP(e) \
     int __l = tp->params.list.val->len; \
     int __i; for (__i=0; __i<__l; __i++) { \
