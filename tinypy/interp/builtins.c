@@ -295,16 +295,20 @@ tp_obj tp_builtins_bool(TP) {
     tp_obj v = TP_OBJ();
     return (tp_number(tp_true(tp, v)));
 }
+
+/* the temporary import function used before the
+ * compiler is initialized; 
+ * it only loads existing modules from the module, and returns None
+ * on failure. */
 tp_obj tp_builtins_import(TP) {
     tp_obj mod = TP_OBJ();
-    tp_obj r;
 
     if (tp_has(tp,tp->modules,mod).number.val) {
         return tp_get(tp,tp->modules,mod);
     }
     
-    r = _tp_import(tp,tp_add(tp,mod,tp_string(".tpc")),mod,tp_None);
-    return r;
+    /* r = _tp_import(tp,tp_add(tp,mod,tp_string(".tpc")),mod,tp_None); */
+    return tp_None;
 }
 
 void _tp_import_builtins(TP) {

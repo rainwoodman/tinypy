@@ -1,18 +1,25 @@
 from tinypy.language.builtins import *
 import sys
 
-def compile(s, fname):
-    from tinypy.compiler.py2bc import _compile
-    return _compile(s, fname)
-
 class Exception:
     def __init__(self, message):
         self.message = message
     def __repr__(self):
         return self.message
 
-oldimport = __import__
+class ImportError(Exception):
+    pass    
+
+def compile(s, fname):
+    # must be here because at import time of builtin,
+    # py2bc is not imported yet
+    from tinypy.compiler.py2bc import _compile
+    return _compile(s, fname)
+
 def __import__(name):
+    # this function overwrites the temporary
+    # C based __import__ which only bootstraps the compiler
+
     if name in sys.modules:
         return sys.modules[name]
     py = name+".py"
@@ -20,9 +27,12 @@ def __import__(name):
     if exists(py):
         if not exists(tpc) or mtime(py) > mtime(tpc):
             s = load(py)
-            code = _compile(s,py)
+            code = compile(s,py)
             save(tpc,code)
-    if not exists(tpc): raise
+
+    if not exists(tpc):
+        raise ImportError("Cannot import the compiled script from " +  tpc)
+
     code = load(tpc)
     g = {'__name__':name,'__code__':code}
     g['__dict__'] = g
@@ -42,4 +52,4 @@ def import_fname(fname,name):
 
 def _entry_point():
     return import_fname(sys.argv[0], '__main__')
-        
+            
