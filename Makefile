@@ -1,4 +1,4 @@
-TINYPYC=./tinypyc
+TINYPYC=./tpc
 
 CORELIB_FILES=boot.py encode.py parse.py py2bc.py tokenize.py
 
