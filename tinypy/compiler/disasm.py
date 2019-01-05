@@ -1,11 +1,5 @@
-import sys
-__tinypy__ = "tinypy" in sys.version
-if not __tinypy__:
-    from boot import *
-    __tinypy__ = False
-else:
-    __tinypy__ = True
-    
+from tinypy.compiler.boot import *
+
 def get_ops():
     """ Builds an value <-> opcode name dictionary """
     li = ["EOF","ADD","SUB","MUL","DIV","POW","BITAND","BITOR","CMP","GET", \
@@ -31,26 +25,6 @@ def pad(s, n):
     m = n - len(s)
     if m > 0: p = " " * m
     return s + p
-
-def funpack(bytes):
-    if not __tinypy__:
-        import struct
-        return struct.unpack("d", bytes)[0]
-    def eat(x, bit):
-        y = int(x / 2 ** bit)
-        x -= y * 2 ** bit
-        return x, y
-    x = 0
-    for i in range(8):
-        x += ord(bytes[i]) * 2 ** (i * 8)
-    x, sign = eat(x, 63)
-    x, exponent = eat(x, 52)
-    x, mantissa1 = eat(x, 31)
-    x, mantissa2 = eat(x, 0)
-    mantissa = mantissa1 * 2 ** 31 + mantissa2
-    sign = sign * -2 + 1
-    x = sign * 2 ** (exponent - 1023) * (1 + mantissa / 2 ** 52)
-    return x
 
 def text(x, ip, bc):
     return "".join([chr(c) for c in bc[ip:ip+x]])

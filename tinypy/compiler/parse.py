@@ -1,7 +1,6 @@
-import tokenize, sys
-from tokenize import Token
-if not "tinypy" in sys.version:
-    from boot import *
+import tinypy.compiler.tokenize as tokenize
+from tinypy.compiler.tokenize import Token
+from tinypy.compiler.boot import *
 
 def check(t,*vs):
     if vs[0] == None: return True
@@ -74,10 +73,11 @@ def get_items(t):
         #error('no items',t)
     return t.items
 
-def expression(rbp):
-    t = P.token
-    advance()
-    left = nud(t)
+def expression(rbp, left=None):
+    if left is None:
+        t = P.token
+        advance()
+        left = nud(t)
     while rbp < get_lbp(P.token):
         t = P.token
         advance()
@@ -254,9 +254,45 @@ def class_nud(t):
 
 def from_nud(t):
     items = t.items = []
-    items.append(expression(0))
+
+    # relative import
+    s = ''
+    while True:
+        if check(P.token, 'get'):
+            s = s + '.'
+            advance()
+        elif check(P.token, 'name'):
+            s = s + P.token.val
+            advance()
+        else:
+            break
+
+    expr = Token(t.pos, 'string', s)
+    items.append(expr)
+
     advance('import')
     items.append(expression(0))
+    return t
+
+def import_nud(t):
+    items = t.items = []
+    s = ''
+    while True:
+        if check(P.token, 'get'):
+            s = s + '.'
+            advance()
+        elif check(P.token, 'name'):
+            s = s + P.token.val
+            advance()
+        else:
+            break
+
+    expr = Token(t.pos, 'string', s)
+    items.append(expr)
+    if check(P.token, 'as'):
+        advance('as')
+        items.append(expression(0))
+
     return t
 
 def for_nud(t):
@@ -373,7 +409,7 @@ base_dmap = {
     'class':{'lbp':0,'nud':class_nud,'type':'class',},
     'raise':{'lbp':0,'nud':prefix_nud0,'type':'raise','bp':20,},
     'return':{'lbp':0,'nud':prefix_nud0,'type':'return','bp':10,},
-    'import':{'lbp':0,'nud':prefix_nuds,'type':'import','bp':20,},
+    'import':{'lbp':0,'nud':import_nud,'type':'import','bp':20,},
     'from':{'lbp':0,'nud':from_nud,'type':'from','bp':20,},
     'del':{'lbp':0,'nud':prefix_nuds,'type':'del','bp':10,},
     'global':{'lbp':0,'nud':prefix_nuds,'type':'globals','bp':20,},
@@ -394,7 +430,7 @@ i_infix(30,infix_led,'or','|')
 i_infix(36,infix_led,'<<','>>')
 def i_terms(*vs):
     for v in vs: base_dmap[v] = {'lbp':0,'nud':itself}
-i_terms(')','}',']',';',':','nl','elif','else','True','False','None','name','string','number','indent','dedent','except')
+i_terms('as', ')','}',']',';',':','nl','elif','else','True','False','None','name','string','number','indent','dedent','except')
 base_dmap['nl']['val'] = 'nl'
 
 def gmap(t,v):

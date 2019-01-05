@@ -1,9 +1,12 @@
 import sys
+
 is_tinypy = "tinypy" in sys.version
-if not is_tinypy:
-    from boot import *
-import asm
-import disasm
+
+from tinypy.compiler.boot import *
+
+from tinypy.compiler import asm
+from tinypy.compiler import disasm
+from tinypy.compiler import tokenize, parse, encode
 
 ################################################################################
 RM = 'rm -f '
@@ -17,23 +20,18 @@ if '-mingw32' in ARGV or "-win" in ARGV:
     TMP = 'tmp.txt'
     #TMP = 'stdout.txt'
 SANDBOX = '-sandbox' in ARGV
+
 def system_rm(fname):
     system(RM+fname)
 
-################################################################################
-#if not is_tinypy:
-    #v = chksize()
-    #assert (v < 65536)
-
-################################################################################
 def t_show(t):
     if t.type == 'string': return '"'+t.val+'"'
     if t.type == 'number': return t.val
     if t.type == 'symbol': return t.val
     if t.type == 'name': return '$'+t.val
     return t.type
+
 def t_tokenize(s,exp=''):
-    import tokenize
     result = tokenize.tokenize(s)
     res = ' '.join([t_show(t) for t in result])
     #print(s); print(exp); print(res)
@@ -79,7 +77,6 @@ def t_lisp(t):
     return "("+t.val+args+")"
 
 def t_parse(s,ex=''):
-    import tokenize, parse
     r = ''
     tokens = tokenize.tokenize(s)
     tree = parse.parse(s,tokens)
@@ -88,7 +85,6 @@ def t_parse(s,ex=''):
     assert(r==ex)
 
 def t_unparse(s):
-    import tokenize, parse
     ok = False
     try:
         tokens = tokenize.tokenize(s)
@@ -220,7 +216,6 @@ def showerror(cmd, ss, ex, res):
     print("res: '" + str(res) + "'")
 
 def t_render(ss,ex,exact=True):
-    import tokenize, parse, encode
     if not is_tinypy:
         #ss = ss.encode('latin1')
         ex = ex.encode('latin1')
@@ -248,8 +243,6 @@ def t_render(ss,ex,exact=True):
         assert(ex in res)
         
 def t_unrender(s):
-    import tokenize, parse, encode
-        
     ok = False
     try:
         tokens = tokenize.tokenize(s)

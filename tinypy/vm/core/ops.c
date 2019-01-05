@@ -6,10 +6,13 @@ tp_obj tp_str_(TP, tp_obj self, tp_obj visited);
 tp_obj tp_has(TP,tp_obj self, tp_obj k);
 
 tp_obj tp_repr_(TP, tp_obj self, tp_obj visited) {
+    TP_META_BEGIN(self,"__repr__");
+        return tp_call(tp,meta,tp_params(tp));
+    TP_META_END;
     if(self.type == TP_STRING) {
-        tp_params_v(tp, 3, self, tp_string("'"), tp_string("\\'")); tp_obj replaced = tp_replace(tp);
+        tp_params_v(tp, 3, self, tp_string("'"), tp_string("\\'"));
+        tp_obj replaced = tp_replace(tp);
         return tp_printf(tp, "\'%s\'", replaced.string.val);
-        return self;
     }
     return tp_str_(tp, self, visited);
 }
@@ -27,6 +30,13 @@ tp_obj tp_repr(TP, tp_obj self) {
  * Returns a string object representating self.
  */
 tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
+    /* if the class has __str__ or __repr__ use those */
+    TP_META_BEGIN(self,"__str__");
+        return tp_call(tp,meta,tp_params(tp));
+    TP_META_END;
+    TP_META_BEGIN(self,"__repr___");
+        return tp_call(tp,meta,tp_params(tp));
+    TP_META_END;
     int type = self.type;
     if(type == TP_DICT) {
         if(tp_has(tp, visited, tp_data(tp, 0, self.dict.val)).number.val) return tp_string("{...}");

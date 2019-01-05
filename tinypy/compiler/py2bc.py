@@ -1,8 +1,8 @@
-import sys
-if not "tinypy" in sys.version:
-    from boot import *
+from tinypy.compiler.boot import *
 
-import tokenize,parse,encode
+import tinypy.compiler.tokenize as tokenize
+import tinypy.compiler.parse as parse
+import tinypy.compiler.encode as encode
 
 def _compile(s,fname):
     tokens = tokenize.tokenize(s)

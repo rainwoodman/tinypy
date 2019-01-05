@@ -1,7 +1,6 @@
-import tokenize, sys
-from tokenize import Token
-if not "tinypy" in sys.version:
-    from boot import *
+import tinypy.compiler.tokenize as tokenize
+from tinypy.compiler.tokenize import Token
+from tinypy.compiler.boot import *
 
 EOF,ADD,SUB,MUL,DIV,POW,BITAND,BITOR,CMP,GET,SET,NUMBER,STRING,GGET,GSET,MOVE,DEF,PASS,JUMP,CALL,RETURN,IF,DEBUG,EQ,LE,LT,DICT,LIST,NONE,LEN,POS,PARAMS,IGET,FILE,NAME,NE,HAS,RAISE,SETJMP,MOD,LSH,RSH,ITER,DEL,REGS,BITXOR,IFN,NOT,BITNOT = 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48
 
@@ -341,33 +340,55 @@ def p_filter(items):
     return a,b,c,d
 
 def do_import(t):
-    for mod in t.items:
-        mod.type = 'string'
-        v = do_call(Token(t.pos,'call',None,[
-            Token(t.pos,'name','import'),
-            mod]))
-        mod.type = 'name'
-        do_set_ctx(mod,Token(t.pos,'reg',v))
+    if len(t.items) == 1:
+        mod = t.items[0]
+        name = mod
+    else:
+        mod, name = t.items
+
+    mod.type = 'string'
+    v = do_call(Token(t.pos,'call',None,[
+        Token(t.pos,'name','import'),
+        mod]))
+
+    name.type = 'name'
+    do_set_ctx(name,Token(t.pos,'reg',v))
+
 def do_from(t):
     mod = t.items[0]
     mod.type = 'string'
     v = do(Token(t.pos,'call',None,[
         Token(t.pos,'name','import'),
         mod]))
-    item = t.items[1]
-    if item.val == '*':
+
+    un_tmp(v)
+    items = t.items[1]
+
+    if items.val == '*':
         free_tmp(do(Token(t.pos,'call',None,[
             Token(t.pos,'name','merge'),
             Token(t.pos,'name','__dict__'),
             Token(t.pos,'reg',v)]))) #REG
     else:
-        item.type = 'string'
-        free_tmp(do_set_ctx(
-            Token(t.pos,'get',None,[ Token(t.pos,'name','__dict__'),item]),
-            Token(t.pos,'get',None,[ Token(t.pos,'reg',v),item])
-            )) #REG
+        if items.type == 'name':
+            items.type = 'string'
+            items = [items]
+        elif items.type == 'tuple':
+            items = items.items
+        else:
+            tokenize.u_error('SyntaxError', D.code, t.pos)
+    
+        r = []
+        for item in items:
+            item.type = 'string'
+            free_tmp(do_set_ctx(
+                Token(t.pos,'get',None,[ Token(t.pos,'name','__dict__'),item]),
+                Token(t.pos,'get',None,[ Token(t.pos,'reg',v),item])
+                )
+            ) #REG
 
-        
+    free_reg(v)
+ 
 def do_globals(t):
     for t in t.items:
         if t.val not in D.globals:
@@ -645,6 +666,7 @@ def do(t,r=None):
         #if r != None: free_reg(r) #REG
         return fmap[t.type](t)
     except:
+        raise
         if D.error: raise
         D.error = True
         tokenize.u_error('encode',D.code,t.pos)

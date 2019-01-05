@@ -227,7 +227,7 @@ int _tp_lookup(TP,tp_obj self, tp_obj k, tp_obj *meta) {
 }
 
 #define TP_META_BEGIN(self,name) \
-    if (self.dict.dtype == 2) { \
+    if (self.type == TP_DICT && self.dict.dtype == 2) { \
         tp_obj meta; if (_tp_lookup(tp,self,tp_string(name),&meta)) {
 
 #define TP_META_END \
