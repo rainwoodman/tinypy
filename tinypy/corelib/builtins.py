@@ -10,6 +10,35 @@ class Exception:
 class ImportError(Exception):
     pass    
 
+def dict(**kwargs):
+    r = {}
+    if istype(kwargs, 'dict'):
+        merge(r, kwargs)
+    else:
+        for item in kwargs:
+            k, v = item
+            r[k] = item
+    return r
+
+def format(a, b):
+    r = []
+    i = 0
+    j = 0
+    while i < len(a):
+        if a[i] == '{':
+            r.append(a[j:i])
+            j = i
+            while j < len(a):
+                if a[j] == '}':
+                    break
+                j = j + 1
+
+            name = a[i+1:j]
+            r.append(str(b[name]))
+            i = j
+        i = i + 1
+    return join(r) 
+
 def compile(s, fname):
     # must be here because at import time of builtin,
     # py2bc is not imported yet

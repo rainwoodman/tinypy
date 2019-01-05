@@ -406,6 +406,19 @@ int tp_cmp(TP,tp_obj a, tp_obj b) {
     tp_raise(0,tp_string("(tp_cmp) TypeError: ?"));
 }
 
+tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
+    switch(a.type) {
+        case TP_NUMBER:
+            if(b.type == TP_NUMBER)
+                return tp_number(((long)a.number.val) % ((long)b.number.val));
+            break;
+        case TP_STRING:
+            return tp_ez_call(tp, "__builtins__", "format", tp_params_v(tp, 2, a, b));
+        
+    }
+    tp_raise(tp_None, tp_string("(tp_mod) TypeError: ?"));
+}
+
 #define TP_OP(name,expr) \
     tp_obj name(TP,tp_obj _a,tp_obj _b) { \
     if (_a.type == TP_NUMBER && _a.type == _b.type) { \
@@ -418,7 +431,6 @@ int tp_cmp(TP,tp_obj a, tp_obj b) {
 TP_OP(tp_bitwise_and,((long)a)&((long)b));
 TP_OP(tp_bitwise_or,((long)a)|((long)b));
 TP_OP(tp_bitwise_xor,((long)a)^((long)b));
-TP_OP(tp_mod,((long)a)%((long)b));
 TP_OP(tp_lsh,((long)a)<<((long)b));
 TP_OP(tp_rsh,((long)a)>>((long)b));
 TP_OP(tp_sub,a-b);

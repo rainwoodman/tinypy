@@ -46,13 +46,13 @@ tp_obj tp_printf(TP, char const *fmt,...) {
     va_list arg;
     va_start(arg, fmt);
     l = vsnprintf(NULL, 0, fmt,arg);
-    r = tp_string_t(tp,l);
+    r = tp_string_t(tp, l + 1);
     s = r.string.info->s;
     va_end(arg);
     va_start(arg, fmt);
-    vsprintf(s,fmt,arg);
+    vsnprintf(s, l + 1, fmt, arg);
     va_end(arg);
-    return tp_track(tp,r);
+    return tp_track(tp, r);
 }
 
 int _tp_str_index(tp_obj s, tp_obj k) {
