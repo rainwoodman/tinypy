@@ -660,6 +660,7 @@ def do(t,r=None):
         #if r != None: free_reg(r) #REG
         return fmap[t.type](t)
     except:
+        raise
         if D.error: raise
         D.error = True
         tokenize.u_error('encode',D.code,t.pos)
