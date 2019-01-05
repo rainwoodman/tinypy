@@ -340,13 +340,19 @@ def p_filter(items):
     return a,b,c,d
 
 def do_import(t):
-    for mod in t.items:
-        mod.type = 'string'
-        v = do_call(Token(t.pos,'call',None,[
-            Token(t.pos,'name','import'),
-            mod]))
-        mod.type = 'name'
-        do_set_ctx(mod,Token(t.pos,'reg',v))
+    if len(t.items) == 1:
+        mod = t.items[0]
+        name = mod
+    else:
+        mod, name = t.items
+
+    mod.type = 'string'
+    v = do_call(Token(t.pos,'call',None,[
+        Token(t.pos,'name','import'),
+        mod]))
+
+    name.type = 'name'
+    do_set_ctx(name,Token(t.pos,'reg',v))
 
 def do_from(t):
     mod = t.items[0]

@@ -20,7 +20,7 @@ def u_error(ctx,s,i):
 
 ISYMBOLS = '`-=[];,./~!@$%^&*()+{}:<>?|'
 SYMBOLS = [
-    'def','class','yield','return','pass','and','or','not','in','import',
+    'def','class','yield','return','pass','and','or','not','in','as', 'with', 'import',
     'is','while','break','for','continue','if','else','elif','try',
     'except','raise','True','False','None','global','del','from',
     '-','+','*','**','/','%','<<','>>',
