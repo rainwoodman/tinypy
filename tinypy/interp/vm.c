@@ -65,34 +65,6 @@ void tp_deinit(TP) {
     free(tp);
 }
 
-/* tp_frame_*/
-void tp_frame(TP,tp_obj globals,tp_obj code,tp_obj *ret_dest) {
-    tp_frame_ f;
-    f.globals = globals;
-    f.code = code;
-    f.cur = (tp_code*)f.code.string.val;
-    f.jmp = 0;
-/*     fprintf(stderr,"tp->cur: %d\n",tp->cur);*/
-    f.regs = (tp->cur <= 0?tp->regs:tp->frames[tp->cur].regs+tp->frames[tp->cur].cregs);
-    
-    f.regs[0] = f.globals;
-    f.regs[1] = f.code;
-    f.regs += TP_REGS_EXTRA;
-    
-    f.ret_dest = ret_dest;
-    f.lineno = 0;
-    f.line = tp_string("");
-    f.name = tp_string("?");
-    f.fname = tp_string("?");
-    f.cregs = 0;
-/*     return f;*/
-    if (f.regs+(256+TP_REGS_EXTRA) >= tp->regs+TP_REGS || tp->cur >= TP_FRAMES-1) {
-        tp_raise(,tp_string("(tp_frame) RuntimeError: stack overflow"));
-    }
-    tp->cur += 1;
-    tp->frames[tp->cur] = f;
-}
-
 void _tp_raise(TP,tp_obj e) {
     /*char *x = 0; x[0]=0;*/
     if (!tp || !tp->jmp) {
@@ -107,19 +79,6 @@ void _tp_raise(TP,tp_obj e) {
     if (e.type != TP_NONE) { tp->ex = e; }
     tp_grey(tp,e);
     longjmp(tp->buf,1);
-}
-
-void tp_print_stack(TP) {
-    int i;
-    tp->echo("\n", -1);
-    for (i=0; i<=tp->cur; i++) {
-        if (!tp->frames[i].lineno) { continue; }
-        tp->echo("File \"", -1); tp_echo(tp,tp->frames[i].fname); tp->echo("\", ", -1);
-        tp_echo(tp, tp_printf(tp, "line %d, in ",tp->frames[i].lineno));
-        tp_echo(tp,tp->frames[i].name); tp->echo("\n ", -1);
-        tp_echo(tp,tp->frames[i].line); tp->echo("\n", -1);
-    }
-    tp->echo("\nException:\n", -1); tp_echo(tp,tp->ex); tp->echo("\n", -1);
 }
 
 void tp_handle(TP) {
@@ -393,30 +352,16 @@ tp_obj tp_ez_call(TP, const char *mod, const char *fnc, tp_obj params) {
     return tp_call(tp,tmp,params);
 }
 
-tp_obj _tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
-    tp_obj g;
-
-    if (!((fname.type != TP_NONE && _tp_str_index(fname,tp_string(".tpc"))!=-1) || code.type != TP_NONE)) {
-        return tp_ez_call(tp,"tinypy.compiler.py2bc","import_fname",tp_params_v(tp,2,fname,name));
-    }
-
-    if (code.type == TP_NONE) {
-        tp_params_v(tp,1,fname);
-        code = tp_load(tp);
-    }
-
-    g = tp_dict(tp);
-    tp_set(tp,g,tp_string("__name__"),name);
-    tp_set(tp,g,tp_string("__code__"),code);
-    tp_set(tp,g,tp_string("__dict__"),g);
-    tp_frame(tp,g,code,0);
-    tp_set(tp,tp->modules,name,g);
-
-    if (!tp->jmp) { tp_run(tp,tp->cur); }
-
-    return g;
+void tp_print(TP) {
+    int n = 0;
+    tp_obj e;
+    TP_LOOP(e)
+        if (n) { tp->echo(" ", -1); }
+        tp_echo(tp,e);
+        n += 1;
+    TP_END;
+    tp->echo("\n", -1);
 }
-
 
 /* Function: tp_import
  * Imports a module.
@@ -448,52 +393,7 @@ tp_obj tp_exec_(TP) {
 }
 
 
-tp_obj tp_import_(TP) {
-    tp_obj mod = TP_OBJ();
-    tp_obj r;
-
-    if (tp_has(tp,tp->modules,mod).number.val) {
-        return tp_get(tp,tp->modules,mod);
-    }
-    
-    r = _tp_import(tp,tp_add(tp,mod,tp_string(".tpc")),mod,tp_None);
-    return r;
-}
-
 tp_obj tp_eval_(TP);
-
-void tp_builtins(TP) {
-    tp_obj o;
-    struct {const char *s;void *f;} b[] = {
-    {"print",tp_print}, {"range",tp_range}, {"min",tp_min},
-    {"max",tp_max}, {"bind",tp_bind}, {"copy",tp_copy},
-    {"import",tp_import_}, {"len",tp_len_}, {"assert",tp_assert},
-    {"str",tp_str2}, {"float",tp_float}, {"system",tp_system},
-    {"istype",tp_istype}, {"isinstance",tp_isinstance}, 
-    {"chr",tp_chr}, {"save",tp_save},
-    {"load",tp_load}, {"read",tp_load}, {"fpack",tp_fpack}, {"abs",tp_abs},
-    {"int",tp_int}, {"eval",tp_eval_}, {"exec",tp_exec_}, {"exists",tp_exists},
-    {"mtime",tp_mtime}, {"number",tp_float}, {"round",tp_round},
-    {"ord",tp_ord}, {"merge",tp_merge}, {"getraw",tp_getraw},
-    {"setmeta",tp_setmeta}, {"getmeta",tp_getmeta},
-    {"bool", tp_builtins_bool}, {"join", tp_builtins_join}, {"repr", tp_repr2},
-    #ifdef TP_SANDBOX
-    {"sandbox",tp_sandbox_},
-    #endif
-    {0,0},
-    };
-    int i; for(i=0; b[i].s; i++) {
-        tp_set(tp,tp->builtins,tp_string(b[i].s),tp_fnc(tp,(tp_obj (*)(tp_vm *))b[i].f));
-    }
-    
-    o = tp_object(tp);
-    tp_set(tp,o,tp_string("__call__"),tp_fnc(tp,tp_object_call));
-    tp_set(tp,o,tp_string("__new__"),tp_fnc(tp,tp_object_new));
-    tp_set(tp,tp->builtins,tp_string("object"),o);
-
-    tp_set(tp,tp->builtins, tp_string("__dict__"),tp->builtins);
-}
-
 
 void tp_args(TP,int argc, char *argv[]) {
     tp_obj self = tp_list(tp);
@@ -551,7 +451,7 @@ tp_obj tp_eval_(TP) {
  */
 tp_vm *tp_init(int argc, char *argv[]) {
     tp_vm *tp = _tp_init();
-    tp_builtins(tp);
+    _tp_import_builtins(tp);
     tp_args(tp,argc,argv);
     _tp_import_compiler(tp);
     return tp;

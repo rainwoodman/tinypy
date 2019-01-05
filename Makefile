@@ -1,6 +1,6 @@
 TINYPYC=./tpc
 
-CORELIB_FILES=asm.py disasm.py
+CORELIB_FILES=builtins.py
 COMPILER_FILES=boot.py encode.py parse.py py2bc.py tokenize.py
 
 COMPILER_C_FILES=$(COMPILER_FILES:%.py=tinypy/compiler/%.c)

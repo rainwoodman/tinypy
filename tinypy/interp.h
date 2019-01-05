@@ -409,6 +409,11 @@ tp_obj tp_import(TP, const char * fname, const char * name, void *codes, int len
 tp_obj tp_ez_call(TP, const char *mod, const char *fnc, tp_obj params);
 void tp_run(TP,int cur);
 
+void tp_print(TP);
+tp_obj tp_load(TP);
+tp_obj tp_save(TP);
+
+void _tp_import_builtins(TP);
 void _tp_import_compiler(TP);
 void _tp_import_corelib(TP);
 

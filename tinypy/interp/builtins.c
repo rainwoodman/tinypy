@@ -2,15 +2,8 @@
  * Builtin tinypy functions.
  */
 
-tp_obj tp_print(TP) {
-    int n = 0;
-    tp_obj e;
-    TP_LOOP(e)
-        if (n) { tp->echo(" ", -1); }
-        tp_echo(tp,e);
-        n += 1;
-    TP_END;
-    tp->echo("\n", -1);
+tp_obj tp_builtins_print(TP) {
+    tp_print(tp);
     return tp_None;
 }
 
@@ -52,7 +45,7 @@ tp_obj tp_copy(TP) {
 }
 
 
-tp_obj tp_len_(TP) {
+tp_obj tp_builtins_len(TP) {
     tp_obj e = TP_OBJ();
     return tp_len(tp,e);
 }
@@ -136,6 +129,14 @@ tp_obj tp_float(TP) {
     tp_raise(tp_None,tp_string("(tp_float) TypeError: ?"));
 }
 
+tp_obj tp_builtins_load(TP) {
+    return tp_load(tp);
+}
+
+tp_obj tp_builtins_save(TP) {
+    return tp_save(tp);
+}
+
 tp_obj tp_builtins_join(TP) {
     tp_obj val = TP_OBJ();
     int l=0,i;
@@ -154,39 +155,6 @@ tp_obj tp_builtins_join(TP) {
     }
     return tp_track(tp,r);
 }
-
-tp_obj tp_save(TP) {
-    char fname[256]; tp_cstr(tp,TP_STR(),fname,256);
-    tp_obj v = TP_OBJ();
-    FILE *f;
-    f = fopen(fname,"wb");
-    if (!f) { tp_raise(tp_None,tp_string("(tp_save) IOError: ?")); }
-    fwrite(v.string.val,v.string.len,1,f);
-    fclose(f);
-    return tp_None;
-}
-
-tp_obj tp_load(TP) {
-    FILE *f;
-    long l;
-    tp_obj r;
-    char *s;
-    char fname[256]; tp_cstr(tp,TP_STR(),fname,256);
-    struct stat stbuf;
-    stat(fname, &stbuf);
-    l = stbuf.st_size;
-    f = fopen(fname,"rb");
-    if (!f) {
-        tp_raise(tp_None,tp_string("(tp_load) IOError: ?"));
-    }
-    r = tp_string_t(tp,l);
-    s = r.string.info->s;
-    fread(s,1,l,f);
-/*    if (rr !=l) { printf("hmmn: %d %d\n",rr,(int)l); }*/
-    fclose(f);
-    return tp_track(tp,r);
-}
-
 
 tp_obj tp_fpack(TP) {
     tp_num v = TP_NUM();
@@ -326,3 +294,48 @@ tp_obj tp_builtins_bool(TP) {
     tp_obj v = TP_OBJ();
     return (tp_number(tp_true(tp, v)));
 }
+tp_obj tp_builtins_import(TP) {
+    tp_obj mod = TP_OBJ();
+    tp_obj r;
+
+    if (tp_has(tp,tp->modules,mod).number.val) {
+        return tp_get(tp,tp->modules,mod);
+    }
+    
+    r = _tp_import(tp,tp_add(tp,mod,tp_string(".tpc")),mod,tp_None);
+    return r;
+}
+
+void _tp_import_builtins(TP) {
+    tp_obj o;
+    struct {const char *s;void *f;} b[] = {
+    {"print",tp_builtins_print}, {"range",tp_range}, {"min",tp_min},
+    {"max",tp_max}, {"bind",tp_bind}, {"copy",tp_copy},
+    {"import",tp_builtins_import}, {"len",tp_builtins_len}, {"assert",tp_assert},
+    {"str",tp_str2}, {"float",tp_float}, {"system",tp_system},
+    {"istype",tp_istype}, {"isinstance",tp_isinstance}, 
+    {"chr",tp_chr}, {"save",tp_builtins_save},
+    {"load",tp_builtins_load}, {"read",tp_builtins_load}, {"fpack",tp_fpack}, {"abs",tp_abs},
+    {"int",tp_int}, {"eval",tp_eval_}, {"exec",tp_exec_}, {"exists",tp_exists},
+    {"mtime",tp_mtime}, {"number",tp_float}, {"round",tp_round},
+    {"ord",tp_ord}, {"merge",tp_merge}, {"getraw",tp_getraw},
+    {"setmeta",tp_setmeta}, {"getmeta",tp_getmeta},
+    {"bool", tp_builtins_bool}, {"join", tp_builtins_join}, {"repr", tp_repr2},
+    #ifdef TP_SANDBOX
+    {"sandbox",tp_sandbox_},
+    #endif
+    {0,0},
+    };
+    int i; for(i=0; b[i].s; i++) {
+        tp_set(tp,tp->builtins,tp_string(b[i].s),tp_fnc(tp,(tp_obj (*)(tp_vm *))b[i].f));
+    }
+    
+    o = tp_object(tp);
+    tp_set(tp,o,tp_string("__call__"),tp_fnc(tp,tp_object_call));
+    tp_set(tp,o,tp_string("__new__"),tp_fnc(tp,tp_object_new));
+    tp_set(tp,tp->builtins,tp_string("object"),o);
+
+    tp_set(tp,tp->builtins, tp_string("__dict__"),tp->builtins);
+}
+
+

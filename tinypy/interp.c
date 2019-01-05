@@ -5,7 +5,8 @@
 #include "interp/misc.c"
 #include "interp/string.c"
 #include "interp/meta.c"
-#include "interp/builtins.c"
+#include "interp/frame.c"
+#include "interp/import.c"
 #include "interp/gc.c"
 #include "interp/ops.c"
 
@@ -17,3 +18,4 @@ tp_obj tp_None = {TP_NONE};
 
 #include "interp/vm.c"
 
+#include "interp/builtins.c"
