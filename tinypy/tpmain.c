@@ -1,4 +1,6 @@
-#include "tp.c"
+#include <vm/core.h>
+#include <vm/vm.h>
+
 /* INCLUDE */
 
 int main(int argc, char *argv[]) {

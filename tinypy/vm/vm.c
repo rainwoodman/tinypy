@@ -1,3 +1,5 @@
+#include "core.c"
+
 /* write to standard output */
 void tp_default_echo(const char* string, int length) {
     if(length < 0) length = strlen(string);
@@ -397,7 +399,7 @@ tp_obj _tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     tp_obj g;
 
     if (!((fname.type != TP_NONE && _tp_str_index(fname,tp_string(".tpc"))!=-1) || code.type != TP_NONE)) {
-        return tp_ez_call(tp,"py2bc","import_fname",tp_params_v(tp,2,fname,name));
+        return tp_ez_call(tp,"tinypy.compiler.py2bc","import_fname",tp_params_v(tp,2,fname,name));
     }
 
     if (code.type == TP_NONE) {
@@ -553,5 +555,13 @@ tp_vm *tp_init(int argc, char *argv[]) {
     tp_compiler(tp);
     return tp;
 }
+
+tp_vm *tp_init_no_compiler(int argc, char *argv[]) {
+    tp_vm *tp = _tp_init();
+    tp_builtins(tp);
+    tp_args(tp,argc,argv);
+    return tp;
+}
+
 
 /**/
