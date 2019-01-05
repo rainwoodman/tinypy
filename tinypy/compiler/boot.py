@@ -9,7 +9,7 @@ if not "tinypy" in sys.version:
         for el in v:
             try:
                 out += el
-            except TypeError:
+            except TypeError: # Python 3
                 out += el.encode('latin1')
         return out
 
