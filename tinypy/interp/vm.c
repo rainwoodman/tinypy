@@ -557,12 +557,4 @@ tp_vm *tp_init(int argc, char *argv[]) {
     return tp;
 }
 
-tp_vm *tp_init_no_compiler(int argc, char *argv[]) {
-    tp_vm *tp = _tp_init();
-    tp_builtins(tp);
-    tp_args(tp,argc,argv);
-    return tp;
-}
-
-
 /**/

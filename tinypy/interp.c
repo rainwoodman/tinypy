@@ -4,6 +4,7 @@
 #include "interp/dict.c"
 #include "interp/misc.c"
 #include "interp/string.c"
+#include "interp/meta.c"
 #include "interp/builtins.c"
 #include "interp/gc.c"
 #include "interp/ops.c"
