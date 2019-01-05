@@ -491,6 +491,8 @@ void tp_builtins(TP) {
     tp_set(tp,o,tp_string("__call__"),tp_fnc(tp,tp_object_call));
     tp_set(tp,o,tp_string("__new__"),tp_fnc(tp,tp_object_new));
     tp_set(tp,tp->builtins,tp_string("object"),o);
+
+    tp_set(tp,tp->builtins, tp_string("__dict__"),tp->builtins);
 }
 
 
