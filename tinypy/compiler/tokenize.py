@@ -2,6 +2,12 @@ class Token:
     def __init__(self,pos=(0,0),type='symbol',val=None,items=None):
         self.pos,self.type,self.val,self.items=pos,type,val,items
 
+    def _format(self):
+        if self.items is not None:
+            return '[' + ', '.join([i._format() for i in self.items]) + ']'
+        else:
+            return str(self.val)
+
 def u_error(ctx,s,i):
     y,x = i
     line = s.split('\n')[y-1]
