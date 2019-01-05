@@ -550,12 +550,13 @@ def do_while(t):
 def do_for(tok):
     items = tok.items
 
-    reg = do_local(items[0])
+    reg = get_tmp()
     itr = do(items[1])
     i = _do_number('0')
 
     t = stack_tag(); tag(t,'loop'); tag(t,'continue')
     code(ITER,reg,itr,i); jump(t,'end')
+    free_tmp(do_set_ctx(items[0], Token(tok.pos, 'reg', reg)))
     free_tmp(do(items[2])) #REG
     jump(t,'loop')
     tag(t,'break'); tag(t,'end'); pop_tag()
@@ -662,16 +663,17 @@ rmap = {
 
 def do(t,r=None):
     if t.pos: setpos(t.pos)
-    try:
+    #try:
+    if 1:
         if t.type in rmap:
             return rmap[t.type](t,r)
         #if r != None: free_reg(r) #REG
         return fmap[t.type](t)
-    except:
-        raise
-        if D.error: raise
-        D.error = True
-        tokenize.u_error('encode',D.code,t.pos)
+    #except:
+    #    raise
+    #    if D.error: raise
+    #    D.error = True
+    #    tokenize.u_error('encode',D.code,t.pos)
 
 def encode(fname,s,t):
     t = Token((1,1),'module','module',[t])
