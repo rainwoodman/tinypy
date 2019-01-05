@@ -382,8 +382,8 @@ def do_from(t):
         for item in items:
             item.type = 'string'
             free_tmp(do_set_ctx(
-                Token(t.pos,'get',None,[ Token(t.pos,'name','__dict__'),item]),
-                Token(t.pos,'get',None,[ Token(t.pos,'reg',v),item])
+                Token(t.pos, 'name', item.val),
+                Token(t.pos, 'get', None,[ Token(t.pos,'reg',v),item])
                 )
             ) #REG
 
