@@ -204,3 +204,12 @@ int _tp_string_cmp(tp_string_ * a, tp_string_ * b)
     }
     return v;
 }
+
+tp_obj tp_string_add(TP, tp_obj * a, tp_obj * b)
+{
+    int al = a->string.len, bl = b->string.len;
+    tp_obj r = tp_string_t(tp,al+bl);
+    char *s = r.string.info->s;
+    memcpy(s,a->string.val,al); memcpy(s+al,b->string.val,bl);
+    return tp_track(tp,r);
+}

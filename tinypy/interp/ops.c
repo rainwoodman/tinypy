@@ -349,18 +349,9 @@ tp_obj tp_add(TP,tp_obj a, tp_obj b) {
     if (a.type == TP_NUMBER && a.type == b.type) {
         return tp_number(a.number.val+b.number.val);
     } else if (a.type == TP_STRING && a.type == b.type) {
-        int al = a.string.len, bl = b.string.len;
-        tp_obj r = tp_string_t(tp,al+bl);
-        char *s = r.string.info->s;
-        memcpy(s,a.string.val,al); memcpy(s+al,b.string.val,bl);
-        return tp_track(tp,r);
+        return tp_string_add(tp, &a, &b);
     } else if (a.type == TP_LIST && a.type == b.type) {
-        tp_obj r;
-        tp_params_v(tp,1,a);
-        r = tp_copy(tp);
-        tp_params_v(tp,2,r,b);
-        tp_extend(tp);
-        return r;
+        return tp_list_add(tp, a, b);
     }
     tp_raise(tp_None,tp_string("(tp_add) TypeError: ?"));
 }

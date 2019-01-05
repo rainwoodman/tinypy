@@ -159,3 +159,13 @@ int _tp_list_cmp(TP, _tp_list * a, _tp_list * b)
     }
     return a->len - b->len;
 }
+
+tp_obj tp_list_add(TP, tp_obj a, tp_obj b)
+{
+    tp_obj r;
+    tp_params_v(tp, 1, a);
+    r = tp_copy(tp);
+    tp_params_v(tp, 2, r, b);
+    tp_extend(tp);
+    return r;
+}

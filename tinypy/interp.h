@@ -397,6 +397,12 @@ tp_inline static tp_obj tp_string_n(char const *v,int n) {
     return val;
 }
 
+tp_obj tp_copy(TP);
+
+tp_obj tp_params(TP);
+tp_obj tp_params_n(TP, int n, tp_obj argv[]);
+tp_obj tp_params_v(TP, int n, ...);
+
 void _tp_import_compiler(TP);
 
 tp_vm *tp_init(int argc, char *argv[]);
