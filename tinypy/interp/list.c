@@ -169,3 +169,16 @@ tp_obj tp_list_add(TP, tp_obj a, tp_obj b)
     tp_extend(tp);
     return r;
 }
+
+tp_obj tp_list_mul(TP, tp_obj a, int n)
+{
+    tp_obj r;
+    tp_params_v(tp, 1, a);
+    r = tp_copy(tp);
+    int i;
+    for (i = 1; i < n; i ++) {
+        tp_params_v(tp, 2, r, a);
+        tp_extend(tp);
+    }
+    return r;
+}

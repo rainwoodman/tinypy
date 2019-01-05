@@ -349,7 +349,7 @@ tp_obj tp_add(TP,tp_obj a, tp_obj b) {
     if (a.type == TP_NUMBER && a.type == b.type) {
         return tp_number(a.number.val+b.number.val);
     } else if (a.type == TP_STRING && a.type == b.type) {
-        return tp_string_add(tp, &a, &b);
+        return tp_string_add(tp, a, b);
     } else if (a.type == TP_LIST && a.type == b.type) {
         return tp_list_add(tp, a, b);
     }
@@ -359,20 +359,17 @@ tp_obj tp_add(TP,tp_obj a, tp_obj b) {
 tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
     if (a.type == TP_NUMBER && a.type == b.type) {
         return tp_number(a.number.val*b.number.val);
-    } else if ((a.type == TP_STRING && b.type == TP_NUMBER) || 
-               (a.type == TP_NUMBER && b.type == TP_STRING)) {
-        if(a.type == TP_NUMBER) {
-            tp_obj c = a; a = b; b = c;
-        }
-        int al = a.string.len; int n = b.number.val;
-        if(n <= 0) {
-            tp_obj r = tp_string_t(tp,0);
-            return tp_track(tp,r);
-        }
-        tp_obj r = tp_string_t(tp,al*n);
-        char *s = r.string.info->s;
-        int i; for (i=0; i<n; i++) { memcpy(s+al*i,a.string.val,al); }
-        return tp_track(tp,r);
+    }
+    if(a.type == TP_NUMBER) {
+        tp_obj c = a; a = b; b = c;
+    }
+    if(a.type == TP_STRING && b.type == TP_NUMBER) {
+        int n = b.number.val;
+        return tp_string_mul(tp, a, n);
+    }
+    if(a.type == TP_LIST && b.type == TP_NUMBER) {
+        int n = b.number.val;
+        return tp_list_mul(tp, a, n);
     }
     tp_raise(tp_None,tp_string("(tp_mul) TypeError: ?"));
 }

@@ -205,11 +205,27 @@ int _tp_string_cmp(tp_string_ * a, tp_string_ * b)
     return v;
 }
 
-tp_obj tp_string_add(TP, tp_obj * a, tp_obj * b)
+tp_obj tp_string_add(TP, tp_obj a, tp_obj b)
 {
-    int al = a->string.len, bl = b->string.len;
+    int al = a.string.len, bl = b.string.len;
     tp_obj r = tp_string_t(tp,al+bl);
     char *s = r.string.info->s;
-    memcpy(s,a->string.val,al); memcpy(s+al,b->string.val,bl);
+    memcpy(s,a.string.val,al); memcpy(s+al,b.string.val,bl);
     return tp_track(tp,r);
+}
+
+tp_obj tp_string_mul(TP, tp_obj a, int n)
+{
+    int al = a.string.len;
+    if(n <= 0) {
+        tp_obj r = tp_string_t(tp, 0);
+        return tp_track(tp, r);
+    }
+    tp_obj r = tp_string_t(tp, al*n);
+    char *s = r.string.info->s;
+    int i;
+    for (i=0; i<n; i++) {
+        memcpy(s+al*i, a.string.val, al);
+    }
+    return tp_track(tp, r);
 }
