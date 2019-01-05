@@ -6,7 +6,7 @@ class Token:
         if self.items is not None:
             return '[' + ', '.join([i._format() for i in self.items]) + ']'
         else:
-            return str(self.val)
+            return str(self.type) + ':' + str(self.val)
 
 def u_error(ctx,s,i):
     y,x = i
