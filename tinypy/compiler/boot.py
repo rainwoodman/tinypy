@@ -5,7 +5,7 @@ if not "tinypy" in sys.version:
     ARGV = sys.argv
 
     def join(v):
-        out = b''
+        out = ''.encode('latin1')
         for el in v:
             try:
                 out += el
