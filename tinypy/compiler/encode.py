@@ -6,6 +6,7 @@ EOF,ADD,SUB,MUL,DIV,POW,BITAND,BITOR,CMP,GET,SET,NUMBER,STRING,GGET,GSET,MOVE,DE
 
 class DState:
     def __init__(self,code,fname):
+        self.nopos = False
         self.code, self.fname = code,fname
         self.lines = self.code.split('\n')
 
@@ -41,7 +42,7 @@ def write(v):
     for n in range(0,len(v),4):
         insert(('data',v[n:n+4]))
 def setpos(v):
-    if '-nopos' in ARGV: return
+    if D.nopos: return
     line,x = v
     if line == D.lineno: return
     text = D.lines[line-1]
@@ -305,6 +306,7 @@ def do_set_ctx(k,v):
             n += 1
         free_reg(r)
         return
+
     r = do(k.items[0])
     rr = do(v)
     tmp = do(k.items[1])
@@ -637,7 +639,7 @@ def do_continue(t): jump(D.tstack[-1],'continue')
 def do_pass(t): code(PASS)
 
 def do_info(name='?'):
-    if '-nopos' in ARGV: return
+    if D.nopos: return
     code(FILE,free_tmp(_do_string(D.fname)))
     code(NAME,free_tmp(_do_string(name)))
 def do_module(t):
