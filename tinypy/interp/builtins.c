@@ -103,6 +103,24 @@ tp_obj tp_istype(TP) {
     tp_raise(tp_None,tp_string("(is_type) TypeError: ?"));
 }
 
+tp_obj tp_isinstance(TP) {
+    tp_obj v = TP_OBJ();
+    tp_obj t = TP_OBJ();
+    
+    tp_obj * pv = &v;
+    if(t.type != TP_DICT) {
+        tp_raise(tp_None, tp_string("isinstance TypeError: class argument must be a dictionary."));
+    }
+
+    while(pv->type == TP_DICT) {
+        if (pv->dict.val->meta.dict.val == t.dict.val) {
+            return tp_number(1);
+        }
+        pv = &(pv->dict.val->meta);
+    }
+    return tp_number(0);
+}
+
 
 tp_obj tp_float(TP) {
     tp_obj v = TP_OBJ();
