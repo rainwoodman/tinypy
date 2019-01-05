@@ -336,5 +336,5 @@ tp_obj tp_class(TP) {
  */
 tp_obj tp_builtins_bool(TP) {
     tp_obj v = TP_OBJ();
-    return (tp_number(tp_bool(tp, v)));
+    return (tp_number(tp_true(tp, v)));
 }

@@ -118,14 +118,14 @@ tp_obj tp_str_old(TP,tp_obj self) {
 }
 
 
-/* Function: tp_bool
+/* Function: tp_true
  * Check the truth value of an object
  *
  * Returns false if v is a numeric object with a value of exactly 0, v is of
  * type None or v is a string list or dictionary with a length of 0. Else true
  * is returned.
  */
-int tp_bool(TP,tp_obj v) {
+int tp_true(TP,tp_obj v) {
     switch(v.type) {
         case TP_NUMBER: return v.number.val != 0;
         case TP_NONE: return 0;

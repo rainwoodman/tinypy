@@ -268,10 +268,10 @@ int tp_step(TP) {
         case TP_ILE: RA = tp_number(tp_cmp(tp,RB,RC)<=0); break;
         case TP_ILT: RA = tp_number(tp_cmp(tp,RB,RC)<0); break;
         case TP_IBITNOT:  RA = tp_bitwise_not(tp,RB); break;
-        case TP_INOT: RA = tp_number(!tp_bool(tp,RB)); break;
+        case TP_INOT: RA = tp_number(!tp_true(tp,RB)); break;
         case TP_IPASS: break;
-        case TP_IIF: if (tp_bool(tp,RA)) { cur += 1; } break;
-        case TP_IIFN: if (!tp_bool(tp,RA)) { cur += 1; } break;
+        case TP_IIF: if (tp_true(tp,RA)) { cur += 1; } break;
+        case TP_IIFN: if (!tp_true(tp,RA)) { cur += 1; } break;
         case TP_IGET: RA = tp_get(tp,RB,RC); GA; break;
         case TP_IITER:
             if (RC.number.val < tp_len(tp,RB).number.val) {
