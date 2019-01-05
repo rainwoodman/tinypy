@@ -143,3 +143,18 @@ tp_obj tp_sort(TP) {
     return tp_None;
 }
 
+int _tp_list_cmp(TP, _tp_list * a, _tp_list * b)
+{
+    int n, v;
+    for(n=0; n<_tp_min(a->len, b->len); n++) {
+        tp_obj aa = a->items[n];
+        tp_obj bb = b->items[n];
+        if (aa.type == TP_LIST && bb.type == TP_LIST) {
+            v = _tp_list_cmp(tp, aa.list.val, bb.list.val);
+        } else {
+            v = tp_cmp(tp, aa, bb);
+        }
+        if (v) { return v; }
+    }
+    return a->len - b->len;
+}

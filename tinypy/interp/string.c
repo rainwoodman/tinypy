@@ -195,3 +195,12 @@ tp_obj tp_replace(TP) {
     return tp_track(tp,rr);
 }
 
+int _tp_string_cmp(tp_string_ * a, tp_string_ * b)
+{
+    int l = _tp_min(a->len, b->len);
+    int v = memcmp(a->val, b->val, l);
+    if (v == 0) {
+        v = a->len - b->len;
+    }
+    return v;
+}

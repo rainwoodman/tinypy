@@ -409,21 +409,8 @@ int tp_cmp(TP,tp_obj a, tp_obj b) {
     switch(a.type) {
         case TP_NONE: return 0;
         case TP_NUMBER: return _tp_sign(a.number.val-b.number.val);
-        case TP_STRING: {
-            int l = _tp_min(a.string.len,b.string.len);
-            int v = memcmp(a.string.val,b.string.val,l);
-            if (v == 0) {
-                v = a.string.len-b.string.len;
-            }
-            return v;
-        }
-        case TP_LIST: {
-            int n,v; for(n=0;n<_tp_min(a.list.val->len,b.list.val->len);n++) {
-        tp_obj aa = a.list.val->items[n]; tp_obj bb = b.list.val->items[n];
-            if (aa.type == TP_LIST && bb.type == TP_LIST) { v = aa.list.val-bb.list.val; } else { v = tp_cmp(tp,aa,bb); }
-            if (v) { return v; } }
-            return a.list.val->len-b.list.val->len;
-        }
+        case TP_STRING: return _tp_string_cmp(&a.string, &b.string);
+        case TP_LIST: return _tp_list_cmp(tp, a.list.val, b.list.val);
         case TP_DICT: return a.dict.val - b.dict.val;
         case TP_FNC: return a.fnc.info - b.fnc.info;
         case TP_DATA: return (char*)a.data.val - (char*)b.data.val;
