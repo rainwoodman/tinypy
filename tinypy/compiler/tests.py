@@ -2,11 +2,11 @@ import sys
 
 is_tinypy = "tinypy" in sys.version
 
-from .boot import *
+from tinypy.compiler.boot import *
 
-from . import asm
-from . import disasm
-from . import tokenize, parse, encode
+from tinypy.compiler import asm
+from tinypy.compiler import disasm
+from tinypy.compiler import tokenize, parse, encode
 
 ################################################################################
 RM = 'rm -f '

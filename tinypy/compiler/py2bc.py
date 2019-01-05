@@ -1,6 +1,8 @@
-from .boot import *
+from tinypy.compiler.boot import *
 
-from . import tokenize, parse, encode
+from tinypy.compiler import tokenize
+from tinypy.compiler import parse
+from tinypy.compiler import encode
 
 def _compile(s,fname):
     tokens = tokenize.tokenize(s)

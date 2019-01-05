@@ -1,6 +1,6 @@
-from . import tokenize
-from .tokenize import Token
-from .boot import *
+from tinypy.compiler import tokenize
+from tinypy.compiler.tokenize import Token
+from tinypy.compiler.boot import *
 
 EOF,ADD,SUB,MUL,DIV,POW,BITAND,BITOR,CMP,GET,SET,NUMBER,STRING,GGET,GSET,MOVE,DEF,PASS,JUMP,CALL,RETURN,IF,DEBUG,EQ,LE,LT,DICT,LIST,NONE,LEN,POS,PARAMS,IGET,FILE,NAME,NE,HAS,RAISE,SETJMP,MOD,LSH,RSH,ITER,DEL,REGS,BITXOR,IFN,NOT,BITNOT = 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48
 

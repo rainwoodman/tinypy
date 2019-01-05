@@ -1,4 +1,4 @@
-from .boot import *
+from tinypy.compiler.boot import *
 
 def get_ops():
     """ Builds an value <-> opcode name dictionary """

@@ -1,6 +1,6 @@
-from . import tokenize
-from .tokenize import Token
-from .boot import *
+from tinypy.compiler import tokenize
+from tinypy.compiler.tokenize import Token
+from tinypy.compiler.boot import *
 
 def check(t,*vs):
     if vs[0] == None: return True

@@ -1,5 +1,5 @@
-from .boot import *
-from . import py2bc
+from tinypy.compiler import py2bc
+from tinypy.compiler.boot import *
 
 def main(args=None):
     if args is None: args = ARGV
