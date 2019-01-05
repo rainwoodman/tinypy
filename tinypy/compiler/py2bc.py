@@ -10,19 +10,6 @@ def _compile(s,fname):
     r = encode.encode(fname,s,t)
     return r
 
-def import_fname(fname,name):
-    g = {}
-    g['__name__'] = name
-    MODULES[name] = g
-    s = load(fname)
-    code = _compile(s,fname)
-    g['__code__'] = code
-    exec(code,g)
-    return g
-
-def tinypy():
-    return import_fname(ARGV[0],'__main__')
-
 def main(src,dest):
     s = read(src)
     r = _compile(s,src)
@@ -30,10 +17,3 @@ def main(src,dest):
 
 if __name__ == '__main__':
     main(ARGV[1],ARGV[2])
-#    main(ARGV[1],ARGV[2])
-#    main(ARGV[1],ARGV[2])
-#    main(ARGV[1],ARGV[2])
-#    main(ARGV[1],ARGV[2])
-#    main(ARGV[1],ARGV[2])
-#    main(ARGV[1],ARGV[2])
-#    main(ARGV[1],ARGV[2])
