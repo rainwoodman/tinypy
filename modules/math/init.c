@@ -1,3 +1,4 @@
+#include <tinypy/interp.h>
 #include "math.c"
 
 /*

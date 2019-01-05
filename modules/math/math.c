@@ -189,8 +189,8 @@ static tp_obj math_frexp(TP) {
                                     "out of range", __func__, x));
     }
 
-    _tp_list_append(tp, rList.list.val, tp_number(r));
-    _tp_list_append(tp, rList.list.val, tp_number((tp_num)y));
+    tp_set(tp, rList, tp_None, tp_number(r));
+    tp_set(tp, rList, tp_None, tp_number((tp_num)y));
     return (rList);
 }
 
@@ -282,8 +282,8 @@ static tp_obj math_modf(TP) {
                                     "out of range", __func__, x));
     }
 
-    _tp_list_append(tp, rList.list.val, tp_number(r));
-    _tp_list_append(tp, rList.list.val, tp_number(y));
+    tp_set(tp, rList, tp_None, tp_number(r));
+    tp_set(tp, rList, tp_None, tp_number(y));
     return (rList);
 }
 

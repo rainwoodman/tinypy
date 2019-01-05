@@ -413,6 +413,11 @@ void tp_print(TP);
 tp_obj tp_load(TP);
 tp_obj tp_save(TP);
 
+tp_obj tp_list(TP);
+tp_obj tp_dict(TP);
+tp_obj tp_fnc(TP,tp_obj v(TP));
+int tp_hash(TP,tp_obj v);
+
 void _tp_import_builtins(TP);
 void _tp_import_compiler(TP);
 void _tp_import_corelib(TP);

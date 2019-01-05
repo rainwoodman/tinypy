@@ -1,3 +1,5 @@
+#include <tinypy/interp.h>
+
 #include "random.c"
 
 /*

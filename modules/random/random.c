@@ -233,9 +233,9 @@ static tp_obj random_getstate(TP)
     int i;
 
     for (i = 0; i < N; i++) {
-        _tp_list_append(tp, state_list.list.val, tp_number(_gRandom.state[i]));
+        tp_set(tp, state_list, tp_None, tp_number(_gRandom.state[i]));
     }
-    _tp_list_append(tp, state_list.list.val, tp_number(_gRandom.index));
+    tp_set(tp, state_list, tp_None, tp_number(_gRandom.index));
 
     return (state_list);
 }
