@@ -256,16 +256,21 @@ def from_nud(t):
     items = t.items = []
 
     # relative import
-    if check(P.token, 'get'):
-        expr = expression(0,
-            left=Token(t.pos, 'symbol', 'RELIMPORT'))
-    else:
-        expr = expression(0)
+    s = ''
+    while True:
+        if check(P.token, 'get'):
+            s = s + '.'
+            advance()
+        elif check(P.token, 'name'):
+            s = s + P.token.val
+            advance()
+        else:
+            break
 
+    expr = Token(t.pos, 'string', s)
     items.append(expr)
 
     advance('import')
-
     items.append(expression(0))
     return t
 
