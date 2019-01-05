@@ -1,4 +1,4 @@
-from tinypy.compiler import tokenize
+import tinypy.compiler.tokenize as tokenize
 from tinypy.compiler.tokenize import Token
 from tinypy.compiler.boot import *
 
