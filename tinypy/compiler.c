@@ -1,10 +1,10 @@
 #include "interp.h"
 
-#include "corelib/boot.c"
-#include "corelib/encode.c"
-#include "corelib/parse.c"
-#include "corelib/tokenize.c"
-#include "corelib/py2bc.c"
+#include "compiler/boot.c"
+#include "compiler/encode.c"
+#include "compiler/parse.c"
+#include "compiler/tokenize.c"
+#include "compiler/py2bc.c"
 
 void _tp_import_compiler(TP) {
     tp_import(tp, 0, "tinypy.compiler.boot", _tp_boot_tpc,  sizeof(_tp_boot_tpc));
