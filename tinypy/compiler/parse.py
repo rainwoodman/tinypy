@@ -168,6 +168,7 @@ def list_nud(t):
         t.items.append(r)
         if P.token.val == ',': advance(',')
     if check(P.token,'for'):
+        restore()
         t.type = 'comp'
         advance('for')
         tweak('in',0)
