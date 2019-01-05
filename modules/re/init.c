@@ -6,6 +6,7 @@
  * $Id$
  */
 
+#include <tinypy/interp.h>
 #include <stdio.h>
 #include <assert.h>
 #include "regexpr.c"
@@ -221,7 +222,7 @@ static tp_obj regex_obj_split(TP)
 		/* generate a temp match object */
 		tp_params_v(tp, 3, self, restr, tp_number(srchloc));
 		maobj = regex_obj_search(tp);
-		if (!tp_bool(tp, maobj)) 
+		if (!tp_true(tp, maobj)) 
 			break;
 
 		re = getre(tp, maobj);
@@ -240,7 +241,7 @@ static tp_obj regex_obj_split(TP)
 			grpstr = tp_string_copy(tp, 
 					(const char *)re->re_lastok + srchloc, start - srchloc);
 
-			if (tp_bool(tp, grpstr)) {
+			if (tp_true(tp, grpstr)) {
 				tp_set(tp, result, tp_None, grpstr);
 				maxsplit.number.val--;
 			}
@@ -253,7 +254,7 @@ static tp_obj regex_obj_split(TP)
 	if (srchloc < slen) {
 		grpstr = tp_string_copy(tp, 
 				(const char *)restr.string.val + srchloc, slen - srchloc);
-		if (tp_bool(tp, grpstr))
+		if (tp_true(tp, grpstr))
 			tp_set(tp, result, tp_None, grpstr);
 	}
 
@@ -287,7 +288,7 @@ static tp_obj regex_obj_findall(TP)
 		/* generate a temp match object */
 		tp_params_v(tp, 3, self, restr, tp_number(srchloc));
 		maobj = regex_obj_search(tp);
-		if (!tp_bool(tp, maobj)) 
+		if (!tp_true(tp, maobj)) 
 			break;
 
 		re = getre(tp, maobj);
@@ -306,7 +307,7 @@ static tp_obj regex_obj_findall(TP)
 			grpstr = tp_string_copy(tp, 
 					(const char *)re->re_lastok + start, end - start);
 
-			if (tp_bool(tp, grpstr)) {
+			if (tp_true(tp, grpstr)) {
 				tp_set(tp, result, tp_None, grpstr);
 			}
 
@@ -411,7 +412,7 @@ static tp_obj match_obj_groups(TP)
 		tp_obj grpstr = tp_string_copy(tp, 
 				(const char *)re->re_lastok + start, end - start);
 
-		if (tp_bool(tp, grpstr))
+		if (tp_true(tp, grpstr))
 			tp_set(tp, result, tp_None, grpstr);
 	}
 

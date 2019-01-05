@@ -435,6 +435,12 @@ enum regexp_syntax_op	/* syntax codes for plain and quoted characters */
 	Rnum_ops
 };
 
+enum {
+    TP_RE_NOERR,
+    TP_RE_UNKNOWN_OPCODE,
+	TP_RE_JUMP_OUT_BOUNDS,
+    TP_RE_QUOTE_ERR,
+};
 /* customized errno */
 int re_errno = TP_RE_NOERR;
 

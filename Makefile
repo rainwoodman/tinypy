@@ -9,7 +9,7 @@ CORELIB_C_FILES=$(CORELIB_FILES:%.py=tinypy/corelib/%.c)
 VMLIB_FILES=interp.c dummy-compiler.c corelib.c
 TPLIB_FILES=interp.c compiler.c corelib.c
 
-MODULES=math random
+MODULES=math random re
 MODULES_A_FILES=$(MODULES:%=modules/%.a)
 MODULES_C_FILES=$(MODULES:%=modules/%/init.c)
 
