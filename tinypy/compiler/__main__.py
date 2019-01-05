@@ -33,10 +33,13 @@ def getopt(args, shortopts):
 
     return opts, args
 
-def basename(s):
-    for j in range(len(s) - 1, -1, -1):
-        if j == -1: break
-        if s[j] == '/': break
+def basename(s, stripdir=True):
+    if stripdir:
+        for j in range(len(s) - 1, -1, -1):
+            if j == -1: break
+            if s[j] == '/': break
+    else:
+        j = -1
     for i in range(len(s) - 1, 0, -1):
         if s[i] == '.': break
     return s[j+1:i]
@@ -54,15 +57,14 @@ def main(args=None):
             dest = opts['-o']
         else:
             if '-c' in opts:
-                dest = basename(args[0]) + '.c'
+                dest = basename(args[0], False) + '.c'
             else:
-                dest = basename(args[0]) + '.tpc'
+                dest = basename(args[0], False) + '.tpc'
     else:
         print('Usage tinypyc [-c] [-n variable] [-o output_file_name] src.py')
         return 
     s = read(src)
     data = py2bc._compile(s, src)
-
     if '-c' in opts:
         out = []
         cols = 16
