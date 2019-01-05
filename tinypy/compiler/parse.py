@@ -73,10 +73,11 @@ def get_items(t):
         #error('no items',t)
     return t.items
 
-def expression(rbp):
-    t = P.token
-    advance()
-    left = nud(t)
+def expression(rbp, left=None):
+    if left is None:
+        t = P.token
+        advance()
+        left = nud(t)
     while rbp < get_lbp(P.token):
         t = P.token
         advance()
@@ -253,10 +254,18 @@ def class_nud(t):
 
 def from_nud(t):
     items = t.items = []
-    items.append(expression(0))
-    while not check(P.token, 'import'):
-        items.append(expression(0))
+
+    # relative import
+    if check(P.token, 'get'):
+        expr = expression(0,
+            left=Token(t.pos, 'symbol', 'RELIMPORT'))
+    else:
+        expr = expression(0)
+
+    items.append(expr)
+
     advance('import')
+
     items.append(expression(0))
     return t
 
@@ -361,7 +370,7 @@ base_dmap = {
     '[':{'lbp':70,'nud':list_nud,
         'bp':80,'led':get_led,},
     '{':{'lbp':0,'nud':dict_nud,},
-    '.':{'lbp':80,'bp':80,'led':dot_led,'type':'get', 'nud':itself},
+    '.':{'lbp':80,'bp':80,'led':dot_led,'type':'get',},
     'break':{'lbp':0,'nud':itself,'type':'break'},
     'pass':{'lbp':0,'nud':itself,'type':'pass'},
     'continue':{'lbp':0,'nud':itself,'type':'continue'},
