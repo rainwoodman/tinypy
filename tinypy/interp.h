@@ -396,7 +396,7 @@ tp_inline static tp_obj tp_string_n(char const *v,int n) {
     return val;
 }
 
-void tp_compiler(TP);
+void _tp_import_compiler(TP);
 
 tp_vm *tp_init(int argc, char *argv[]);
 void tp_deinit(TP);

@@ -552,7 +552,7 @@ tp_vm *tp_init(int argc, char *argv[]) {
     tp_vm *tp = _tp_init();
     tp_builtins(tp);
     tp_args(tp,argc,argv);
-    tp_compiler(tp);
+    _tp_import_compiler(tp);
     return tp;
 }
 
