@@ -171,6 +171,7 @@ def list_nud(t):
         t.type = 'comp'
         advance('for')
         tweak('in',0)
+        tweak(',', 1)
         t.items.append(expression(0))
         advance('in')
         t.items.append(expression(0))
@@ -305,6 +306,7 @@ def for_nud(t):
     advance(':')
     items.append(block())
     return t
+
 def if_nud(t):
     items = t.items = []
     a = expression(0)
