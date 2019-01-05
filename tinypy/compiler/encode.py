@@ -347,26 +347,42 @@ def do_import(t):
             mod]))
         mod.type = 'name'
         do_set_ctx(mod,Token(t.pos,'reg',v))
+
 def do_from(t):
     mod = t.items[0]
     mod.type = 'string'
     v = do(Token(t.pos,'call',None,[
         Token(t.pos,'name','import'),
         mod]))
-    item = t.items[1]
-    if item.val == '*':
+
+    un_tmp(v)
+    items = t.items[1]
+
+    if items.val == '*':
         free_tmp(do(Token(t.pos,'call',None,[
             Token(t.pos,'name','merge'),
             Token(t.pos,'name','__dict__'),
             Token(t.pos,'reg',v)]))) #REG
     else:
-        item.type = 'string'
-        free_tmp(do_set_ctx(
-            Token(t.pos,'get',None,[ Token(t.pos,'name','__dict__'),item]),
-            Token(t.pos,'get',None,[ Token(t.pos,'reg',v),item])
-            )) #REG
+        if items.type == 'name':
+            items.type = 'string'
+            items = [items]
+        elif items.type == 'tuple':
+            items = items.items
+        else:
+            tokenize.u_error('SyntaxError', D.code, t.pos)
+    
+        r = []
+        for item in items:
+            item.type = 'string'
+            free_tmp(do_set_ctx(
+                Token(t.pos,'get',None,[ Token(t.pos,'name','__dict__'),item]),
+                Token(t.pos,'get',None,[ Token(t.pos,'reg',v),item])
+                )
+            ) #REG
 
-        
+    free_reg(v)
+ 
 def do_globals(t):
     for t in t.items:
         if t.val not in D.globals:
