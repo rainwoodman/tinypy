@@ -1,5 +1,6 @@
 #include "interp.h"
 
+#include "interp/hash.c"
 #include "interp/list.c"
 #include "interp/dict.c"
 #include "interp/misc.c"

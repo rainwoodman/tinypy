@@ -1,0 +1,35 @@
+/* File: Dict
+ * Functions for dealing with dictionaries.
+ */
+int _tpi_lua_hash(void const *v,int l) {
+    int i,step = (l>>5)+1;
+    int h = l + (l >= 4?*(int*)v:0);
+    for (i=l; i>=step; i-=step) {
+        h = h^((h<<5)+(h>>2)+((unsigned char *)v)[i-1]);
+    }
+    return h;
+}
+
+int tp_obj_hash(TP, tp_obj v) {
+    switch (v.type) {
+        case TP_NONE: return 0;
+        case TP_NUMBER: return _tpi_lua_hash(&v.number.val, sizeof(tp_num));
+        case TP_STRING: return _tpi_lua_hash(v.string.val, v.string.len);
+        case TP_DICT: return _tpi_lua_hash(&v.dict.val, sizeof(void*));
+        case TP_LIST: {
+            int r = v.list.val->len;
+            int n;
+            for(n=0; n<v.list.val->len; n++) {
+                tp_obj vv = v.list.val->items[n];
+                r += (vv.type != TP_LIST)?
+                      tp_obj_hash(tp, v.list.val->items[n])
+                    : _tpi_lua_hash(&vv.list.val, sizeof(void*));
+            }
+            return r;
+        }
+        case TP_FNC: return _tpi_lua_hash(&v.fnc.info, sizeof(void*));
+        case TP_DATA: return _tpi_lua_hash(&v.data.val, sizeof(void*));
+    }
+    tp_raise(0, tp_string("(tp_obj_hash) TypeError: value unhashable"));
+}
+

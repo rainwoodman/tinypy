@@ -6,7 +6,7 @@ void _tpi_list_realloc(TP, tpi_list *self, int len) {
 
 void _tpi_list_set(TP, tpi_list *self,int k, tp_obj v, const char *error) {
     if (k >= self->len) {
-        tp_raise(,tp_string("(_tp_list_set) KeyError"));
+        tp_raise(,tp_string("(_tpi_list_set) KeyError"));
     }
     self->items[k] = v;
     tp_grey(tp,v);
@@ -89,8 +89,8 @@ int _tpi_list_cmp(TP, tpi_list * a, tpi_list * b)
 }
 
 
-
-tp_obj _tp_list_copy(TP, tp_obj rr) {
+/* C API for lists */
+tp_obj tp_list_copy(TP, tp_obj rr) {
     tp_check_type(tp, TP_LIST, rr);
 
     tp_obj val = {TP_LIST};
@@ -104,18 +104,18 @@ tp_obj _tp_list_copy(TP, tp_obj rr) {
     return tp_track(tp,val);
 }
 
-tp_obj _tp_list_add(TP, tp_obj a, tp_obj b)
+tp_obj tp_list_add(TP, tp_obj a, tp_obj b)
 {
     tp_obj r;
-    r = _tp_list_copy(tp, a);
+    r = tp_list_copy(tp, a);
     _tpi_list_extend(tp, r.list.val, b.list.val);
     return r;
 }
 
-tp_obj _tp_list_mul(TP, tp_obj a, int n)
+tp_obj tp_list_mul(TP, tp_obj a, int n)
 {
     tp_obj r;
-    r = _tp_list_copy(tp, a);
+    r = tp_list_copy(tp, a);
     int i;
     for (i = 1; i < n; i ++) {
         _tpi_list_extend(tp, r.list.val, a.list.val);
@@ -123,11 +123,26 @@ tp_obj _tp_list_mul(TP, tp_obj a, int n)
     return r;
 }
 
+tp_obj tp_list_n(TP, int n, tp_obj *argv) {
+    int i;
+    tp_obj r = tp_list(tp);
+    _tpi_list_realloc(tp, r.list.val,n);
+    for (i=0; i<n; i++) {
+        _tpi_list_append(tp, r.list.val, argv[i]);
+    }
+    return r;
+}
+
+int _tp_list_sort_cmp(tp_obj *a, tp_obj *b) {
+    return tp_cmp(0, *a, *b);
+}
+
+
 /******
  * Functions below take arguments from the current python scope.
  *  */
 
-tp_obj tp_list_index(TP) {
+tp_obj tpy_list_index(TP) {
     tp_obj self = TP_OBJ();
     tp_obj v = TP_OBJ();
     int i = _tpi_list_find(tp,self.list.val,v);
@@ -137,19 +152,19 @@ tp_obj tp_list_index(TP) {
     return tp_number(i);
 }
 
-tp_obj tp_list_append(TP) {
+tp_obj tpy_list_append(TP) {
     tp_obj self = TP_OBJ();
     tp_obj v = TP_OBJ();
     _tpi_list_append(tp, self.list.val, v);
     return tp_None;
 }
 
-tp_obj tp_list_pop(TP) {
+tp_obj tpy_list_pop(TP) {
     tp_obj self = TP_OBJ();
     return _tpi_list_pop(tp, self.list.val, self.list.val->len-1, "pop");
 }
 
-tp_obj tp_list_insert(TP) {
+tp_obj tpy_list_insert(TP) {
     tp_obj self = TP_OBJ();
     int n = TP_NUM();
     tp_obj v = TP_OBJ();
@@ -157,14 +172,14 @@ tp_obj tp_list_insert(TP) {
     return tp_None;
 }
 
-tp_obj tp_list_extend(TP) {
+tp_obj tpy_list_extend(TP) {
     tp_obj self = TP_TYPE(TP_LIST);
     tp_obj v = TP_TYPE(TP_LIST);
     _tpi_list_extend(tp, self.list.val, v.list.val);
     return tp_None;
 }
 
-tp_obj tp_list_nt(TP) {
+tp_obj tpy_list_nt(TP) {
     tp_obj r = {TP_LIST};
     r.list.val = _tpi_list_new(tp);
     return r;
@@ -176,20 +191,7 @@ tp_obj tp_list(TP) {
     return tp_track(tp,r);
 }
 
-tp_obj tp_list_n(TP,int n,tp_obj *argv) {
-    int i;
-    tp_obj r = tp_list(tp); _tpi_list_realloc(tp, r.list.val,n);
-    for (i=0; i<n; i++) {
-        _tpi_list_append(tp, r.list.val, argv[i]);
-    }
-    return r;
-}
-
-int _tp_list_sort_cmp(tp_obj *a, tp_obj *b) {
-    return tp_cmp(0, *a, *b);
-}
-
-tp_obj tp_list_sort(TP) {
+tp_obj tpy_list_sort(TP) {
     tp_obj self = TP_OBJ();
     qsort(self.list.val->items, self.list.val->len, sizeof(tp_obj), (int(*)(const void*,const void*))_tp_list_sort_cmp);
     return tp_None;

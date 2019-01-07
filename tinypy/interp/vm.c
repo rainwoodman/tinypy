@@ -20,7 +20,7 @@ tp_vm *_tp_init(void) {
     tp->cur = 0;
     tp->jmp = 0;
     tp->ex = tp_None;
-    tp->root = tp_list_nt(tp);
+    tp->root = tpy_list_nt(tp);
     for (i=0; i<256; i++) { tp->chars[i][0]=i; }
     tp_gc_init(tp);
     tp->_regs = tp_list(tp);

@@ -234,15 +234,15 @@ tp_obj tp_get(TP,tp_obj self, tp_obj k) {
             /* FIXME: move these to the prototype object of list, after
              * adding meta to all objects */
             if (tp_cmp(tp,tp_string("append"),k) == 0) {
-                return tp_method(tp,self, tp_list_append);
+                return tp_method(tp, self, tpy_list_append);
             } else if (tp_cmp(tp,tp_string("pop"),k) == 0) {
-                return tp_method(tp,self,tp_list_pop);
+                return tp_method(tp, self,tpy_list_pop);
             } else if (tp_cmp(tp,tp_string("index"),k) == 0) {
-                return tp_method(tp,self,tp_list_index);
+                return tp_method(tp, self,tpy_list_index);
             } else if (tp_cmp(tp,tp_string("sort"),k) == 0) {
-                return tp_method(tp,self,tp_list_sort);
+                return tp_method(tp, self,tpy_list_sort);
             } else if (tp_cmp(tp,tp_string("extend"),k) == 0) {
-                return tp_method(tp,self,tp_list_extend);
+                return tp_method(tp, self,tpy_list_extend);
             } else if (tp_cmp(tp,tp_string("*"),k) == 0) {
                 tp_params_v(tp,1,self);
                 r = tp_copy(tp);
@@ -358,7 +358,7 @@ tp_obj tp_add(TP,tp_obj a, tp_obj b) {
     } else if (a.type == TP_STRING && a.type == b.type) {
         return tp_string_add(tp, a, b);
     } else if (a.type == TP_LIST && a.type == b.type) {
-        return _tp_list_add(tp, a, b);
+        return tp_list_add(tp, a, b);
     }
     tp_raise(tp_None,tp_string("(tp_add) TypeError: ?"));
 }
@@ -376,7 +376,7 @@ tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
     }
     if(a.type == TP_LIST && b.type == TP_NUMBER) {
         int n = b.number.val;
-        return _tp_list_mul(tp, a, n);
+        return tp_list_mul(tp, a, n);
     }
     tp_raise(tp_None,tp_string("(tp_mul) TypeError: ?"));
 }

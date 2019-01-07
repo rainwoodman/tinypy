@@ -406,7 +406,7 @@ tp_obj tp_list(TP);
 tp_obj tp_dict(TP);
 tp_obj tp_fnc(TP,tp_obj v(TP));
 
-int _tp_obj_hash(TP, tp_obj v);
+int tp_obj_hash(TP, tp_obj v);
 
 void _tp_import_builtins(TP);
 void _tp_import_compiler(TP);

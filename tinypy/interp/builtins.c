@@ -37,9 +37,9 @@ tp_obj tp_copy(TP) {
     tp_obj r = TP_OBJ();
     int type = r.type;
     if (type == TP_LIST) {
-        return _tp_list_copy(tp,r);
+        return tp_list_copy(tp,r);
     } else if (type == TP_DICT) {
-        return _tp_dict_copy(tp,r);
+        return tp_dict_copy(tp,r);
     }
     tp_raise(tp_None,tp_string("(tp_copy) TypeError: ?"));
 }
@@ -329,7 +329,7 @@ void _tp_import_builtins(TP) {
     {"abs",tp_abs},
     {"int",tp_int}, {"eval",tp_eval_}, {"exec",tp_exec_}, {"exists",tp_exists},
     {"mtime",tp_mtime}, {"number",tp_float}, {"round",tp_round},
-    {"ord",tp_ord}, {"merge",tp_dict_merge}, {"getraw",tp_getraw},
+    {"ord",tp_ord}, {"merge",tpy_dict_merge}, {"getraw",tp_getraw},
     {"setmeta",tp_setmeta}, {"getmeta",tp_getmeta},
     {"bool", tp_builtins_bool}, {"join", tp_builtins_join}, {"repr", tp_repr2},
     #ifdef TP_SANDBOX
