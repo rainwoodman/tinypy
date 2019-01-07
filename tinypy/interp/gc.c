@@ -26,7 +26,7 @@ void tp_follow(TP,tp_obj v) {
     if (type == TP_DICT) {
         int i;
         for (i=0; i<v.dict.val->len; i++) {
-            int n = _tp_dict_next(tp,v.dict.val);
+            int n = _tpi_dict_next(tp,v.dict.val);
             tp_grey(tp,v.dict.val->items[n].key);
             tp_grey(tp,v.dict.val->items[n].val);
         }
@@ -69,7 +69,7 @@ void tp_delete(TP,tp_obj v) {
         _tpi_list_free(tp, v.list.val);
         return;
     } else if (type == TP_DICT) {
-        _tp_dict_free(tp, v.dict.val);
+        _tpi_dict_free(tp, v.dict.val);
         return;
     } else if (type == TP_STRING) {
         tp_free(tp, v.string.info);

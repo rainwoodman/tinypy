@@ -329,7 +329,7 @@ void _tp_import_builtins(TP) {
     {"abs",tp_abs},
     {"int",tp_int}, {"eval",tp_eval_}, {"exec",tp_exec_}, {"exists",tp_exists},
     {"mtime",tp_mtime}, {"number",tp_float}, {"round",tp_round},
-    {"ord",tp_ord}, {"merge",tp_merge}, {"getraw",tp_getraw},
+    {"ord",tp_ord}, {"merge",tp_dict_merge}, {"getraw",tp_getraw},
     {"setmeta",tp_setmeta}, {"getmeta",tp_getmeta},
     {"bool", tp_builtins_bool}, {"join", tp_builtins_join}, {"repr", tp_repr2},
     #ifdef TP_SANDBOX

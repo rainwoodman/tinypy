@@ -145,7 +145,9 @@ int tp_true(TP,tp_obj v) {
 tp_obj tp_has(TP,tp_obj self, tp_obj k) {
     int type = self.type;
     if (type == TP_DICT) {
-        if (_tp_dict_find(tp,self.dict.val,k) != -1) { return tp_True; }
+        if (_tpi_dict_find(tp, self.dict.val, k) != -1) {
+            return tp_True;
+        }
         return tp_False;
     } else if (type == TP_STRING && k.type == TP_STRING) {
         return tp_number(_tp_str_index(self,k)!=-1);
@@ -165,7 +167,7 @@ tp_obj tp_has(TP,tp_obj self, tp_obj k) {
 void tp_del(TP,tp_obj self, tp_obj k) {
     int type = self.type;
     if (type == TP_DICT) {
-        _tp_dict_del(tp,self.dict.val,k,"tp_del");
+        _tpi_dict_del(tp, self.dict.val,k, "tp_del");
         return;
     }
     tp_raise(,tp_string("(tp_del) TypeError: object does not support item deletion"));
@@ -198,7 +200,7 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
     int type = self.type;
     if (type == TP_LIST || type == TP_STRING) { return tp_get(tp,self,k); }
     if (type == TP_DICT && k.type == TP_NUMBER) {
-        return self.dict.val->items[_tp_dict_next(tp,self.dict.val)].key;
+        return self.dict.val->items[_tpi_dict_next(tp,self.dict.val)].key;
     }
     tp_raise(tp_None,tp_string("(tp_iter) TypeError: iteration over non-sequence"));
 }
@@ -221,7 +223,7 @@ tp_obj tp_get(TP,tp_obj self, tp_obj k) {
             return tp_call(tp,meta,tp_params_v(tp,1,k));
         TP_META_END;
         if (self.dict.dtype && _tp_lookup(tp,self,k,&r)) { return r; }
-        return _tp_dict_get(tp,self.dict.val,k,"tp_get");
+        return _tpi_dict_get(tp, self.dict.val,k, "tp_get");
     } else if (type == TP_LIST) {
         if (k.type == TP_NUMBER) {
             int l = tp_len(tp,self).number.val;
@@ -303,7 +305,7 @@ tp_obj tp_get(TP,tp_obj self, tp_obj k) {
  */
 int tp_iget(TP,tp_obj *r, tp_obj self, tp_obj k) {
     if (self.type == TP_DICT) {
-        int n = _tp_dict_find(tp,self.dict.val,k);
+        int n = _tpi_dict_find(tp, self.dict.val, k);
         if (n == -1) { return 0; }
         *r = self.dict.val->items[n].val;
         tp_grey(tp,*r);
@@ -328,7 +330,8 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
             tp_call(tp,meta,tp_params_v(tp,2,k,v));
             return;
         TP_META_END;
-        _tp_dict_set(tp,self.dict.val,k,v);
+
+        _tpi_dict_set(tp, self.dict.val, k, v);
         return;
     } else if (type == TP_LIST) {
         if (k.type == TP_NUMBER) {

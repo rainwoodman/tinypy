@@ -77,7 +77,7 @@ typedef union tp_obj {
     struct { int type; tp_num val; } number;
     struct { int type; struct _tp_string *info; char const *val; int len; } string;
     struct { int type; struct tpi_list *val; } list;
-    struct { int type; struct _tp_dict *val; int dtype; } dict;
+    struct { int type; struct tpi_dict *val; int dtype; } dict;
     struct { int type; struct _tp_fnc *info; int ftype; void *cfnc; } fnc;
     struct { int type; struct _tp_data *info; void *val; int magic; } data;
 } tp_obj;
@@ -102,7 +102,7 @@ typedef struct tp_item {
     tp_obj val;
 } tp_item;
 
-typedef struct _tp_dict {
+typedef struct tpi_dict {
     int gci;
     tp_item *items;
     int len;
@@ -111,7 +111,7 @@ typedef struct _tp_dict {
     int mask;
     int used;
     tp_obj meta;
-} _tp_dict;
+} tpi_dict;
 
 typedef struct _tp_fnc {
     int gci;
@@ -405,7 +405,8 @@ tp_obj tp_save(TP);
 tp_obj tp_list(TP);
 tp_obj tp_dict(TP);
 tp_obj tp_fnc(TP,tp_obj v(TP));
-int tp_hash(TP,tp_obj v);
+
+int _tp_obj_hash(TP, tp_obj v);
 
 void _tp_import_builtins(TP);
 void _tp_import_compiler(TP);
