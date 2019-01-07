@@ -97,10 +97,10 @@ tp_obj tp_split(TP) {
 
     int i;
     while ((i=_tp_str_index(v,d))!=-1) {
-        _tp_list_append(tp,r.list.val,tp_string_sub(tp,v,0,i));
+        _tpi_list_append(tp, r.list.val, tp_string_sub(tp, v, 0, i));
         v.string.val += i + d.string.len; v.string.len -= i + d.string.len;
     }
-    _tp_list_append(tp,r.list.val,tp_string_sub(tp,v,0,v.string.len));
+    _tpi_list_append(tp, r.list.val, tp_string_sub(tp, v, 0, v.string.len));
     return r;
 }
 

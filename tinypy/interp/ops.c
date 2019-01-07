@@ -40,10 +40,10 @@ tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
     int type = self.type;
     if(type == TP_DICT) {
         if(tp_has(tp, visited, tp_data(tp, 0, self.dict.val)).number.val) return tp_string("{...}");
-        _tp_list_append(tp, visited.list.val, tp_data(tp, 0, self.dict.val));
+        _tpi_list_append(tp, visited.list.val, tp_data(tp, 0, self.dict.val));
     } else if(type == TP_LIST) {
         if(tp_has(tp, visited, tp_data(tp, 0, self.list.val)).number.val) return tp_string("[...]");
-        _tp_list_append(tp, visited.list.val, tp_data(tp, 0, self.list.val));
+        _tpi_list_append(tp, visited.list.val, tp_data(tp, 0, self.list.val));
     }
     tp_obj result = tp_None;
     if (type == TP_STRING) { 
@@ -85,7 +85,7 @@ tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
         result = tp_string("<?>");
     }
     if(type == TP_DICT || type == TP_LIST) {
-        _tp_list_pop(tp, visited.list.val, visited.list.val->len - 1, "visited list is empty");
+        _tpi_list_pop(tp, visited.list.val, visited.list.val->len - 1, "visited list is empty");
     }
     return result;
 }
@@ -150,7 +150,7 @@ tp_obj tp_has(TP,tp_obj self, tp_obj k) {
     } else if (type == TP_STRING && k.type == TP_STRING) {
         return tp_number(_tp_str_index(self,k)!=-1);
     } else if (type == TP_LIST) {
-        return tp_number(_tp_list_find(tp,self.list.val,k)!=-1);
+        return tp_number(_tpi_list_find(tp,self.list.val,k)!=-1);
     }
     tp_raise(tp_None,tp_string("(tp_has) TypeError: iterable argument required"));
 }
@@ -227,18 +227,20 @@ tp_obj tp_get(TP,tp_obj self, tp_obj k) {
             int l = tp_len(tp,self).number.val;
             int n = k.number.val;
             n = (n<0?l+n:n);
-            return _tp_list_get(tp,self.list.val,n,"tp_get");
+            return _tpi_list_get(tp, self.list.val, n, "tp_get");
         } else if (k.type == TP_STRING) {
+            /* FIXME: move these to the prototype object of list, after
+             * adding meta to all objects */
             if (tp_cmp(tp,tp_string("append"),k) == 0) {
-                return tp_method(tp,self,tp_append);
+                return tp_method(tp,self, tp_list_append);
             } else if (tp_cmp(tp,tp_string("pop"),k) == 0) {
-                return tp_method(tp,self,tp_pop);
+                return tp_method(tp,self,tp_list_pop);
             } else if (tp_cmp(tp,tp_string("index"),k) == 0) {
-                return tp_method(tp,self,tp_index);
+                return tp_method(tp,self,tp_list_index);
             } else if (tp_cmp(tp,tp_string("sort"),k) == 0) {
-                return tp_method(tp,self,tp_sort);
+                return tp_method(tp,self,tp_list_sort);
             } else if (tp_cmp(tp,tp_string("extend"),k) == 0) {
-                return tp_method(tp,self,tp_extend);
+                return tp_method(tp,self,tp_list_extend);
             } else if (tp_cmp(tp,tp_string("*"),k) == 0) {
                 tp_params_v(tp,1,self);
                 r = tp_copy(tp);
@@ -246,7 +248,7 @@ tp_obj tp_get(TP,tp_obj self, tp_obj k) {
                 return r;
             }
         } else if (k.type == TP_NONE) {
-            return _tp_list_pop(tp,self.list.val,0,"tp_get");
+            return _tpi_list_pop(tp, self.list.val, 0, "tp_get");
         }
     } else if (type == TP_STRING) {
         if (k.type == TP_NUMBER) {
@@ -330,14 +332,16 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
         return;
     } else if (type == TP_LIST) {
         if (k.type == TP_NUMBER) {
-            _tp_list_set(tp,self.list.val,k.number.val,v,"tp_set");
+            _tpi_list_set(tp, self.list.val, k.number.val, v, "tp_set");
             return;
         } else if (k.type == TP_NONE) {
-            _tp_list_append(tp,self.list.val,v);
+            _tpi_list_append(tp, self.list.val, v);
             return;
         } else if (k.type == TP_STRING) {
-            if (tp_cmp(tp,tp_string("*"),k) == 0) {
-                tp_params_v(tp,2,self,v); tp_extend(tp);
+            /* WTF is this syntax? a['*'] = b will extend a by b ??
+             * FIXME: remove this support. Use a + b */
+            if (tp_cmp(tp, tp_string("*"), k) == 0) {
+                _tpi_list_extend(tp, self.list.val, v.list.val);
                 return;
             }
         }
@@ -351,7 +355,7 @@ tp_obj tp_add(TP,tp_obj a, tp_obj b) {
     } else if (a.type == TP_STRING && a.type == b.type) {
         return tp_string_add(tp, a, b);
     } else if (a.type == TP_LIST && a.type == b.type) {
-        return tp_list_add(tp, a, b);
+        return _tp_list_add(tp, a, b);
     }
     tp_raise(tp_None,tp_string("(tp_add) TypeError: ?"));
 }
@@ -369,7 +373,7 @@ tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
     }
     if(a.type == TP_LIST && b.type == TP_NUMBER) {
         int n = b.number.val;
-        return tp_list_mul(tp, a, n);
+        return _tp_list_mul(tp, a, n);
     }
     tp_raise(tp_None,tp_string("(tp_mul) TypeError: ?"));
 }

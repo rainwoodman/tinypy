@@ -52,7 +52,7 @@ tp_vm *_tp_init(void) {
  */
 void tp_deinit(TP) {
     while (tp->root.list.val->len) {
-        _tp_list_pop(tp,tp->root.list.val,0,"tp_deinit");
+        _tpi_list_pop(tp, tp->root.list.val, 0, "tp_deinit");
     }
     tp_full(tp); tp_full(tp);
     tp_delete(tp,tp->root);
@@ -121,7 +121,7 @@ tp_obj tp_call(TP,tp_obj self, tp_obj params) {
     if (self.type == TP_DICT) {
         if (self.dict.dtype == 1) {
             tp_obj meta; if (_tp_lookup(tp,self,tp_string("__new__"),&meta)) {
-                _tp_list_insert(tp,params.list.val,0,self);
+                _tpi_list_insert(tp, params.list.val, 0, self);
                 return tp_call(tp,meta,params);
             }
         } else if (self.dict.dtype == 2) {
@@ -140,7 +140,7 @@ tp_obj tp_call(TP,tp_obj self, tp_obj params) {
         tp_frame(tp,self.fnc.info->globals,self.fnc.info->code,&dest);
         if ((self.fnc.ftype&2)) {
             tp->frames[tp->cur].regs[0] = params;
-            _tp_list_insert(tp,params.list.val,0,self.fnc.info->self);
+            _tpi_list_insert(tp, params.list.val, 0, self.fnc.info->self);
         } else {
             tp->frames[tp->cur].regs[0] = params;
         }
@@ -391,10 +391,12 @@ tp_obj tp_exec_(TP) {
 
 tp_obj tp_eval_(TP);
 
-tp_obj tp_args(TP,int argc, char *argv[]) {
+tp_obj tp_args(TP, int argc, char *argv[]) {
     tp_obj self = tp_list(tp);
     int i;
-    for (i=1; i<argc; i++) { _tp_list_append(tp,self.list.val,tp_string(argv[i])); }
+    for (i=1; i<argc; i++) {
+        _tpi_list_append(tp, self.list.val, tp_string(argv[i]));
+    }
     return self;
 }
 

@@ -304,7 +304,6 @@ void tp_cstr(TP, tp_obj v, char *s, int l) {
 }
 
 
-#define TP_OBJ() (tp_get(tp,tp->params,tp_None))
 tp_inline static
 tp_obj tp_check_type(TP,int t, tp_obj v) {
     if (v.type != t) {
@@ -313,13 +312,17 @@ tp_obj tp_check_type(TP,int t, tp_obj v) {
     }
     return v;
 }
-
+/* 
+ * Macros for obtaining objects from the parameter list of the current
+ * function scope.
+ * */
 #define TP_NO_LIMIT 0
-#define TP_TYPE(t) tp_check_type(tp,t,TP_OBJ())
+#define TP_OBJ() (tp_get(tp, tp->params, tp_None))
+#define TP_TYPE(t) tp_check_type(tp, t, TP_OBJ())
 #define TP_NUM() (TP_TYPE(TP_NUMBER).number.val)
 /* #define TP_STR() (TP_CSTR(TP_TYPE(TP_STRING))) */
 #define TP_STR() (TP_TYPE(TP_STRING))
-#define TP_DEFAULT(d) (tp->params.list.val->len?tp_get(tp,tp->params,tp_None):(d))
+#define TP_DEFAULT(d) (tp->params.list.val->len?tp_get(tp, tp->params, tp_None):(d))
 
 /* Macro: TP_LOOP
  * Macro to iterate over all remaining arguments.
@@ -338,11 +341,11 @@ tp_obj tp_check_type(TP,int t, tp_obj v) {
  * >     TP_END
  * > }
  */
-tp_obj _tp_list_get(TP,_tp_list *self,int k,const char *error);
+tp_obj _tpi_list_get(TP, _tp_list *self, int k, const char *error);
 #define TP_LOOP(e) \
     int __l = tp->params.list.val->len; \
     int __i; for (__i=0; __i<__l; __i++) { \
-    (e) = _tp_list_get(tp,tp->params.list.val,__i,"TP_LOOP");
+        (e) = _tpi_list_get(tp, tp->params.list.val, __i, "TP_LOOP");
 #define TP_END \
     }
 
