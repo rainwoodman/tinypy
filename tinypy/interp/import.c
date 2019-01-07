@@ -1,5 +1,6 @@
-tp_obj tp_save(TP) {
-    char fname[256]; tp_cstr(tp,TP_STR(),fname,256);
+tp_obj tpy_save(TP) {
+    char fname[256];
+    tp_cstr(tp, TP_STR(), fname, 256);
     tp_obj v = TP_OBJ();
     FILE *f;
     f = fopen(fname,"wb");
@@ -9,12 +10,13 @@ tp_obj tp_save(TP) {
     return tp_None;
 }
 
-tp_obj tp_load(TP) {
+tp_obj tpy_load(TP) {
     FILE *f;
     long l;
     tp_obj r;
     char *s;
-    char fname[256]; tp_cstr(tp,TP_STR(),fname,256);
+    char fname[256];
+    tp_cstr(tp, TP_STR(), fname, 256);
     struct stat stbuf;
     stat(fname, &stbuf);
     l = stbuf.st_size;
@@ -30,7 +32,7 @@ tp_obj tp_load(TP) {
     return tp_track(tp,r);
 }
 
-tp_obj _tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
+tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     tp_obj g;
 
     if (!((fname.type != TP_NONE && _tp_str_index(fname,tp_string(".tpc"))!=-1) || code.type != TP_NONE)) {
@@ -39,7 +41,7 @@ tp_obj _tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
 
     if (code.type == TP_NONE) {
         tp_params_v(tp,1,fname);
-        code = tp_load(tp);
+        code = tpy_load(tp);
     }
 
     g = tp_dict(tp);
@@ -49,9 +51,25 @@ tp_obj _tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     tp_frame(tp,g,code,0);
     tp_set(tp,tp->modules,name,g);
 
-    if (!tp->jmp) { tp_run(tp,tp->cur); }
+    if (!tp->jmp) { tp_run(tp, tp->cur); }
 
     return g;
 }
 
-
+/* Function: tp_import
+ * Imports a module.
+ * 
+ * Parameters:
+ * fname - The filename of a file containing the module's code.
+ * name - The name of the module.
+ * codes - The module's code.  If this is given, fname is ignored.
+ * len - The length of the bytecode.
+ *
+ * Returns:
+ * The module object.
+ */
+tp_obj tp_import_from_buffer(TP, const char * fname, const char * name, void *codes, int len) {
+    tp_obj f = fname?tp_string(fname):tp_None;
+    tp_obj bc = codes?tp_string_n((const char*)codes,len):tp_None;
+    return tp_import(tp, f, tp_string(name), bc);
+}

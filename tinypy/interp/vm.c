@@ -359,27 +359,8 @@ void tp_print(TP) {
     tp->echo("\n", -1);
 }
 
-/* Function: tp_import
- * Imports a module.
- * 
- * Parameters:
- * fname - The filename of a file containing the module's code.
- * name - The name of the module.
- * codes - The module's code.  If this is given, fname is ignored.
- * len - The length of the bytecode.
- *
- * Returns:
- * The module object.
- */
-tp_obj tp_import(TP, const char * fname, const char * name, void *codes, int len) {
-    tp_obj f = fname?tp_string(fname):tp_None;
-    tp_obj bc = codes?tp_string_n((const char*)codes,len):tp_None;
-    return _tp_import(tp,f,tp_string(name),bc);
-}
 
-
-
-tp_obj tp_exec_(TP) {
+tp_obj tpy_exec(TP) {
     tp_obj code = TP_OBJ();
     tp_obj globals = TP_OBJ();
     tp_obj r = tp_None;
@@ -388,8 +369,6 @@ tp_obj tp_exec_(TP) {
     return r;
 }
 
-
-tp_obj tp_eval_(TP);
 
 tp_obj tp_args(TP, int argc, char *argv[]) {
     tp_obj self = tp_list(tp);
@@ -401,7 +380,7 @@ tp_obj tp_args(TP, int argc, char *argv[]) {
 }
 
 tp_obj tp_main(TP,char *fname, void *code, int len) {
-    return tp_import(tp,fname,"__main__",code, len);
+    return tp_import_from_buffer(tp,fname, "__main__", code, len);
 }
 
 /* Function: tp_compile
@@ -428,7 +407,7 @@ tp_obj tp_eval(TP, const char *text, tp_obj globals) {
     return tp->last_result;
 }
 
-tp_obj tp_eval_(TP) {
+tp_obj tpy_eval(TP) {
     tp_obj text = TP_STR();
     tp_obj globals = TP_TYPE(TP_DICT);
 
