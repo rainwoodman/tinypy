@@ -41,7 +41,7 @@ void tp_follow(TP,tp_obj v) {
 
 void tp_reset(TP) {
     int n;
-    _tp_list *tmp;
+    tpi_list *tmp;
     for (n=0; n<tp->black->len; n++) {
         *tp->black->items[n].gci.data = 0;
     }

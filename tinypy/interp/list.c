@@ -1,10 +1,10 @@
-void _tpi_list_realloc(TP, _tp_list *self, int len) {
+void _tpi_list_realloc(TP, tpi_list *self, int len) {
     if (!len) { len=1; }
     self->items = (tp_obj*)tp_realloc(tp, self->items,len*sizeof(tp_obj));
     self->alloc = len;
 }
 
-void _tpi_list_set(TP, _tp_list *self,int k, tp_obj v, const char *error) {
+void _tpi_list_set(TP, tpi_list *self,int k, tp_obj v, const char *error) {
     if (k >= self->len) {
         tp_raise(,tp_string("(_tp_list_set) KeyError"));
     }
@@ -12,18 +12,18 @@ void _tpi_list_set(TP, _tp_list *self,int k, tp_obj v, const char *error) {
     tp_grey(tp,v);
 }
 
-void _tpi_list_free(TP, _tp_list *self) {
+void _tpi_list_free(TP, tpi_list *self) {
     tp_free(tp, self->items);
     tp_free(tp, self);
 }
 
-tp_obj _tpi_list_get(TP, _tp_list *self, int k, const char *error) {
+tp_obj _tpi_list_get(TP, tpi_list *self, int k, const char *error) {
     if (k >= self->len) {
         tp_raise(tp_None, tp_string("(_tpi_list_get) KeyError"));
     }
     return self->items[k];
 }
-void _tpi_list_insertx(TP, _tp_list *self, int n, tp_obj v) {
+void _tpi_list_insertx(TP, tpi_list *self, int n, tp_obj v) {
     if (self->len >= self->alloc) {
         _tpi_list_realloc(tp, self,self->alloc*2);
     }
@@ -31,25 +31,25 @@ void _tpi_list_insertx(TP, _tp_list *self, int n, tp_obj v) {
     self->items[n] = v;
     self->len += 1;
 }
-void _tpi_list_appendx(TP, _tp_list *self, tp_obj v) {
+void _tpi_list_appendx(TP, tpi_list *self, tp_obj v) {
     _tpi_list_insertx(tp, self, self->len, v);
 }
-void _tpi_list_insert(TP,_tp_list *self, int n, tp_obj v) {
+void _tpi_list_insert(TP,tpi_list *self, int n, tp_obj v) {
     _tpi_list_insertx(tp,self,n,v);
     tp_grey(tp,v);
 }
-void _tpi_list_append(TP,_tp_list *self, tp_obj v) {
+void _tpi_list_append(TP,tpi_list *self, tp_obj v) {
     _tpi_list_insert(tp,self,self->len,v);
 }
 
-void _tpi_list_extend(TP, _tp_list * self, _tp_list * v) {
+void _tpi_list_extend(TP, tpi_list * self, tpi_list * v) {
     int i;
     for (i = 0; i < v->len; i++) {
         _tpi_list_append(tp, self, v->items[i]);
     }
 }
 
-tp_obj _tpi_list_pop(TP,_tp_list *self, int n, const char *error) {
+tp_obj _tpi_list_pop(TP,tpi_list *self, int n, const char *error) {
     tp_obj r = _tpi_list_get(tp,self,n,error);
     if (n != self->len-1) {
         memmove(&self->items[n], &self->items[n+1], sizeof(tp_obj)*(self->len-(n+1)));
@@ -58,7 +58,7 @@ tp_obj _tpi_list_pop(TP,_tp_list *self, int n, const char *error) {
     return r;
 }
 
-int _tpi_list_find(TP,_tp_list *self, tp_obj v) {
+int _tpi_list_find(TP,tpi_list *self, tp_obj v) {
     int n;
     for (n=0; n<self->len; n++) {
         if (tp_cmp(tp, v, self->items[n]) == 0) {
@@ -68,16 +68,16 @@ int _tpi_list_find(TP,_tp_list *self, tp_obj v) {
     return -1;
 }
 
-_tp_list *_tp_list_new(TP) {
-    return (_tp_list*)tp_malloc(tp, sizeof(_tp_list));
+tpi_list *_tp_list_new(TP) {
+    return (tpi_list*)tp_malloc(tp, sizeof(tpi_list));
 }
 
 tp_obj _tp_list_copy(TP, tp_obj rr) {
     tp_check_type(tp, TP_LIST, rr);
 
     tp_obj val = {TP_LIST};
-    _tp_list *o = rr.list.val;
-    _tp_list *r = _tp_list_new(tp);
+    tpi_list *o = rr.list.val;
+    tpi_list *r = _tp_list_new(tp);
     *r = *o; r->gci = 0;
     r->alloc = o->len;
     r->items = (tp_obj*)tp_malloc(tp, sizeof(tp_obj)*o->len);
@@ -107,7 +107,7 @@ tp_obj _tp_list_mul(TP, tp_obj a, int n)
     return r;
 }
 
-int _tp_list_cmp(TP, _tp_list * a, _tp_list * b)
+int _tp_list_cmp(TP, tpi_list * a, tpi_list * b)
 {
     int n, v;
     for(n=0; n<_tp_min(a->len, b->len); n++) {
