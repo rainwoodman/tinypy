@@ -414,7 +414,7 @@ tp_obj tpy_save(TP);
 tp_obj tp_list(TP);
 tp_obj tp_dict(TP);
 tp_obj tp_fnc(TP, tp_obj v(TP));
-
+tp_obj tp_printf(TP, const char * fmt, ...);
 
 void tp_module_sys_init(TP, int argc, char * argv[]);
 void tp_module_builtins_init(TP);
