@@ -1,0 +1,17 @@
+function namespaces:
+
+Functions are into several namespaces from lower-level to higher-level:
+
+- `_tpi_*` : tinypy data structures
+
+- `tp_*` : tinypy interpreter C-API;
+           arguments from C arguments;
+           functions may return any C value;
+           return values are usually not tracked by gc,
+           unless the name indicates otherwise. (need to make sure this is true).
+
+- `tpy_*` : python language C-API
+            arguments from local scope parameter list
+            functions always return tp_obj;
+            return values are usually tracked by gc, unless 
+            the name indicates otherwise. (need to make sure this is true)
