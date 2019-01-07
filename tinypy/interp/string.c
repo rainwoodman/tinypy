@@ -66,7 +66,7 @@ int _tp_str_index(tp_obj s, tp_obj k) {
     return -1;
 }
 
-tp_obj tp_join(TP) {
+tp_obj tpy_str_join(TP) {
     tp_obj delim = TP_OBJ();
     tp_obj val = TP_OBJ();
     int l=0,i;
@@ -90,13 +90,13 @@ tp_obj tp_join(TP) {
     return tp_track(tp,r);
 }
 
-tp_obj tp_split(TP) {
+tp_obj tpy_str_split(TP) {
     tp_obj v = TP_OBJ();
     tp_obj d = TP_OBJ();
     tp_obj r = tp_list(tp);
 
     int i;
-    while ((i=_tp_str_index(v,d))!=-1) {
+    while ((i=_tp_str_index(v, d))!=-1) {
         _tpi_list_append(tp, r.list.val, tp_string_sub(tp, v, 0, i));
         v.string.val += i + d.string.len; v.string.len -= i + d.string.len;
     }
@@ -105,13 +105,13 @@ tp_obj tp_split(TP) {
 }
 
 
-tp_obj tp_find(TP) {
+tp_obj tpy_find(TP) {
     tp_obj s = TP_OBJ();
     tp_obj v = TP_OBJ();
     return tp_number(_tp_str_index(s,v));
 }
 
-tp_obj tp_str_index(TP) {
+tp_obj tpy_str_index(TP) {
     tp_obj s = TP_OBJ();
     tp_obj v = TP_OBJ();
     int n = _tp_str_index(s,v);
@@ -119,23 +119,23 @@ tp_obj tp_str_index(TP) {
     tp_raise(tp_None,tp_string("(tp_str_index) ValueError: substring not found"));
 }
 
-tp_obj tp_str2(TP) {
+tp_obj tpy_str2(TP) {
     tp_obj v = TP_OBJ();
-    return tp_str(tp,v);
+    return tp_str(tp, v);
 }
 
 tp_obj tp_repr(TP, tp_obj self);
 
-tp_obj tp_repr2(TP) {
+tp_obj tpy_repr(TP) {
     tp_obj v = TP_OBJ();
-    return tp_repr(tp,v);
+    return tp_repr(tp, v);
 }
 
-tp_obj tp_chr(TP) {
+tp_obj tpy_chr(TP) {
     int v = TP_NUM();
     return tp_string_n(tp->chars[(unsigned char)v],1);
 }
-tp_obj tp_ord(TP) {
+tp_obj tpy_ord(TP) {
     tp_obj s = TP_STR();
     if (s.string.len != 1) {
         tp_raise(tp_None,tp_string("(tp_ord) TypeError: ord() expected a character"));
@@ -143,7 +143,7 @@ tp_obj tp_ord(TP) {
     return tp_number((unsigned char)s.string.val[0]);
 }
 
-tp_obj tp_strip(TP) {
+tp_obj tpy_str_strip(TP) {
     tp_obj o = TP_TYPE(TP_STRING);
     char const *v = o.string.val; int l = o.string.len;
     int i; int a = l, b = 0;
@@ -161,7 +161,7 @@ tp_obj tp_strip(TP) {
     return tp_track(tp,r);
 }
 
-tp_obj tp_replace(TP) {
+tp_obj tpy_str_replace(TP) {
     tp_obj s = TP_OBJ();
     tp_obj k = TP_OBJ();
     tp_obj v = TP_OBJ();

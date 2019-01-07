@@ -6,7 +6,7 @@
 #include "compiler/tokenize.c"
 #include "compiler/py2bc.c"
 
-void _tp_import_compiler(TP) {
+void tp_module_compiler_init(TP) {
     tp_import(tp, 0, "tinypy.compiler.boot", _tp_boot_tpc,  sizeof(_tp_boot_tpc));
     tp_import(tp, 0, "tinypy.compiler.tokenize", _tp_tokenize_tpc,  sizeof(_tp_tokenize_tpc));
     tp_import(tp, 0, "tinypy.compiler.parse", _tp_parse_tpc, sizeof(_tp_parse_tpc));

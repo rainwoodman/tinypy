@@ -2,12 +2,12 @@
  * Builtin tinypy functions.
  */
 
-tp_obj tp_builtins_print(TP) {
+tp_obj tpy_print(TP) {
     tp_print(tp);
     return tp_None;
 }
 
-tp_obj tp_bind(TP) {
+tp_obj tpy_bind(TP) {
     tp_obj r = TP_TYPE(TP_FNC);
     tp_obj self = TP_OBJ();
     return tp_fnc_new(tp,
@@ -15,7 +15,7 @@ tp_obj tp_bind(TP) {
         self,r.fnc.info->globals);
 }
 
-tp_obj tp_min(TP) {
+tp_obj tpy_min(TP) {
     tp_obj r = TP_OBJ();
     tp_obj e;
     TP_LOOP(e)
@@ -24,7 +24,7 @@ tp_obj tp_min(TP) {
     return r;
 }
 
-tp_obj tp_max(TP) {
+tp_obj tpy_max(TP) {
     tp_obj r = TP_OBJ();
     tp_obj e;
     TP_LOOP(e)
@@ -33,7 +33,7 @@ tp_obj tp_max(TP) {
     return r;
 }
 
-tp_obj tp_copy(TP) {
+tp_obj tpy_copy(TP) {
     tp_obj r = TP_OBJ();
     int type = r.type;
     if (type == TP_LIST) {
@@ -45,18 +45,18 @@ tp_obj tp_copy(TP) {
 }
 
 
-tp_obj tp_builtins_len(TP) {
+tp_obj tpy_len(TP) {
     tp_obj e = TP_OBJ();
     return tp_len(tp,e);
 }
 
-tp_obj tp_assert(TP) {
+tp_obj tpy_assert(TP) {
     int a = TP_NUM();
     if (a) { return tp_None; }
-    tp_raise(tp_None,tp_string("(tp_assert) AssertionError"));
+    tp_raise(tp_None, tp_string("(tp_assert) AssertionError"));
 }
 
-tp_obj tp_range(TP) {
+tp_obj tpy_range(TP) {
     int a,b,c,i;
     tp_obj r = tp_list(tp);
     switch (tp->params.list.val->len) {
@@ -78,13 +78,13 @@ tp_obj tp_range(TP) {
  * The system builtin. A grave security flaw. If your version of tinypy
  * enables this, you better remove it before deploying your app :P
  */
-tp_obj tp_system(TP) {
+tp_obj tpy_system(TP) {
     char s[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),s,TP_CSTR_LEN);
     int r = system(s);
     return tp_number(r);
 }
 
-tp_obj tp_istype(TP) {
+tp_obj tpy_istype(TP) {
     tp_obj v = TP_OBJ();
     tp_obj t = TP_STR();
     if (tp_cmp(tp,t,tp_string("string")) == 0) { return tp_number(v.type == TP_STRING); }
@@ -96,7 +96,7 @@ tp_obj tp_istype(TP) {
     tp_raise(tp_None,tp_string("(is_type) TypeError: ?"));
 }
 
-tp_obj tp_isinstance(TP) {
+tp_obj tpy_isinstance(TP) {
     tp_obj v = TP_OBJ();
     tp_obj t = TP_OBJ();
     
@@ -115,7 +115,7 @@ tp_obj tp_isinstance(TP) {
 }
 
 
-tp_obj tp_float(TP) {
+tp_obj tpy_float(TP) {
     tp_obj v = TP_OBJ();
     int ord = TP_DEFAULT(tp_number(0)).number.val;
     int type = v.type;
@@ -126,10 +126,10 @@ tp_obj tp_float(TP) {
         if (strchr(s,'.')) { return tp_number(atof(s)); }
         return(tp_number(strtol(s,0,ord)));
     }
-    tp_raise(tp_None,tp_string("(tp_float) TypeError: ?"));
+    tp_raise(tp_None,tp_string("(tpy_float) TypeError: ?"));
 }
 
-tp_obj tp_builtins_join(TP) {
+tp_obj tpy_join(TP) {
     tp_obj val = TP_OBJ();
     int l=0,i;
     tp_obj r;
@@ -148,14 +148,14 @@ tp_obj tp_builtins_join(TP) {
     return tp_track(tp,r);
 }
 
-tp_obj tp_fpack(TP) {
+tp_obj tpy_fpack(TP) {
     tp_num v = TP_NUM();
     tp_obj r = tp_string_t(tp,sizeof(tp_num));
     *(tp_num*)r.string.val = v;
     return tp_track(tp,r);
 }
 
-tp_obj tp_funpack(TP) {
+tp_obj tpy_funpack(TP) {
     tp_obj v = TP_STR();
     if (v.string.len != sizeof(tp_num)) {
         tp_raise(tp_None, tp_string("funpack ValueError: length of string is incorrect."));
@@ -164,27 +164,27 @@ tp_obj tp_funpack(TP) {
     return tp_number(r);
 }
 
-tp_obj tp_abs(TP) {
-    return tp_number(fabs(tp_float(tp).number.val));
+tp_obj tpy_abs(TP) {
+    return tp_number(fabs(tpy_float(tp).number.val));
 }
-tp_obj tp_int(TP) {
-    return tp_number((long)tp_float(tp).number.val);
+tp_obj tpy_int(TP) {
+    return tp_number((long)tpy_float(tp).number.val);
 }
 tp_num _roundf(tp_num v) {
     tp_num av = fabs(v); tp_num iv = (long)av;
     av = (av-iv < 0.5?iv:iv+1);
     return (v<0?-av:av);
 }
-tp_obj tp_round(TP) {
-    return tp_number(_roundf(tp_float(tp).number.val));
+tp_obj tpy_round(TP) {
+    return tp_number(_roundf(tpy_float(tp).number.val));
 }
 
-tp_obj tp_exists(TP) {
+tp_obj tpy_exists(TP) {
     char fname[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),fname,TP_CSTR_LEN);
     struct stat stbuf;
     return tp_number(!stat(fname,&stbuf));
 }
-tp_obj tp_mtime(TP) {
+tp_obj tpy_mtime(TP) {
     char fname[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),fname,TP_CSTR_LEN);
     struct stat stbuf;
     if (!stat(fname,&stbuf)) { return tp_number(stbuf.st_mtime); }
@@ -213,14 +213,14 @@ tp_obj tp_mtime(TP) {
  * Returns:
  * None
  */
-tp_obj tp_setmeta(TP) {
+tp_obj tpy_setmeta(TP) {
     tp_obj self = TP_TYPE(TP_DICT);
     tp_obj meta = TP_TYPE(TP_DICT);
     self.dict.val->meta = meta;
     return tp_None;
 }
 
-tp_obj tp_getmeta(TP) {
+tp_obj tpy_getmeta(TP) {
     tp_obj self = TP_TYPE(TP_DICT);
     return self.dict.val->meta;
 }
@@ -238,7 +238,7 @@ tp_obj tp_object(TP) {
     return self;
 }
 
-tp_obj tp_object_new(TP) {
+tp_obj tpy_object_new(TP) {
     tp_obj klass = TP_TYPE(TP_DICT);
     tp_obj self = tp_object(tp);
     self.dict.val->meta = klass;
@@ -248,7 +248,7 @@ tp_obj tp_object_new(TP) {
     return self;
 }
 
-tp_obj tp_object_call(TP) {
+tp_obj tpy_object_call(TP) {
     tp_obj self;
     if (tp->params.list.val->len) {
         self = TP_TYPE(TP_DICT);
@@ -267,7 +267,7 @@ tp_obj tp_object_call(TP) {
  * functions, as it allows you to directly access the attributes stored in the
  * dict.
  */
-tp_obj tp_getraw(TP) {
+tp_obj tpy_getraw(TP) {
     tp_obj self = TP_TYPE(TP_DICT);
     self.dict.dtype = 0;
     return self;
@@ -284,14 +284,14 @@ tp_obj tp_getraw(TP) {
  */
 tp_obj tp_class(TP) {
     tp_obj klass = tp_dict(tp);
-    klass.dict.val->meta = tp_get(tp,tp->builtins,tp_string("object")); 
+    klass.dict.val->meta = tp_get(tp, tp->builtins, tp_string("object")); 
     return klass;
 }
 
-/* Function: tp_builtins_bool
+/* Function: tpy_bool
  * Coerces any value to a boolean.
  */
-tp_obj tp_builtins_bool(TP) {
+tp_obj tpy_bool(TP) {
     tp_obj v = TP_OBJ();
     return (tp_number(tp_true(tp, v)));
 }
@@ -300,7 +300,7 @@ tp_obj tp_builtins_bool(TP) {
  * compiler is initialized; 
  * it only loads existing modules from the module, and returns None
  * on failure. */
-tp_obj tp_builtins_import(TP) {
+tp_obj tpy_import(TP) {
     tp_obj mod = TP_OBJ();
 
     if (tp_has(tp,tp->modules,mod).number.val) {
@@ -311,29 +311,30 @@ tp_obj tp_builtins_import(TP) {
     return tp_None;
 }
 
-void _tp_import_builtins(TP) {
+
+void tp_module_builtins_init(TP) {
     tp_obj builtins = tp_dict(tp);
     tp_set(tp, builtins, tp_string("MODULES"), tp->modules);
     tp_set(tp,builtins, tp_string("__dict__"), tp->builtins);
 
     tp_obj o;
     struct {const char *s;void *f;} b[] = {
-    {"print",tp_builtins_print}, {"range",tp_range}, {"min",tp_min},
-    {"max",tp_max}, {"bind",tp_bind}, {"copy",tp_copy},
-    {"__import__",tp_builtins_import}, {"len",tp_builtins_len}, {"assert",tp_assert},
-    {"str",tp_str2}, {"float",tp_float}, {"system",tp_system},
-    {"istype",tp_istype}, {"isinstance",tp_isinstance}, 
-    {"chr",tp_chr}, {"save",tp_save},
+    {"print",tpy_print}, {"range",tpy_range}, {"min",tpy_min},
+    {"max",tpy_max}, {"bind", tpy_bind}, {"copy",tpy_copy},
+    {"__import__",tpy_import}, {"len",tpy_len}, {"assert", tpy_assert},
+    {"str",tpy_str2}, {"float",tpy_float}, {"system",tpy_system},
+    {"istype",tpy_istype}, {"isinstance",tpy_isinstance}, 
+    {"chr",tpy_chr}, {"save",tp_save},
     {"load",tp_load}, {"read",tp_load},
-    {"fpack",tp_fpack}, {"funpack", tp_funpack},
-    {"abs",tp_abs},
-    {"int",tp_int}, {"eval",tp_eval_}, {"exec",tp_exec_}, {"exists",tp_exists},
-    {"mtime",tp_mtime}, {"number",tp_float}, {"round",tp_round},
-    {"ord",tp_ord}, {"merge",tpy_dict_merge}, {"getraw",tp_getraw},
-    {"setmeta",tp_setmeta}, {"getmeta",tp_getmeta},
-    {"bool", tp_builtins_bool}, {"join", tp_builtins_join}, {"repr", tp_repr2},
+    {"fpack",tpy_fpack}, {"funpack", tpy_funpack},
+    {"abs",tpy_abs},
+    {"int",tpy_int}, {"eval",tp_eval_}, {"exec",tp_exec_}, {"exists",tpy_exists},
+    {"mtime",tpy_mtime}, {"number",tpy_float}, {"round",tpy_round},
+    {"ord",tpy_ord}, {"merge",tpy_dict_merge}, {"getraw",tpy_getraw},
+    {"setmeta",tpy_setmeta}, {"getmeta",tpy_getmeta},
+    {"bool", tpy_bool}, {"join", tpy_join}, {"repr", tpy_repr},
     #ifdef TP_SANDBOX
-    {"sandbox",tp_sandbox_},
+    {"sandbox",tpy_sandbox_},
     #endif
     {0,0},
     };
@@ -342,11 +343,11 @@ void _tp_import_builtins(TP) {
     }
     
     o = tp_object(tp);
-    tp_set(tp,o,tp_string("__call__"),tp_fnc(tp,tp_object_call));
-    tp_set(tp,o,tp_string("__new__"),tp_fnc(tp,tp_object_new));
-    tp_set(tp,builtins,tp_string("object"),o);
+    tp_set(tp, o, tp_string("__call__"), tp_fnc(tp, tpy_object_call));
+    tp_set(tp, o, tp_string("__new__"),  tp_fnc(tp, tpy_object_new));
+    tp_set(tp, builtins, tp_string("object"), o);
 
-    tp_set(tp,tp->modules, tp_string("tinypy.language.builtins"), builtins);
+    tp_set(tp, tp->modules, tp_string("tinypy.language.builtins"), builtins);
     tp->builtins = builtins;
 }
 

@@ -391,7 +391,7 @@ tp_obj tp_string_n(char const * v, int n) {
     return r;
 }
 
-tp_obj tp_copy(TP);
+tp_obj tpy_copy(TP);
 
 tp_obj tp_params(TP);
 tp_obj tp_params_n(TP, int n, tp_obj argv[]);
@@ -399,6 +399,7 @@ tp_obj tp_params_v(TP, int n, ...);
 
 tp_vm *tp_init(int argc, char *argv[]);
 void tp_deinit(TP);
+
 tp_obj tp_import(TP, const char * fname, const char * name, void *codes, int len);
 tp_obj tp_ez_call(TP, const char *mod, const char *fnc, tp_obj params);
 void tp_run(TP,int cur);
@@ -409,10 +410,11 @@ tp_obj tp_save(TP);
 
 tp_obj tp_list(TP);
 tp_obj tp_dict(TP);
-tp_obj tp_fnc(TP,tp_obj v(TP));
+tp_obj tp_fnc(TP, tp_obj v(TP));
 
-void _tp_import_builtins(TP);
-void _tp_import_compiler(TP);
-void _tp_import_corelib(TP);
+void tp_module_sys_init(TP, int argc, char * argv[]);
+void tp_module_builtins_init(TP);
+void tp_module_compiler_init(TP);
+void tp_module_corelib_init(TP);
 
 #endif

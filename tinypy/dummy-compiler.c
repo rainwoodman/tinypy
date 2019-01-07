@@ -1,3 +1,3 @@
 #include "interp.h"
 
-void _tp_import_compiler(TP) { }
+void tp_module_compiler_init(TP) { }

@@ -438,7 +438,7 @@ tp_obj tp_eval_(TP) {
     return tp->last_result;
 }
 
-void _tp_import_sys(TP, int argc, char * argv[]) {
+void tp_module_sys_init (TP, int argc, char * argv[]) {
     tp_obj sys = tp_dict(tp);
     tp_obj args = tp_args(tp,argc,argv);
     tp_set(tp, sys, tp_string("version"), tp_string("tinypy 1.2+SVN"));
@@ -457,10 +457,10 @@ void _tp_import_sys(TP, int argc, char * argv[]) {
  */
 tp_vm *tp_init(int argc, char *argv[]) {
     tp_vm *tp = _tp_init();
-    _tp_import_sys(tp, argc, argv);
-    _tp_import_builtins(tp);
-    _tp_import_corelib(tp);
-    _tp_import_compiler(tp);
+    tp_module_sys_init(tp, argc, argv);
+    tp_module_builtins_init(tp);
+    tp_module_corelib_init(tp);
+    tp_module_compiler_init(tp);
     return tp;
 }
 
