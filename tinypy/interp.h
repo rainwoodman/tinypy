@@ -241,8 +241,7 @@ tp_obj tp_add(TP,tp_obj a, tp_obj b) ;
 tp_obj tp_mul(TP, tp_obj a, tp_obj b);
 int    tp_hash(TP, tp_obj v);
 
-tp_obj tp_printf(TP,char const *fmt,...);
-tp_obj tp_track(TP,tp_obj);
+tp_obj tp_track(TP, tp_obj);
 void   tp_grey(TP,tp_obj);
 tp_obj tp_call(TP, tp_obj fnc, tp_obj params);
 
@@ -391,8 +390,6 @@ tp_obj tp_string_n(char const * v, int n) {
     return r;
 }
 
-tp_obj tpy_copy(TP);
-
 tp_obj tp_params(TP);
 tp_obj tp_params_n(TP, int n, tp_obj argv[]);
 tp_obj tp_params_v(TP, int n, ...);
@@ -403,15 +400,21 @@ void tp_deinit(TP);
 tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code);
 tp_obj tp_import_from_buffer(TP, const char * fname, const char * name, void *codes, int len);
 tp_obj tp_ez_call(TP, const char *mod, const char *fnc, tp_obj params);
-void tp_run(TP,int cur);
+tp_obj tp_eval_from_cstr(TP, const char *text, tp_obj globals);
+tp_obj tp_exec(TP, tp_obj code, tp_obj globals);
+tp_obj tp_compile(TP, tp_obj text, tp_obj fname);
 
-void tp_print(TP);
-tp_obj tp_load(TP);
-tp_obj tp_save(TP);
+void   tp_run(TP, int cur);
+
+tp_obj tpy_copy(TP);
+tp_obj tpy_print(TP);
+tp_obj tpy_load(TP);
+tp_obj tpy_save(TP);
 
 tp_obj tp_list(TP);
 tp_obj tp_dict(TP);
 tp_obj tp_fnc(TP, tp_obj v(TP));
+
 
 void tp_module_sys_init(TP, int argc, char * argv[]);
 void tp_module_builtins_init(TP);

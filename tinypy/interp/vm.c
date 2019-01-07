@@ -147,7 +147,7 @@ tp_obj tp_call(TP,tp_obj self, tp_obj params) {
         tp_run(tp,tp->cur);
         return dest;
     }
-    tp_params_v(tp,1,self); tp_print(tp);
+    tp_params_v(tp,1, self); tpy_print(tp);
     tp_raise(tp_None,tp_string("(tp_call) TypeError: object is not callable"));
 }
 
@@ -295,7 +295,7 @@ int tp_step(TP) {
         case TP_IRETURN: tp_return(tp,RA); SR(0); break;
         case TP_IRAISE: _tp_raise(tp,RA); SR(0); break;
         case TP_IDEBUG:
-            tp_params_v(tp,3,tp_string("DEBUG:"),tp_number(VA),RA); tp_print(tp);
+            tp_params_v(tp,3,tp_string("DEBUG:"),tp_number(VA),RA); tpy_print(tp);
             break;
         case TP_INONE: RA = tp_None; break;
         case TP_ILINE: {
@@ -348,7 +348,7 @@ tp_obj tp_ez_call(TP, const char *mod, const char *fnc, tp_obj params) {
     return tp_call(tp,tmp,params);
 }
 
-void tp_print(TP) {
+tp_obj tpy_print(TP) {
     int n = 0;
     tp_obj e;
     TP_LOOP(e)
@@ -357,6 +357,7 @@ void tp_print(TP) {
         n += 1;
     TP_END;
     tp->echo("\n", -1);
+    return tp_None;
 }
 
 
@@ -401,7 +402,7 @@ tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
     return r;
 }
 
-tp_obj tp_eval(TP, const char *text, tp_obj globals) {
+tp_obj tp_eval_from_cstr(TP, const char *text, tp_obj globals) {
     tp_obj code = tp_compile(tp,tp_string(text),tp_string("<eval>"));
     tp_exec(tp,code,globals);
     return tp->last_result;

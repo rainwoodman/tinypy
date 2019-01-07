@@ -2,11 +2,6 @@
  * Builtin tinypy functions.
  */
 
-tp_obj tpy_print(TP) {
-    tp_print(tp);
-    return tp_None;
-}
-
 tp_obj tpy_bind(TP) {
     tp_obj r = TP_TYPE(TP_FNC);
     tp_obj self = TP_OBJ();
