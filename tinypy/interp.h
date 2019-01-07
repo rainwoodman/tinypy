@@ -49,39 +49,6 @@ enum {
 
 typedef double tp_num;
 
-typedef struct tp_number_ {
-    int type;
-    tp_num val;
-} tp_number_;
-typedef struct tp_string_ {
-    int type;
-    struct _tp_string *info;
-    char const *val;
-    int len;
-} tp_string_;
-
-typedef struct tp_list_ {
-    int type;
-    struct _tp_list *val;
-} tp_list_;
-typedef struct tp_dict_ {
-    int type;
-    struct _tp_dict *val;
-    int dtype;
-} tp_dict_;
-typedef struct tp_fnc_ {
-    int type;
-    struct _tp_fnc *info;
-    int ftype;
-    void *cfnc;
-} tp_fnc_;
-typedef struct tp_data_ {
-    int type;
-    struct _tp_data *info;
-    void *val;
-    int magic;
-} tp_data_;
-
 /* Type: tp_obj
  * Tinypy's object representation.
  * 
@@ -106,13 +73,13 @@ typedef struct tp_data_ {
  */
 typedef union tp_obj {
     int type;
-    tp_number_ number;
     struct { int type; int *data; } gci;
-    tp_string_ string;
-    tp_dict_ dict;
-    tp_list_ list;
-    tp_fnc_ fnc;
-    tp_data_ data;
+    struct { int type; tp_num val; } number;
+    struct { int type; struct _tp_string *info; char const *val; int len; } string;
+    struct { int type; struct _tp_list *val; } list;
+    struct { int type; struct _tp_dict *val; int dtype; } dict;
+    struct { int type; struct _tp_fnc *info; int ftype; void *cfnc; } fnc;
+    struct { int type; struct _tp_data *info; void *val; int magic; } data;
 } tp_obj;
 
 typedef struct _tp_string {
@@ -120,18 +87,21 @@ typedef struct _tp_string {
     int len;
     char s[1];
 } _tp_string;
+
 typedef struct _tp_list {
     int gci;
     tp_obj *items;
     int len;
     int alloc;
 } _tp_list;
+
 typedef struct tp_item {
     int used;
     int hash;
     tp_obj key;
     tp_obj val;
 } tp_item;
+
 typedef struct _tp_dict {
     int gci;
     tp_item *items;
@@ -142,13 +112,13 @@ typedef struct _tp_dict {
     int used;
     tp_obj meta;
 } _tp_dict;
+
 typedef struct _tp_fnc {
     int gci;
     tp_obj self;
     tp_obj globals;
     tp_obj code;
 } _tp_fnc;
-
 
 typedef union tp_code {
     unsigned char i;
@@ -302,12 +272,15 @@ tp_obj tp_add(TP,tp_obj a, tp_obj b) ;
  * use <tp_string_t> or <tp_string_slice> to create a string where tinypy
  * manages storage for you.
  */
-tp_inline static tp_obj tp_string(char const *v) {
-    tp_obj val;
-    tp_string_ s = {TP_STRING, 0, v, 0};
-    s.len = strlen(v);
-    val.string = s;
-    return val;
+/* FIXME: rename this tp tp_string_const; */
+tp_inline static
+tp_obj tp_string(char const *v) {
+    tp_obj r;
+    r.string.type = TP_STRING;
+    r.string.info = NULL;
+    r.string.val = v;
+    r.string.len = strlen(v);
+    return r;
 }
 
 #define TP_CSTR_LEN 256
@@ -326,11 +299,9 @@ tp_inline static void tp_cstr(TP,tp_obj v, char *s, int l) {
 
 #define TP_OBJ() (tp_get(tp,tp->params,tp_None))
 tp_inline static tp_obj tp_type(TP,int t,tp_obj v) {
-    if (v.type != t) { tp_raise(tp_None,tp_string("(tp_type) TypeError: unexpected type")); }
+    if (v.type != t) { tp_raise(tp_None, tp_string("(tp_type) TypeError: unexpected type")); }
     return v;
 }
-
-
 
 #define TP_NO_LIMIT 0
 #define TP_TYPE(t) tp_type(tp,t,TP_OBJ())
@@ -391,11 +362,14 @@ tp_inline static void tp_echo(TP,tp_obj e) {
  * use for the string object. The *note* also applies for this function, as the
  * string reference and length are kept, but no actual substring is stored.
  */
-tp_inline static tp_obj tp_string_n(char const *v,int n) {
-    tp_obj val;
-    tp_string_ s = {TP_STRING, 0,v,n};
-    val.string = s;
-    return val;
+tp_inline static
+tp_obj tp_string_n(char const * v, int n) {
+    tp_obj r;
+    r.string.type = TP_STRING;
+    r.string.info = NULL;
+    r.string.val = v;
+    r.string.len = n;
+    return r;
 }
 
 tp_obj tp_copy(TP);
