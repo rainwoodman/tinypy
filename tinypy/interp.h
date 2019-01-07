@@ -285,26 +285,37 @@ tp_obj tp_string(char const *v) {
 
 #define TP_CSTR_LEN 256
 
-tp_inline static void tp_cstr(TP,tp_obj v, char *s, int l) {
+/* Function: tp_cstr
+ *
+ * Fill a C string from a tinypy string.
+ *
+ * s must be a buffer at least can hold v.string.len + 1 bytes
+ */
+tp_inline static
+void tp_cstr(TP, tp_obj v, char *s, int l) {
     if (v.type != TP_STRING) { 
-        tp_raise(,tp_string("(tp_cstr) TypeError: value not a string"));
+        tp_raise( , tp_string("(tp_cstr) TypeError: value not a string"));
     }
-    if (v.string.len >= l) {
-        tp_raise(,tp_string("(tp_cstr) TypeError: value too long"));
+    if (v.string.len + 1 >= l) {
+        tp_raise( , tp_string("(tp_cstr) TypeError: value too long"));
     }
-    memset(s,0,l);
-    memcpy(s,v.string.val,v.string.len);
+    memset(s, 0, v.string.len + 1);
+    memcpy(s, v.string.val, v.string.len);
 }
 
 
 #define TP_OBJ() (tp_get(tp,tp->params,tp_None))
-tp_inline static tp_obj tp_type(TP,int t,tp_obj v) {
-    if (v.type != t) { tp_raise(tp_None, tp_string("(tp_type) TypeError: unexpected type")); }
+tp_inline static
+tp_obj tp_check_type(TP,int t, tp_obj v) {
+    if (v.type != t) {
+        tp_raise(tp_None,
+            tp_string("(tp_check_type) TypeError: unexpected type"));
+    }
     return v;
 }
 
 #define TP_NO_LIMIT 0
-#define TP_TYPE(t) tp_type(tp,t,TP_OBJ())
+#define TP_TYPE(t) tp_check_type(tp,t,TP_OBJ())
 #define TP_NUM() (TP_TYPE(TP_NUMBER).number.val)
 /* #define TP_STR() (TP_CSTR(TP_TYPE(TP_STRING))) */
 #define TP_STR() (TP_TYPE(TP_STRING))
