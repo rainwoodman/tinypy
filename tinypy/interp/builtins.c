@@ -62,7 +62,7 @@ tp_obj tpy_range(TP) {
     }
     if (c != 0) {
         for (i=a; (c>0) ? i<b : i>b; i+=c) {
-            _tpi_list_append(tp, r.list.val, tp_number(i));
+            tpi_list_append(tp, r.list.val, tp_number(i));
         }
     }
     return r;

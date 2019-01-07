@@ -9,10 +9,10 @@ void tp_grey(TP,tp_obj v) {
     if (v.type < TP_STRING || (!v.gci.data) || *v.gci.data) { return; }
     *v.gci.data = 1;
     if (v.type == TP_STRING || v.type == TP_DATA) {
-        _tpi_list_appendx(tp, tp->black, v);
+        tpi_list_appendx(tp, tp->black, v);
         return;
     }
-    _tpi_list_appendx(tp, tp->grey, v);
+    tpi_list_appendx(tp, tp->grey, v);
 }
 
 void tp_follow(TP,tp_obj v) {
@@ -26,7 +26,7 @@ void tp_follow(TP,tp_obj v) {
     if (type == TP_DICT) {
         int i;
         for (i=0; i<v.dict.val->len; i++) {
-            int n = _tpi_dict_next(tp,v.dict.val);
+            int n = tpi_dict_next(tp,v.dict.val);
             tp_grey(tp,v.dict.val->items[n].key);
             tp_grey(tp,v.dict.val->items[n].val);
         }
@@ -51,25 +51,25 @@ void tp_reset(TP) {
 }
 
 void tp_gc_init(TP) {
-    tp->white = _tpi_list_new(tp);
-    tp->grey = _tpi_list_new(tp);
-    tp->black = _tpi_list_new(tp);
+    tp->white = tpi_list_new(tp);
+    tp->grey = tpi_list_new(tp);
+    tp->black = tpi_list_new(tp);
     tp->steps = 0;
 }
 
 void tp_gc_deinit(TP) {
-    _tpi_list_free(tp, tp->white);
-    _tpi_list_free(tp, tp->grey);
-    _tpi_list_free(tp, tp->black);
+    tpi_list_free(tp, tp->white);
+    tpi_list_free(tp, tp->grey);
+    tpi_list_free(tp, tp->black);
 }
 
 void tp_delete(TP,tp_obj v) {
     int type = v.type;
     if (type == TP_LIST) {
-        _tpi_list_free(tp, v.list.val);
+        tpi_list_free(tp, v.list.val);
         return;
     } else if (type == TP_DICT) {
-        _tpi_dict_free(tp, v.dict.val);
+        tpi_dict_free(tp, v.dict.val);
         return;
     } else if (type == TP_STRING) {
         tp_free(tp, v.string.info);
@@ -103,9 +103,9 @@ void _tp_gcinc(TP) {
     if (!tp->grey->len) {
         return;
     }
-    v = _tpi_list_pop(tp, tp->grey, tp->grey->len-1, "_tp_gcinc");
+    v = tpi_list_pop(tp, tp->grey, tp->grey->len-1, "_tp_gcinc");
     tp_follow(tp,v);
-    _tpi_list_appendx(tp, tp->black, v);
+    tpi_list_appendx(tp, tp->black, v);
 }
 
 void tp_full(TP) {

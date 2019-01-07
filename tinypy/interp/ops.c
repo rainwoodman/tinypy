@@ -40,10 +40,10 @@ tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
     int type = self.type;
     if(type == TP_DICT) {
         if(tp_has(tp, visited, tp_data(tp, 0, self.dict.val)).number.val) return tp_string("{...}");
-        _tpi_list_append(tp, visited.list.val, tp_data(tp, 0, self.dict.val));
+        tpi_list_append(tp, visited.list.val, tp_data(tp, 0, self.dict.val));
     } else if(type == TP_LIST) {
         if(tp_has(tp, visited, tp_data(tp, 0, self.list.val)).number.val) return tp_string("[...]");
-        _tpi_list_append(tp, visited.list.val, tp_data(tp, 0, self.list.val));
+        tpi_list_append(tp, visited.list.val, tp_data(tp, 0, self.list.val));
     }
     tp_obj result = tp_None;
     if (type == TP_STRING) { 
@@ -85,7 +85,7 @@ tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
         result = tp_string("<?>");
     }
     if(type == TP_DICT || type == TP_LIST) {
-        _tpi_list_pop(tp, visited.list.val, visited.list.val->len - 1, "visited list is empty");
+        tpi_list_pop(tp, visited.list.val, visited.list.val->len - 1, "visited list is empty");
     }
     return result;
 }
@@ -145,14 +145,14 @@ int tp_true(TP,tp_obj v) {
 tp_obj tp_has(TP,tp_obj self, tp_obj k) {
     int type = self.type;
     if (type == TP_DICT) {
-        if (_tpi_dict_find(tp, self.dict.val, k) != -1) {
+        if (tpi_dict_find(tp, self.dict.val, k) != -1) {
             return tp_True;
         }
         return tp_False;
     } else if (type == TP_STRING && k.type == TP_STRING) {
         return tp_number(_tp_str_index(self,k)!=-1);
     } else if (type == TP_LIST) {
-        return tp_number(_tpi_list_find(tp,self.list.val,k)!=-1);
+        return tp_number(tpi_list_find(tp,self.list.val,k)!=-1);
     }
     tp_raise(tp_None,tp_string("(tp_has) TypeError: iterable argument required"));
 }
@@ -167,7 +167,7 @@ tp_obj tp_has(TP,tp_obj self, tp_obj k) {
 void tp_del(TP,tp_obj self, tp_obj k) {
     int type = self.type;
     if (type == TP_DICT) {
-        _tpi_dict_del(tp, self.dict.val,k, "tp_del");
+        tpi_dict_del(tp, self.dict.val,k, "tp_del");
         return;
     }
     tp_raise(,tp_string("(tp_del) TypeError: object does not support item deletion"));
@@ -200,7 +200,7 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
     int type = self.type;
     if (type == TP_LIST || type == TP_STRING) { return tp_get(tp,self,k); }
     if (type == TP_DICT && k.type == TP_NUMBER) {
-        return self.dict.val->items[_tpi_dict_next(tp,self.dict.val)].key;
+        return self.dict.val->items[tpi_dict_next(tp,self.dict.val)].key;
     }
     tp_raise(tp_None,tp_string("(tp_iter) TypeError: iteration over non-sequence"));
 }
@@ -223,13 +223,13 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
             return tp_call(tp,meta,tp_params_v(tp,1,k));
         TP_META_END;
         if (self.dict.dtype && _tp_lookup(tp,self,k,&r)) { return r; }
-        return _tpi_dict_get(tp, self.dict.val,k, "tp_get");
+        return tpi_dict_get(tp, self.dict.val,k, "tp_get");
     } else if (type == TP_LIST) {
         if (k.type == TP_NUMBER) {
             int l = tp_len(tp,self).number.val;
             int n = k.number.val;
             n = (n<0?l+n:n);
-            return _tpi_list_get(tp, self.list.val, n, "tp_get");
+            return tpi_list_get(tp, self.list.val, n, "tp_get");
         } else if (k.type == TP_STRING) {
             /* FIXME: move these to the prototype object of list, after
              * adding meta to all objects */
@@ -250,7 +250,7 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
                 return r;
             }
         } else if (k.type == TP_NONE) {
-            return _tpi_list_pop(tp, self.list.val, 0, "tp_get");
+            return tpi_list_pop(tp, self.list.val, 0, "tp_get");
         }
     } else if (type == TP_STRING) {
         if (k.type == TP_NUMBER) {
@@ -305,7 +305,7 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
  */
 int tp_iget(TP,tp_obj *r, tp_obj self, tp_obj k) {
     if (self.type == TP_DICT) {
-        int n = _tpi_dict_find(tp, self.dict.val, k);
+        int n = tpi_dict_find(tp, self.dict.val, k);
         if (n == -1) { return 0; }
         *r = self.dict.val->items[n].val;
         tp_grey(tp,*r);
@@ -331,20 +331,20 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
             return;
         TP_META_END;
 
-        _tpi_dict_set(tp, self.dict.val, k, v);
+        tpi_dict_set(tp, self.dict.val, k, v);
         return;
     } else if (type == TP_LIST) {
         if (k.type == TP_NUMBER) {
-            _tpi_list_set(tp, self.list.val, k.number.val, v, "tp_set");
+            tpi_list_set(tp, self.list.val, k.number.val, v, "tp_set");
             return;
         } else if (k.type == TP_NONE) {
-            _tpi_list_append(tp, self.list.val, v);
+            tpi_list_append(tp, self.list.val, v);
             return;
         } else if (k.type == TP_STRING) {
             /* WTF is this syntax? a['*'] = b will extend a by b ??
              * FIXME: remove this support. Use a + b */
             if (tp_cmp(tp, tp_string("*"), k) == 0) {
-                _tpi_list_extend(tp, self.list.val, v.list.val);
+                tpi_list_extend(tp, self.list.val, v.list.val);
                 return;
             }
         }
@@ -405,7 +405,7 @@ int tp_cmp(TP, tp_obj a, tp_obj b) {
         case TP_NONE: return 0;
         case TP_NUMBER: return _tp_sign(a.number.val-b.number.val);
         case TP_STRING: return _tp_string_cmp(&a, &b);
-        case TP_LIST: return _tpi_list_cmp(tp, a.list.val, b.list.val);
+        case TP_LIST: return tpi_list_cmp(tp, a.list.val, b.list.val);
         case TP_DICT: return a.dict.val - b.dict.val;
         case TP_FNC: return a.fnc.info - b.fnc.info;
         case TP_DATA: return (char*)a.data.val - (char*)b.data.val;

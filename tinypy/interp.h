@@ -345,11 +345,11 @@ tp_obj tp_check_type(TP,int t, tp_obj v) {
  * >     TP_END
  * > }
  */
-tp_obj _tpi_list_get(TP, tpi_list *self, int k, const char *error);
+tp_obj tpi_list_get(TP, tpi_list *self, int k, const char *error);
 #define TP_LOOP(e) \
     int __l = tp->params.list.val->len; \
     int __i; for (__i=0; __i<__l; __i++) { \
-        (e) = _tpi_list_get(tp, tp->params.list.val, __i, "TP_LOOP");
+        (e) = tpi_list_get(tp, tp->params.list.val, __i, "TP_LOOP");
 #define TP_END \
     }
 

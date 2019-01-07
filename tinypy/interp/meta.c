@@ -1,5 +1,5 @@
 int _tp_lookup_(TP, tp_obj self, tp_obj k, tp_obj *meta, int depth) {
-    int n = _tpi_dict_find(tp, self.dict.val, k);
+    int n = tpi_dict_find(tp, self.dict.val, k);
     if (n != -1) {
         *meta = self.dict.val->items[n].val;
         return 1;
