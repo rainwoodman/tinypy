@@ -12,6 +12,10 @@ void _tpi_list_set(TP, tpi_list *self,int k, tp_obj v, const char *error) {
     tp_grey(tp,v);
 }
 
+tpi_list *_tpi_list_new(TP) {
+    return (tpi_list*) tp_malloc(tp, sizeof(tpi_list));
+}
+
 void _tpi_list_free(TP, tpi_list *self) {
     tp_free(tp, self->items);
     tp_free(tp, self);
@@ -68,16 +72,30 @@ int _tpi_list_find(TP,tpi_list *self, tp_obj v) {
     return -1;
 }
 
-tpi_list *_tp_list_new(TP) {
-    return (tpi_list*)tp_malloc(tp, sizeof(tpi_list));
+int _tpi_list_cmp(TP, tpi_list * a, tpi_list * b)
+{
+    int n, v;
+    for(n=0; n<_tp_min(a->len, b->len); n++) {
+        tp_obj aa = a->items[n];
+        tp_obj bb = b->items[n];
+        if (aa.type == TP_LIST && bb.type == TP_LIST) {
+            v = _tpi_list_cmp(tp, aa.list.val, bb.list.val);
+        } else {
+            v = tp_cmp(tp, aa, bb);
+        }
+        if (v) { return v; }
+    }
+    return a->len - b->len;
 }
+
+
 
 tp_obj _tp_list_copy(TP, tp_obj rr) {
     tp_check_type(tp, TP_LIST, rr);
 
     tp_obj val = {TP_LIST};
     tpi_list *o = rr.list.val;
-    tpi_list *r = _tp_list_new(tp);
+    tpi_list *r = _tpi_list_new(tp);
     *r = *o; r->gci = 0;
     r->alloc = o->len;
     r->items = (tp_obj*)tp_malloc(tp, sizeof(tp_obj)*o->len);
@@ -89,8 +107,7 @@ tp_obj _tp_list_copy(TP, tp_obj rr) {
 tp_obj _tp_list_add(TP, tp_obj a, tp_obj b)
 {
     tp_obj r;
-    tp_params_v(tp, 1, a);
-    r = tp_copy(tp);
+    r = _tp_list_copy(tp, a);
     _tpi_list_extend(tp, r.list.val, b.list.val);
     return r;
 }
@@ -98,31 +115,13 @@ tp_obj _tp_list_add(TP, tp_obj a, tp_obj b)
 tp_obj _tp_list_mul(TP, tp_obj a, int n)
 {
     tp_obj r;
-    tp_params_v(tp, 1, a);
-    r = tp_copy(tp);
+    r = _tp_list_copy(tp, a);
     int i;
     for (i = 1; i < n; i ++) {
         _tpi_list_extend(tp, r.list.val, a.list.val);
     }
     return r;
 }
-
-int _tp_list_cmp(TP, tpi_list * a, tpi_list * b)
-{
-    int n, v;
-    for(n=0; n<_tp_min(a->len, b->len); n++) {
-        tp_obj aa = a->items[n];
-        tp_obj bb = b->items[n];
-        if (aa.type == TP_LIST && bb.type == TP_LIST) {
-            v = _tp_list_cmp(tp, aa.list.val, bb.list.val);
-        } else {
-            v = tp_cmp(tp, aa, bb);
-        }
-        if (v) { return v; }
-    }
-    return a->len - b->len;
-}
-
 
 /******
  * Functions below take arguments from the current python scope.
@@ -167,13 +166,13 @@ tp_obj tp_list_extend(TP) {
 
 tp_obj tp_list_nt(TP) {
     tp_obj r = {TP_LIST};
-    r.list.val = _tp_list_new(tp);
+    r.list.val = _tpi_list_new(tp);
     return r;
 }
 
 tp_obj tp_list(TP) {
     tp_obj r = {TP_LIST};
-    r.list.val = _tp_list_new(tp);
+    r.list.val = _tpi_list_new(tp);
     return tp_track(tp,r);
 }
 

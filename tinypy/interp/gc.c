@@ -51,9 +51,9 @@ void tp_reset(TP) {
 }
 
 void tp_gc_init(TP) {
-    tp->white = _tp_list_new(tp);
-    tp->grey = _tp_list_new(tp);
-    tp->black = _tp_list_new(tp);
+    tp->white = _tpi_list_new(tp);
+    tp->grey = _tpi_list_new(tp);
+    tp->black = _tpi_list_new(tp);
     tp->steps = 0;
 }
 

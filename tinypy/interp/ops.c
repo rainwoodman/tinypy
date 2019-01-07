@@ -402,7 +402,7 @@ int tp_cmp(TP,tp_obj a, tp_obj b) {
         case TP_NONE: return 0;
         case TP_NUMBER: return _tp_sign(a.number.val-b.number.val);
         case TP_STRING: return _tp_string_cmp(&a, &b);
-        case TP_LIST: return _tp_list_cmp(tp, a.list.val, b.list.val);
+        case TP_LIST: return _tpi_list_cmp(tp, a.list.val, b.list.val);
         case TP_DICT: return a.dict.val - b.dict.val;
         case TP_FNC: return a.fnc.info - b.fnc.info;
         case TP_DATA: return (char*)a.data.val - (char*)b.data.val;
