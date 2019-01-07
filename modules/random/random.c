@@ -217,7 +217,7 @@ static tp_obj random_seed(TP)
     } else if (arg.type == TP_STRING) {
         unsigned long seed;
         
-        seed = (unsigned long) tp_obj_hash(tp, arg);
+        seed = (unsigned long) tp_hash(tp, arg);
         init_genrand(&_gRandom, seed);
         _gRandom.has_seed = 1;
     } else {

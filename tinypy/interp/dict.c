@@ -57,11 +57,11 @@ int _tpi_dict_hashfind(TP, tpi_dict * self, int hash, tp_obj k) {
     return -1;
 }
 int _tpi_dict_find(TP, tpi_dict * self, tp_obj k) {
-    return _tpi_dict_hashfind(tp, self, tp_obj_hash(tp, k), k);
+    return _tpi_dict_hashfind(tp, self, tp_hash(tp, k), k);
 }
 
 void _tpi_dict_setx(TP, tpi_dict * self, tp_obj k, tp_obj v) {
-    int hash = tp_obj_hash(tp, k);
+    int hash = tp_hash(tp, k);
     int n = _tpi_dict_hashfind(tp, self, hash, k);
     if (n == -1) {
         if (self->len >= (self->alloc/2)) {

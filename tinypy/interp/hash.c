@@ -10,7 +10,7 @@ int _tpi_lua_hash(void const *v,int l) {
     return h;
 }
 
-int tp_obj_hash(TP, tp_obj v) {
+int tp_hash(TP, tp_obj v) {
     switch (v.type) {
         case TP_NONE: return 0;
         case TP_NUMBER: return _tpi_lua_hash(&v.number.val, sizeof(tp_num));
@@ -22,7 +22,7 @@ int tp_obj_hash(TP, tp_obj v) {
             for(n=0; n<v.list.val->len; n++) {
                 tp_obj vv = v.list.val->items[n];
                 r += (vv.type != TP_LIST)?
-                      tp_obj_hash(tp, v.list.val->items[n])
+                      tp_hash(tp, v.list.val->items[n])
                     : _tpi_lua_hash(&vv.list.val, sizeof(void*));
             }
             return r;
@@ -30,6 +30,6 @@ int tp_obj_hash(TP, tp_obj v) {
         case TP_FNC: return _tpi_lua_hash(&v.fnc.info, sizeof(void*));
         case TP_DATA: return _tpi_lua_hash(&v.data.val, sizeof(void*));
     }
-    tp_raise(0, tp_string("(tp_obj_hash) TypeError: value unhashable"));
+    tp_raise(0, tp_string("(tp_hash) TypeError: value unhashable"));
 }
 

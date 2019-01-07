@@ -215,7 +215,7 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
  * As a special case, if self is a list, self[None] will return the first
  * element in the list and subsequently remove it from the list.
  */
-tp_obj tp_get(TP,tp_obj self, tp_obj k) {
+tp_obj tp_get(TP, tp_obj self, tp_obj k) {
     int type = self.type;
     tp_obj r;
     if (type == TP_DICT) {
@@ -399,7 +399,7 @@ tp_obj tp_len(TP,tp_obj self) {
     tp_raise(tp_None,tp_string("(tp_len) TypeError: len() of unsized object"));
 }
 
-int tp_cmp(TP,tp_obj a, tp_obj b) {
+int tp_cmp(TP, tp_obj a, tp_obj b) {
     if (a.type != b.type) { return a.type-b.type; }
     switch(a.type) {
         case TP_NONE: return 0;

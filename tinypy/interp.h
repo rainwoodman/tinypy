@@ -225,21 +225,26 @@ void tp_sandbox(TP, double, unsigned long);
 void tp_time_update(TP);
 void tp_mem_update(TP);
 
-void tp_run(TP,int cur);
-void tp_set(TP,tp_obj,tp_obj,tp_obj);
-tp_obj tp_get(TP,tp_obj,tp_obj);
-tp_obj tp_has(TP,tp_obj self, tp_obj k);
-tp_obj tp_len(TP,tp_obj);
-void tp_del(TP,tp_obj,tp_obj);
-tp_obj tp_str(TP,tp_obj);
-int tp_true(TP,tp_obj);
-int tp_cmp(TP,tp_obj,tp_obj);
-void _tp_raise(TP,tp_obj);
+void   tp_run(TP,int cur);
+
+void   tp_set(TP, tp_obj, tp_obj, tp_obj);
+tp_obj tp_get(TP, tp_obj, tp_obj);
+tp_obj tp_has(TP, tp_obj self, tp_obj k);
+tp_obj tp_len(TP, tp_obj);
+
+void   tp_del(TP, tp_obj, tp_obj);
+tp_obj tp_str(TP, tp_obj);
+tp_obj tp_repr(TP, tp_obj);
+int    tp_true(TP, tp_obj);
+int    tp_cmp(TP, tp_obj, tp_obj);
+tp_obj tp_add(TP,tp_obj a, tp_obj b) ;
+tp_obj tp_mul(TP, tp_obj a, tp_obj b);
+int    tp_hash(TP, tp_obj v);
+
 tp_obj tp_printf(TP,char const *fmt,...);
 tp_obj tp_track(TP,tp_obj);
-void tp_grey(TP,tp_obj);
+void   tp_grey(TP,tp_obj);
 tp_obj tp_call(TP, tp_obj fnc, tp_obj params);
-tp_obj tp_add(TP,tp_obj a, tp_obj b) ;
 
 /* __func__ __VA_ARGS__ __FILE__ __LINE__ */
 
@@ -249,14 +254,14 @@ tp_obj tp_add(TP,tp_obj a, tp_obj b) ;
  * This macro will return from the current function returning "r". The
  * remaining parameters are used to format the exception message.
  */
-/*
-#define tp_raise(r,fmt,...) { \
-    _tp_raise(tp,tp_printf(tp,fmt,__VA_ARGS__)); \
+void   _tp_raise(TP,tp_obj);
+#define tp_raise(r, obj) { \
+    _tp_raise(tp, obj); \
     return r; \
 }
-*/
-#define tp_raise(r,v) { \
-    _tp_raise(tp,v); \
+
+#define tp_raise_printf(r,fmt,...) { \
+    _tp_raise(tp, tp_printf(tp, fmt, __VA_ARGS__)); \
     return r; \
 }
 
@@ -405,8 +410,6 @@ tp_obj tp_save(TP);
 tp_obj tp_list(TP);
 tp_obj tp_dict(TP);
 tp_obj tp_fnc(TP,tp_obj v(TP));
-
-int tp_obj_hash(TP, tp_obj v);
 
 void _tp_import_builtins(TP);
 void _tp_import_compiler(TP);
