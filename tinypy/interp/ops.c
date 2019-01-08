@@ -330,8 +330,7 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
             tp_call(tp,meta,tp_params_v(tp,2,k,v));
             return;
         TP_META_END;
-
-        tpd_dict_hashset(tp, self.dict.val, tp_hash(tp, k), k, v);
+        tp_dict_set(tp, self, k, v);
         return;
     } else if (type == TP_LIST) {
         if (k.type == TP_NUMBER) {

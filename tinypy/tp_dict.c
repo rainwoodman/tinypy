@@ -4,7 +4,7 @@ tp_obj tp_dict_get(TP, tp_obj self, tp_obj k) {
 
     if (n < 0) {
         char * str = tp_cstr(tp, k);
-        tp_obj message = tp_printf_tracked(tp, "(tpd_dict_del) KeyError: %s", str);
+        tp_obj message = tp_printf_tracked(tp, "(tpd_dict_get) KeyError: %s (%d)", str, hash);
         tp_free(tp, str);
         tp_raise(tp_None, message);
     }
