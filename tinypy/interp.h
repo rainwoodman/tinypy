@@ -76,8 +76,8 @@ typedef union tp_obj {
     struct { int type; int *data; } gci;
     struct { int type; tp_num val; } number;
     struct { int type; struct _tp_string *info; char const *val; int len; } string;
-    struct { int type; struct tpi_list *val; } list;
-    struct { int type; struct tpi_dict *val; int dtype; } dict;
+    struct { int type; struct tpd_list *val; } list;
+    struct { int type; struct tpd_dict *val; int dtype; } dict;
     struct { int type; struct _tp_fnc *info; int ftype; void *cfnc; } fnc;
     struct { int type; struct _tp_data *info; void *val; int magic; } data;
 } tp_obj;
@@ -88,12 +88,12 @@ typedef struct _tp_string {
     char s[1];
 } _tp_string;
 
-typedef struct tpi_list {
+typedef struct tpd_list {
     int gci;
     tp_obj *items;
     int len;
     int alloc;
-} tpi_list;
+} tpd_list;
 
 typedef struct tp_item {
     int used;
@@ -102,7 +102,7 @@ typedef struct tp_item {
     tp_obj val;
 } tp_item;
 
-typedef struct tpi_dict {
+typedef struct tpd_dict {
     int gci;
     tp_item *items;
     int len;
@@ -111,7 +111,7 @@ typedef struct tpi_dict {
     int mask;
     int used;
     tp_obj meta;
-} tpi_dict;
+} tpd_dict;
 
 typedef struct _tp_fnc {
     int gci;
@@ -187,9 +187,9 @@ typedef struct tp_vm {
     int cur;
     void (*echo)(const char* data, int length);
     /* gc */
-    tpi_list *white;
-    tpi_list *grey;
-    tpi_list *black;
+    tpd_list *white;
+    tpd_list *grey;
+    tpd_list *black;
     int steps;
     /* sandbox */
     clock_t clocks;
@@ -345,11 +345,11 @@ tp_obj tp_check_type(TP,int t, tp_obj v) {
  * >     TP_END
  * > }
  */
-tp_obj tpi_list_get(TP, tpi_list *self, int k, const char *error);
+tp_obj tpd_list_get(TP, tpd_list *self, int k, const char *error);
 #define TP_LOOP(e) \
     int __l = tp->params.list.val->len; \
     int __i; for (__i=0; __i<__l; __i++) { \
-        (e) = tpi_list_get(tp, tp->params.list.val, __i, "TP_LOOP");
+        (e) = tpd_list_get(tp, tp->params.list.val, __i, "TP_LOOP");
 #define TP_END \
     }
 

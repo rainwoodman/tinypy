@@ -1,7 +1,7 @@
 /* File: Dict
  * Functions for dealing with dictionaries.
  */
-int tpi_lua_hash(void const *v,int l) {
+int tpd_lua_hash(void const *v,int l) {
     int i,step = (l>>5)+1;
     int h = l + (l >= 4?*(int*)v:0);
     for (i=l; i>=step; i-=step) {
@@ -13,9 +13,9 @@ int tpi_lua_hash(void const *v,int l) {
 int tp_hash(TP, tp_obj v) {
     switch (v.type) {
         case TP_NONE: return 0;
-        case TP_NUMBER: return tpi_lua_hash(&v.number.val, sizeof(tp_num));
-        case TP_STRING: return tpi_lua_hash(v.string.val, v.string.len);
-        case TP_DICT: return tpi_lua_hash(&v.dict.val, sizeof(void*));
+        case TP_NUMBER: return tpd_lua_hash(&v.number.val, sizeof(tp_num));
+        case TP_STRING: return tpd_lua_hash(v.string.val, v.string.len);
+        case TP_DICT: return tpd_lua_hash(&v.dict.val, sizeof(void*));
         case TP_LIST: {
             int r = v.list.val->len;
             int n;
@@ -23,12 +23,12 @@ int tp_hash(TP, tp_obj v) {
                 tp_obj vv = v.list.val->items[n];
                 r += (vv.type != TP_LIST)?
                       tp_hash(tp, v.list.val->items[n])
-                    : tpi_lua_hash(&vv.list.val, sizeof(void*));
+                    : tpd_lua_hash(&vv.list.val, sizeof(void*));
             }
             return r;
         }
-        case TP_FNC: return tpi_lua_hash(&v.fnc.info, sizeof(void*));
-        case TP_DATA: return tpi_lua_hash(&v.data.val, sizeof(void*));
+        case TP_FNC: return tpd_lua_hash(&v.fnc.info, sizeof(void*));
+        case TP_DATA: return tpd_lua_hash(&v.data.val, sizeof(void*));
     }
     tp_raise(0, tp_string("(tp_hash) TypeError: value unhashable"));
 }

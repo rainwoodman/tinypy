@@ -97,10 +97,10 @@ tp_obj tpy_str_split(TP) {
 
     int i;
     while ((i=_tp_str_index(v, d))!=-1) {
-        tpi_list_append(tp, r.list.val, tp_string_sub(tp, v, 0, i));
+        tpd_list_append(tp, r.list.val, tp_string_sub(tp, v, 0, i));
         v.string.val += i + d.string.len; v.string.len -= i + d.string.len;
     }
-    tpi_list_append(tp, r.list.val, tp_string_sub(tp, v, 0, v.string.len));
+    tpd_list_append(tp, r.list.val, tp_string_sub(tp, v, 0, v.string.len));
     return r;
 }
 

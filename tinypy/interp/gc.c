@@ -9,10 +9,10 @@ void tp_grey(TP,tp_obj v) {
     if (v.type < TP_STRING || (!v.gci.data) || *v.gci.data) { return; }
     *v.gci.data = 1;
     if (v.type == TP_STRING || v.type == TP_DATA) {
-        tpi_list_appendx(tp, tp->black, v);
+        tpd_list_appendx(tp, tp->black, v);
         return;
     }
-    tpi_list_appendx(tp, tp->grey, v);
+    tpd_list_appendx(tp, tp->grey, v);
 }
 
 void tp_follow(TP,tp_obj v) {
@@ -26,7 +26,7 @@ void tp_follow(TP,tp_obj v) {
     if (type == TP_DICT) {
         int i;
         for (i=0; i<v.dict.val->len; i++) {
-            int n = tpi_dict_next(tp,v.dict.val);
+            int n = tpd_dict_next(tp,v.dict.val);
             tp_grey(tp,v.dict.val->items[n].key);
             tp_grey(tp,v.dict.val->items[n].val);
         }
@@ -41,7 +41,7 @@ void tp_follow(TP,tp_obj v) {
 
 void tp_reset(TP) {
     int n;
-    tpi_list *tmp;
+    tpd_list *tmp;
     for (n=0; n<tp->black->len; n++) {
         *tp->black->items[n].gci.data = 0;
     }
@@ -51,25 +51,25 @@ void tp_reset(TP) {
 }
 
 void tp_gc_init(TP) {
-    tp->white = tpi_list_new(tp);
-    tp->grey = tpi_list_new(tp);
-    tp->black = tpi_list_new(tp);
+    tp->white = tpd_list_new(tp);
+    tp->grey = tpd_list_new(tp);
+    tp->black = tpd_list_new(tp);
     tp->steps = 0;
 }
 
 void tp_gc_deinit(TP) {
-    tpi_list_free(tp, tp->white);
-    tpi_list_free(tp, tp->grey);
-    tpi_list_free(tp, tp->black);
+    tpd_list_free(tp, tp->white);
+    tpd_list_free(tp, tp->grey);
+    tpd_list_free(tp, tp->black);
 }
 
 void tp_delete(TP,tp_obj v) {
     int type = v.type;
     if (type == TP_LIST) {
-        tpi_list_free(tp, v.list.val);
+        tpd_list_free(tp, v.list.val);
         return;
     } else if (type == TP_DICT) {
-        tpi_dict_free(tp, v.dict.val);
+        tpd_dict_free(tp, v.dict.val);
         return;
     } else if (type == TP_STRING) {
         tp_free(tp, v.string.info);
@@ -103,9 +103,9 @@ void _tp_gcinc(TP) {
     if (!tp->grey->len) {
         return;
     }
-    v = tpi_list_pop(tp, tp->grey, tp->grey->len-1, "_tp_gcinc");
+    v = tpd_list_pop(tp, tp->grey, tp->grey->len-1, "_tp_gcinc");
     tp_follow(tp,v);
-    tpi_list_appendx(tp, tp->black, v);
+    tpd_list_appendx(tp, tp->black, v);
 }
 
 void tp_full(TP) {
