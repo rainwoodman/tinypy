@@ -196,16 +196,16 @@ enum {
 
 
 int tp_step(TP) {
-    tp_frame_ *f = &tp->frames[tp->cur];
+    tpd_frame *f = &tp->frames[tp->cur];
     tp_obj *regs = f->regs;
-    tp_code *cur = f->cur;
+    tpd_code *cur = f->cur;
     while(1) {
     #ifdef TP_SANDBOX
     tp_bounds(tp,cur,1);
     #endif
-    tp_code e = *cur;
+    tpd_code e = *cur;
     /*
-     fprintf(stderr,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur,cur - (tp_code*)f->code.string.val,tp_strings[e.i],VA,VB,VC);
+     fprintf(stderr,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur,cur - (tpd_code*)f->code.string.val,tp_strings[e.i],VA,VB,VC);
        int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(regs[i])); }
     */
     switch (e.i) {

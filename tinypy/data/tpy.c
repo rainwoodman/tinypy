@@ -26,12 +26,12 @@
  * >     free(self.data.val);
  * > }
  * >
- * > tp_obj my_obj = tp_data(TP, 0, my_ptr);
+ * > tp_obj my_obj = tpy_data(TP, 0, my_ptr);
  * > my_obj.data.info->free = __free__;
  */
-tp_obj tp_data(TP,int magic,void *v) {
+tp_obj tpy_data(TP, int magic, void *v) {
     tp_obj r = {TP_DATA};
-    r.data.info = (_tp_data*)tp_malloc(tp, sizeof(_tp_data));
+    r.data.info = (tpd_data*)tp_malloc(tp, sizeof(tpd_data));
     r.data.val = v;
     r.data.magic = magic;
     return tp_track(tp,r);

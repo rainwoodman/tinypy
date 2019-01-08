@@ -39,11 +39,11 @@ tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
     TP_META_END;
     int type = self.type;
     if(type == TP_DICT) {
-        if(tp_has(tp, visited, tp_data(tp, 0, self.dict.val)).number.val) return tp_string("{...}");
-        tpd_list_append(tp, visited.list.val, tp_data(tp, 0, self.dict.val));
+        if(tp_has(tp, visited, tpy_data(tp, 0, self.dict.val)).number.val) return tp_string("{...}");
+        tpd_list_append(tp, visited.list.val, tpy_data(tp, 0, self.dict.val));
     } else if(type == TP_LIST) {
-        if(tp_has(tp, visited, tp_data(tp, 0, self.list.val)).number.val) return tp_string("[...]");
-        tpd_list_append(tp, visited.list.val, tp_data(tp, 0, self.list.val));
+        if(tp_has(tp, visited, tpy_data(tp, 0, self.list.val)).number.val) return tp_string("[...]");
+        tpd_list_append(tp, visited.list.val, tpy_data(tp, 0, self.list.val));
     }
     tp_obj result = tp_None;
     if (type == TP_STRING) { 

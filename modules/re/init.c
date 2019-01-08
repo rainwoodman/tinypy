@@ -12,7 +12,7 @@
 #include "regexpr.c"
 
 /* tinypy API to be use in this unit */
-extern tp_obj tp_data(TP,int magic,void *v);
+extern tp_obj tpy_data(TP,int magic,void *v);
 extern tp_obj tp_object_new(TP);
 extern tp_obj tp_object(TP);
 extern tp_obj tp_string_copy(TP, const char *s, int n);
@@ -75,7 +75,7 @@ static tp_obj match_object(TP, tp_obj reobj)
 	redata = tp_get(tp, reobj, tp_string("__data__"));
 	re = (regexobject *)redata.data.val;
 	assert(re);
-	madata = tp_data(tp, (int)sizeof(regexobject), re);
+	madata = tpy_data(tp, (int)sizeof(regexobject), re);
 
 	tp_set(tp, mo, tp_string("group"),	tpy_method(tp, mo, match_obj_group));
 	tp_set(tp, mo, tp_string("groups"),	tpy_method(tp, mo, match_obj_groups));
@@ -551,7 +551,7 @@ static tp_obj regex_compile(TP)
 	}
 
 	/* regexobject's size as magic */
-	reobj_data = tp_data(tp, (int)sizeof(regexobject), re);
+	reobj_data = tpy_data(tp, (int)sizeof(regexobject), re);
 
 	/*
 	 * bind to regex object

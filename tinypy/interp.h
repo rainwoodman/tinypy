@@ -75,18 +75,18 @@ typedef union tp_obj {
     int type;
     struct { int type; int *data; } gci;
     struct { int type; tp_num val; } number;
-    struct { int type; struct _tp_string *info; char const *val; int len; } string;
+    struct { int type; struct tpd_string *info; char const *val; int len; } string;
     struct { int type; struct tpd_list *val; } list;
     struct { int type; struct tpd_dict *val; int dtype; } dict;
-    struct { int type; struct _tp_fnc *info; int ftype; void *cfnc; } fnc;
-    struct { int type; struct _tp_data *info; void *val; int magic; } data;
+    struct { int type; struct tpd_fnc *info; int ftype; void *cfnc; } fnc;
+    struct { int type; struct tpd_data *info; void *val; int magic; } data;
 } tp_obj;
 
-typedef struct _tp_string {
+typedef struct tpd_string {
     int gci;
     int len;
     char s[1];
-} _tp_string;
+} tpd_string;
 
 typedef struct tpd_list {
     int gci;
@@ -95,16 +95,16 @@ typedef struct tpd_list {
     int alloc;
 } tpd_list;
 
-typedef struct tp_item {
+typedef struct tpd_item {
     int used;
     int hash;
     tp_obj key;
     tp_obj val;
-} tp_item;
+} tpd_item;
 
 typedef struct tpd_dict {
     int gci;
-    tp_item *items;
+    tpd_item *items;
     int len;
     int alloc;
     int cur;
@@ -113,25 +113,25 @@ typedef struct tpd_dict {
     tp_obj meta;
 } tpd_dict;
 
-typedef struct _tp_fnc {
+typedef struct tpd_fnc {
     int gci;
     tp_obj self;
     tp_obj globals;
     tp_obj code;
-} _tp_fnc;
+} tpd_fnc;
 
-typedef union tp_code {
+typedef union tpd_code {
     unsigned char i;
     struct { unsigned char i,a,b,c; } regs;
     struct { char val[4]; } string;
     struct { float val; } number;
-} tp_code;
+} tpd_code;
 
-typedef struct tp_frame_ {
-/*    tp_code *codes; */
+typedef struct tpd_frame {
+/*    tpd_code *codes; */
     tp_obj code;
-    tp_code *cur;
-    tp_code *jmp;
+    tpd_code *cur;
+    tpd_code *jmp;
     tp_obj *regs;
     tp_obj *ret_dest;
     tp_obj fname;
@@ -140,7 +140,7 @@ typedef struct tp_frame_ {
     tp_obj globals;
     int lineno;
     int cregs;
-} tp_frame_;
+} tpd_frame;
 
 #define TP_GCMAX 16384 /* FIXME: increased so that gc doesn't get called while running tp_str() */
 #define TP_FRAMES 256
@@ -170,7 +170,7 @@ typedef struct tp_frame_ {
 typedef struct tp_vm {
     tp_obj builtins;
     tp_obj modules;
-    tp_frame_ frames[TP_FRAMES];
+    tpd_frame frames[TP_FRAMES];
     tp_obj _params;
     tp_obj params;
     tp_obj _regs;
@@ -201,10 +201,10 @@ typedef struct tp_vm {
 } tp_vm;
 
 #define TP tp_vm *tp
-typedef struct _tp_data {
+typedef struct tpd_data {
     int gci;
     void (*free)(TP,tp_obj);
-} _tp_data;
+} tpd_data;
 
 #define tp_True tp_number(1)
 #define tp_False tp_number(0)

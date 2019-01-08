@@ -136,7 +136,7 @@ tp_obj unmap_value(TP, char type, void* value) {
         case DOUBLE_T: _unmap_value(double, tp_number);
         case LDOUBLE_T: _unmap_value(long double, tp_number);
         case STRING_T: if(*(char**)value == NULL) result = tp_None; else _unmap_value(char*, tp_string);
-        case POINTER_T: result = tp_data(tp, 0, *(void**)value); break;
+        case POINTER_T: result = tpy_data(tp, 0, *(void**)value); break;
         default: tp_raise(tp_None, tp_printf(tp, "invalid type \"%c\""));
     }
     free(value);
@@ -146,7 +146,7 @@ tp_obj unmap_value(TP, char type, void* value) {
 /* handle = dl.open("library") */
 tp_obj dl_dlopen(TP) {
     tp_obj name = TP_STR();
-    tp_obj handle = tp_data(tp, 0, NULL);
+    tp_obj handle = tpy_data(tp, 0, NULL);
     handle.data.val = dlopen(name.string.val, RTLD_LAZY);
     if (handle.data.val == NULL) {
         tp_raise(tp_None, tp_printf(tp, "%s", dlerror()));
@@ -165,7 +165,7 @@ tp_obj dl_dlclose(TP) {
 tp_obj dl_dlsym(TP) {
     tp_obj handle = TP_TYPE(TP_DATA);
     tp_obj name = TP_STR();
-    tp_obj result = tp_data(tp, 0, NULL);
+    tp_obj result = tpy_data(tp, 0, NULL);
     void* sym = dlsym(handle.data.val, name.string.val);
     result.data.val = sym;
     /*fprintf(stderr, "%s => %p\n", name.string.val, sym);*/
@@ -204,7 +204,7 @@ tp_obj dl_pack(TP) {
         memcpy(data + offset, arg, type_size(tp, signature.string.val[i]));
         offset += type_size(tp, signature.string.val[i]);
     }
-    tp_obj result = tp_data(tp, 0, data);
+    tp_obj result = tpy_data(tp, 0, data);
     result.data.info->free = dl_free_data;
     return result;
 }

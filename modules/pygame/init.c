@@ -43,7 +43,7 @@ tp_obj pygame_surface_set_at(TP) {
 tp_obj pygame_surf_to_obj(TP,SDL_Surface *s) {
     tp_obj self = tp_dict(tp);
     
-    tp_obj d = tp_data(tp,PYGAME_TYPE_SURF,s);
+    tp_obj d = tpy_data(tp,PYGAME_TYPE_SURF,s);
     d.data.info->free = pygame_surf_free;
 
     tp_set(tp,self,tp_string("__surf"),d);

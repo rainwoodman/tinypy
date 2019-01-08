@@ -4,14 +4,14 @@ void tpd_dict_free(TP, tpd_dict *self) {
 }
 
 /* void tpd_dict_reset(tpd_dict *self) {
-       memset(self->items,0,self->alloc*sizeof(tp_item));
+       memset(self->items,0,self->alloc*sizeof(tpd_item));
        self->len = 0;
        self->used = 0;
        self->cur = 0;
    }*/
 
 void tpd_dict_hashset(TP, tpd_dict *self, int hash, tp_obj k, tp_obj v) {
-    tp_item item;
+    tpd_item item;
     int i,idx = hash&self->mask;
     for (i=idx; i<idx+self->alloc; i++) {
         int n = i&self->mask;
@@ -29,11 +29,11 @@ void tpd_dict_hashset(TP, tpd_dict *self, int hash, tp_obj k, tp_obj v) {
 }
 
 void tpd_dict_realloc(TP, tpd_dict *self, int len) {
-    tp_item *items = self->items;
+    tpd_item *items = self->items;
     int i,alloc = self->alloc;
     len = _tp_max(8,len);
 
-    self->items = (tp_item*)tp_malloc(tp, len*sizeof(tp_item));
+    self->items = (tpd_item*)tp_malloc(tp, len*sizeof(tpd_item));
     self->alloc = len; self->mask = len-1;
     self->len = 0; self->used = 0;
 

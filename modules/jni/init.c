@@ -26,7 +26,7 @@ jvalue jNULL = {.l=NULL};
 tp_obj jni_find_class(TP) {
     tp_obj class_name = TP_STR();
     jclass cls = (*env)->FindClass(env, class_name.string.val);
-    return tp_data(tp, 0, cls);
+    return tpy_data(tp, 0, cls);
 }
 
 tp_obj jni_get_method_id(TP) {
@@ -44,7 +44,7 @@ tp_obj jni_get_method_id(TP) {
     method->signature = strdup(signature.string.val);
     //(*env)->DeleteLocalRef(env, id);
 
-    tp_obj result = tp_data(tp, DATA_METHOD, method);
+    tp_obj result = tpy_data(tp, DATA_METHOD, method);
     result.data.info->free = jni_free_method;
 
     return result;
@@ -104,7 +104,7 @@ tp_obj jni_unmap_value(TP, const char* type, jvalue value) {
                   } else if(!strncmp(type, "Ljava/lang/String;", 18)) {
                           return tp_string((*env)->GetStringUTFChars(env, value.l, NULL));
                   } else {
-                      return tp_data(tp, 0, value.l);
+                      return tpy_data(tp, 0, value.l);
                   } 
                   break;
         case '[': return jni_unmap_array(tp, type + 1, value);
@@ -171,7 +171,7 @@ tp_obj jni_new_object(TP) {
     jobject object = (*env)->NewObjectA(env, cls.data.val, constructor->id, arguments);
 
     free(arguments);
-    return tp_data(tp, 0, object);
+    return tpy_data(tp, 0, object);
 }
 
 /*

@@ -9,7 +9,7 @@
  */ 
 tp_obj tp_string_t(TP, int n) {
     tp_obj r = tp_string_n(0,n);
-    r.string.info = (_tp_string*)tp_malloc(tp, sizeof(_tp_string)+n);
+    r.string.info = (tpd_string*)tp_malloc(tp, sizeof(tpd_string)+n);
     r.string.info->len = n;
     r.string.val = r.string.info->s;
     return r;

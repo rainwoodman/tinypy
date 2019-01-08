@@ -13,7 +13,7 @@ tp_obj tp_tcall(TP, tp_obj fnc) {
 
 tp_obj tp_fnc_new(TP, int t, void *v, tp_obj c,tp_obj s, tp_obj g) {
     tp_obj r = {TP_FNC};
-    _tp_fnc *info = (_tp_fnc*)tp_malloc(tp, sizeof(_tp_fnc));
+    tpd_fnc *info = (tpd_fnc*)tp_malloc(tp, sizeof(tpd_fnc));
     info->code = c;
     info->self = s;
     info->globals = g;

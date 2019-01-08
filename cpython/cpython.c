@@ -113,7 +113,7 @@ static PyTypeObject TinypyType = {
     0,                              /*ob_size*/
     "tinypy.Tinypy",                /*tp_name*/
     sizeof(TinypyObject),           /*tp_basicsize*/
-    0,                              /*tp_itemsize*/
+    0,                              /*tpd_itemsize*/
     Tinypy_destruct,                /*tp_dealloc*/
     0,                              /*tp_print*/
     0,                              /*tp_getattr*/

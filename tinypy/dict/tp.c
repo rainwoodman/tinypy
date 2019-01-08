@@ -50,8 +50,8 @@ tp_obj tp_dict_copy(TP, tp_obj rr) {
     tpd_dict *r = tpd_dict_new(tp);
     *r = *o;
     r->gci = 0;
-    r->items = (tp_item*) tp_malloc(tp, sizeof(tp_item)*o->alloc);
-    memcpy(r->items, o->items, sizeof(tp_item)*o->alloc);
+    r->items = (tpd_item*) tp_malloc(tp, sizeof(tpd_item)*o->alloc);
+    memcpy(r->items, o->items, sizeof(tpd_item)*o->alloc);
     obj.dict.val = r;
     obj.dict.dtype = 1;
     return obj;
