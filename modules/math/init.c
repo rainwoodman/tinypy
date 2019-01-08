@@ -22,31 +22,31 @@ void math_init(TP)
      */
     tp_set(tp, math_mod, tp_string("pi"), math_pi);
     tp_set(tp, math_mod, tp_string("e"), math_e);
-    tp_set(tp, math_mod, tp_string("acos"), tp_fnc(tp, math_acos));
-    tp_set(tp, math_mod, tp_string("asin"), tp_fnc(tp, math_asin));
-    tp_set(tp, math_mod, tp_string("atan"), tp_fnc(tp, math_atan));
-    tp_set(tp, math_mod, tp_string("atan2"), tp_fnc(tp, math_atan2));
-    tp_set(tp, math_mod, tp_string("ceil"), tp_fnc(tp, math_ceil));
-    tp_set(tp, math_mod, tp_string("cos"), tp_fnc(tp, math_cos));
-    tp_set(tp, math_mod, tp_string("cosh"), tp_fnc(tp, math_cosh));
-    tp_set(tp, math_mod, tp_string("degrees"), tp_fnc(tp, math_degrees));
-    tp_set(tp, math_mod, tp_string("exp"), tp_fnc(tp, math_exp));
-    tp_set(tp, math_mod, tp_string("fabs"), tp_fnc(tp, math_fabs));
-    tp_set(tp, math_mod, tp_string("floor"), tp_fnc(tp, math_floor));
-    tp_set(tp, math_mod, tp_string("fmod"), tp_fnc(tp, math_fmod));
-    tp_set(tp, math_mod, tp_string("frexp"), tp_fnc(tp, math_frexp));
-    tp_set(tp, math_mod, tp_string("hypot"), tp_fnc(tp, math_hypot));
-    tp_set(tp, math_mod, tp_string("ldexp"), tp_fnc(tp, math_ldexp));
-    tp_set(tp, math_mod, tp_string("log"), tp_fnc(tp, math_log));
-    tp_set(tp, math_mod, tp_string("log10"), tp_fnc(tp, math_log10));
-    tp_set(tp, math_mod, tp_string("modf"), tp_fnc(tp, math_modf));
-    tp_set(tp, math_mod, tp_string("pow"), tp_fnc(tp, math_pow));
-    tp_set(tp, math_mod, tp_string("radians"), tp_fnc(tp, math_radians));
-    tp_set(tp, math_mod, tp_string("sin"), tp_fnc(tp, math_sin));
-    tp_set(tp, math_mod, tp_string("sinh"), tp_fnc(tp, math_sinh));
-    tp_set(tp, math_mod, tp_string("sqrt"), tp_fnc(tp, math_sqrt));
-    tp_set(tp, math_mod, tp_string("tan"), tp_fnc(tp, math_tan));
-    tp_set(tp, math_mod, tp_string("tanh"), tp_fnc(tp, math_tanh));
+    tp_set(tp, math_mod, tp_string("acos"), tpy_fnc(tp, math_acos));
+    tp_set(tp, math_mod, tp_string("asin"), tpy_fnc(tp, math_asin));
+    tp_set(tp, math_mod, tp_string("atan"), tpy_fnc(tp, math_atan));
+    tp_set(tp, math_mod, tp_string("atan2"), tpy_fnc(tp, math_atan2));
+    tp_set(tp, math_mod, tp_string("ceil"), tpy_fnc(tp, math_ceil));
+    tp_set(tp, math_mod, tp_string("cos"), tpy_fnc(tp, math_cos));
+    tp_set(tp, math_mod, tp_string("cosh"), tpy_fnc(tp, math_cosh));
+    tp_set(tp, math_mod, tp_string("degrees"), tpy_fnc(tp, math_degrees));
+    tp_set(tp, math_mod, tp_string("exp"), tpy_fnc(tp, math_exp));
+    tp_set(tp, math_mod, tp_string("fabs"), tpy_fnc(tp, math_fabs));
+    tp_set(tp, math_mod, tp_string("floor"), tpy_fnc(tp, math_floor));
+    tp_set(tp, math_mod, tp_string("fmod"), tpy_fnc(tp, math_fmod));
+    tp_set(tp, math_mod, tp_string("frexp"), tpy_fnc(tp, math_frexp));
+    tp_set(tp, math_mod, tp_string("hypot"), tpy_fnc(tp, math_hypot));
+    tp_set(tp, math_mod, tp_string("ldexp"), tpy_fnc(tp, math_ldexp));
+    tp_set(tp, math_mod, tp_string("log"), tpy_fnc(tp, math_log));
+    tp_set(tp, math_mod, tp_string("log10"), tpy_fnc(tp, math_log10));
+    tp_set(tp, math_mod, tp_string("modf"), tpy_fnc(tp, math_modf));
+    tp_set(tp, math_mod, tp_string("pow"), tpy_fnc(tp, math_pow));
+    tp_set(tp, math_mod, tp_string("radians"), tpy_fnc(tp, math_radians));
+    tp_set(tp, math_mod, tp_string("sin"), tpy_fnc(tp, math_sin));
+    tp_set(tp, math_mod, tp_string("sinh"), tpy_fnc(tp, math_sinh));
+    tp_set(tp, math_mod, tp_string("sqrt"), tpy_fnc(tp, math_sqrt));
+    tp_set(tp, math_mod, tp_string("tan"), tpy_fnc(tp, math_tan));
+    tp_set(tp, math_mod, tp_string("tanh"), tpy_fnc(tp, math_tanh));
 
     /*
      * bind special attributes to math module

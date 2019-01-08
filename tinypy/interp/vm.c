@@ -135,8 +135,8 @@ tp_obj tp_call(TP,tp_obj self, tp_obj params) {
         }
     }
     if (self.type == TP_FNC && !(self.fnc.ftype&1)) {
-        tp_obj r = _tp_tcall(tp,self);
-        tp_grey(tp,r);
+        tp_obj r = tp_tcall(tp, self);
+        tp_grey(tp, r);
         return r;
     }
     if (self.type == TP_FNC) {
@@ -283,12 +283,12 @@ int tp_step(TP) {
             break;
         case TP_IGSET: tp_set(tp,f->globals,RA,RB); break;
         case TP_IDEF: {
-/*            RA = tp_def(tp,(*(cur+1)).string.val,f->globals);*/
+/*            RA = tpy_def(tp,(*(cur+1)).string.val,f->globals);*/
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,SVBC);
             #endif
             int a = (*(cur+1)).string.val-f->code.string.val;
-            RA = tp_def(tp,
+            RA = tpy_def(tp,
                 /*tp_string_n((*(cur+1)).string.val,(SVBC-1)*4),*/
                 tp_string_sub(tp,f->code,a,a+(SVBC-1)*4),
                 f->globals);

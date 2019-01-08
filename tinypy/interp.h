@@ -413,7 +413,10 @@ tp_obj tpy_save(TP);
 
 tp_obj tpy_list(TP);
 tp_obj tpy_dict(TP);
-tp_obj tp_fnc(TP, tp_obj v(TP));
+tp_obj tpy_fnc(TP, tp_obj v(TP));
+tp_obj tpy_method(TP,tp_obj self,tp_obj v(TP));
+tp_obj tpy_def(TP, tp_obj code, tp_obj g);
+
 tp_obj tp_printf_tracked(TP, const char * fmt, ...);
 
 void tp_module_sys_init(TP, int argc, char * argv[]);

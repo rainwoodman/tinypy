@@ -234,15 +234,15 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
             /* FIXME: move these to the prototype object of list, after
              * adding meta to all objects */
             if (tp_cmp(tp,tp_string("append"),k) == 0) {
-                return tp_method(tp, self, tpy_list_append);
+                return tpy_method(tp, self, tpy_list_append);
             } else if (tp_cmp(tp,tp_string("pop"),k) == 0) {
-                return tp_method(tp, self,tpy_list_pop);
+                return tpy_method(tp, self,tpy_list_pop);
             } else if (tp_cmp(tp,tp_string("index"),k) == 0) {
-                return tp_method(tp, self,tpy_list_index);
+                return tpy_method(tp, self,tpy_list_index);
             } else if (tp_cmp(tp,tp_string("sort"),k) == 0) {
-                return tp_method(tp, self,tpy_list_sort);
+                return tpy_method(tp, self,tpy_list_sort);
             } else if (tp_cmp(tp,tp_string("extend"),k) == 0) {
-                return tp_method(tp, self,tpy_list_extend);
+                return tpy_method(tp, self,tpy_list_extend);
             } else if (tp_cmp(tp,tp_string("*"),k) == 0) {
                 tp_params_v(tp,1,self);
                 r = tpy_copy(tp);
@@ -260,15 +260,15 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
             if (n >= 0 && n < l) { return tp_string_n(tp->chars[(unsigned char)self.string.val[n]],1); }
         } else if (k.type == TP_STRING) {
             if (tp_cmp(tp,tp_string("join"),k) == 0) {
-                return tp_method(tp,self,tpy_str_join);
+                return tpy_method(tp,self,tpy_str_join);
             } else if (tp_cmp(tp,tp_string("split"),k) == 0) {
-                return tp_method(tp,self,tpy_str_split);
+                return tpy_method(tp,self,tpy_str_split);
             } else if (tp_cmp(tp,tp_string("index"),k) == 0) {
-                return tp_method(tp,self,tpy_str_index);
+                return tpy_method(tp,self,tpy_str_index);
             } else if (tp_cmp(tp,tp_string("strip"),k) == 0) {
-                return tp_method(tp,self,tpy_str_strip);
+                return tpy_method(tp,self,tpy_str_strip);
             } else if (tp_cmp(tp,tp_string("replace"),k) == 0) {
-                return tp_method(tp,self,tpy_str_replace);
+                return tpy_method(tp,self,tpy_str_replace);
             }
         }
     }

@@ -12,13 +12,13 @@ int _tp_lookup_(TP, tp_obj self, tp_obj k, tp_obj *meta, int depth) {
     && self.dict.val->meta.type == TP_DICT
     && _tp_lookup_(tp, self.dict.val->meta, k, meta, depth)) {
         if (self.dict.dtype == 2 && meta->type == TP_FNC) {
-            /* make a copy of the function; FIXME: what does dtype == 2 mean? */
-            *meta = tp_fnc_new(tp,
+            /* make a copy of the function;  FIXME: what does dtype == 2 mean? */
+            *meta = tp_track(tp, tp_fnc_new(tp,
                 meta->fnc.ftype|2,
                 meta->fnc.cfnc,
                 meta->fnc.info->code,
                 self,
-                meta->fnc.info->globals);
+                meta->fnc.info->globals));
         }
         return 1;
     }

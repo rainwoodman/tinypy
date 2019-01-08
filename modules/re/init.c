@@ -15,10 +15,8 @@
 extern tp_obj tp_data(TP,int magic,void *v);
 extern tp_obj tp_object_new(TP);
 extern tp_obj tp_object(TP);
-extern tp_obj tp_method(TP,tp_obj self,tp_obj v(TP));
 extern tp_obj tp_string_copy(TP, const char *s, int n);
 extern tp_obj tpy_list(TP);
-extern tp_obj tp_copy(TP);
 
 /* last error message */
 static const char * LastError = NULL;
@@ -79,11 +77,11 @@ static tp_obj match_object(TP, tp_obj reobj)
 	assert(re);
 	madata = tp_data(tp, (int)sizeof(regexobject), re);
 
-	tp_set(tp, mo, tp_string("group"),	tp_method(tp, mo, match_obj_group));
-	tp_set(tp, mo, tp_string("groups"),	tp_method(tp, mo, match_obj_groups));
-	tp_set(tp, mo, tp_string("start"),	tp_method(tp, mo, match_obj_start));
-	tp_set(tp, mo, tp_string("end"),	tp_method(tp, mo, match_obj_end));
-	tp_set(tp, mo, tp_string("span"),	tp_method(tp, mo, match_obj_span));
+	tp_set(tp, mo, tp_string("group"),	tpy_method(tp, mo, match_obj_group));
+	tp_set(tp, mo, tp_string("groups"),	tpy_method(tp, mo, match_obj_groups));
+	tp_set(tp, mo, tp_string("start"),	tpy_method(tp, mo, match_obj_start));
+	tp_set(tp, mo, tp_string("end"),	tpy_method(tp, mo, match_obj_end));
+	tp_set(tp, mo, tp_string("span"),	tpy_method(tp, mo, match_obj_span));
 	tp_set(tp, mo, tp_string("__data__"), madata);
 
 	return (mo);
@@ -559,13 +557,13 @@ static tp_obj regex_compile(TP)
 	 * bind to regex object
 	 */
 	tp_set(tp, reobj, tp_string("search"), 
-			tp_method(tp, reobj, regex_obj_search));
+			tpy_method(tp, reobj, regex_obj_search));
 	tp_set(tp, reobj, tp_string("match"), 
-			tp_method(tp, reobj, regex_obj_match));
+			tpy_method(tp, reobj, regex_obj_match));
 	tp_set(tp, reobj, tp_string("split"),
-			tp_method(tp, reobj, regex_obj_split));
+			tpy_method(tp, reobj, regex_obj_split));
 	tp_set(tp, reobj, tp_string("findall"),
-			tp_method(tp, reobj, regex_obj_findall));
+			tpy_method(tp, reobj, regex_obj_findall));
 	tp_set(tp, reobj, tp_string("__data__"), reobj_data);
 
 	tp_set(tp, reobj, tp_string("__name__"), 
@@ -684,11 +682,11 @@ void re_init(TP)
 	/*
 	 * bind to re module
 	 */
-	tp_set(tp, re_mod, tp_string("compile"),	  tp_fnc(tp, regex_compile));
-	tp_set(tp, re_mod, tp_string("search"),		  tp_fnc(tp, regex_search));
-	tp_set(tp, re_mod, tp_string("match"),		  tp_fnc(tp, regex_match));
-	tp_set(tp, re_mod, tp_string("split"),		  tp_fnc(tp, regex_split));
-	tp_set(tp, re_mod, tp_string("findall"),	  tp_fnc(tp, regex_findall));
+	tp_set(tp, re_mod, tp_string("compile"),	  tpy_fnc(tp, regex_compile));
+	tp_set(tp, re_mod, tp_string("search"),		  tpy_fnc(tp, regex_search));
+	tp_set(tp, re_mod, tp_string("match"),		  tpy_fnc(tp, regex_match));
+	tp_set(tp, re_mod, tp_string("split"),		  tpy_fnc(tp, regex_split));
+	tp_set(tp, re_mod, tp_string("findall"),	  tpy_fnc(tp, regex_findall));
 	tp_set(tp, re_mod, tp_string("AWK_SYNTAX"),   tp_number(RE_SYNTAX_AWK));
 	tp_set(tp, re_mod, tp_string("EGREP_SYNTAX"), tp_number(RE_SYNTAX_EGREP));
 	tp_set(tp, re_mod, tp_string("GREP_SYNTAX"),  tp_number(RE_SYNTAX_GREP));

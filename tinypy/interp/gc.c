@@ -9,9 +9,11 @@ void tp_grey(TP,tp_obj v) {
     if (v.type < TP_STRING || (!v.gci.data) || *v.gci.data) { return; }
     *v.gci.data = 1;
     if (v.type == TP_STRING || v.type == TP_DATA) {
+        /* terminal types, no need to follow */
         tpd_list_appendx(tp, tp->black, v);
         return;
     }
+    /* need to follow the referents */
     tpd_list_appendx(tp, tp->grey, v);
 }
 
@@ -48,6 +50,9 @@ void tp_reset(TP) {
     tmp = tp->white;
     tp->white = tp->black;
     tp->black = tmp;
+    /* if called after a sweep, at this point */
+    /* white is the list of reachable objects;
+     * black shall be empty and will capture newly produced reachable objects */
 }
 
 void tp_gc_init(TP) {
@@ -119,6 +124,7 @@ void tp_full(TP) {
 void tp_gcinc(TP) {
     tp->steps += 1;
     if (tp->steps < TP_GCMAX || tp->grey->len > 0) {
+        /* follow two objects every one new object is tracked */
         _tp_gcinc(tp); _tp_gcinc(tp); 
     }
     if (tp->steps < TP_GCMAX || tp->grey->len > 0) { return; }

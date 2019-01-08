@@ -17,28 +17,28 @@ void random_init(TP)
     /*
      * bind functions to random module
      */
-    tp_set(tp, random_mod, tp_string("seed"),       tp_fnc(tp, random_seed));
-    tp_set(tp, random_mod, tp_string("getstate"),   tp_fnc(tp, random_getstate));
-    tp_set(tp, random_mod, tp_string("setstate"),   tp_fnc(tp, random_setstate));
-    tp_set(tp, random_mod, tp_string("jumpahead"),  tp_fnc(tp, random_jumpahead));
-    tp_set(tp, random_mod, tp_string("random"),     tp_fnc(tp, random_random));
+    tp_set(tp, random_mod, tp_string("seed"),       tpy_fnc(tp, random_seed));
+    tp_set(tp, random_mod, tp_string("getstate"),   tpy_fnc(tp, random_getstate));
+    tp_set(tp, random_mod, tp_string("setstate"),   tpy_fnc(tp, random_setstate));
+    tp_set(tp, random_mod, tp_string("jumpahead"),  tpy_fnc(tp, random_jumpahead));
+    tp_set(tp, random_mod, tp_string("random"),     tpy_fnc(tp, random_random));
 
     /*
      * bind usual distribution random variable generator
      */
-    tp_set(tp, random_mod, tp_string("uniform"),        tp_fnc(tp, random_uniform));
-    tp_set(tp, random_mod, tp_string("normalvariate"),  tp_fnc(tp, random_normalvariate));
-    tp_set(tp, random_mod, tp_string("lognormvariate"), tp_fnc(tp, random_lognormvariate));
-    tp_set(tp, random_mod, tp_string("expovariate"),    tp_fnc(tp, random_expovariate));
-    tp_set(tp, random_mod, tp_string("vonmisesvariate"), tp_fnc(tp, random_vonmisesvariate));
-    tp_set(tp, random_mod, tp_string("gammavariate"),   tp_fnc(tp, random_gammavariate));
-    tp_set(tp, random_mod, tp_string("betavariate"),    tp_fnc(tp, random_betavariate));
-    tp_set(tp, random_mod, tp_string("paretovariate"),  tp_fnc(tp, random_paretovariate));
-    tp_set(tp, random_mod, tp_string("weibullvariate"), tp_fnc(tp, random_weibullvariate));
-    tp_set(tp, random_mod, tp_string("randrange"),      tp_fnc(tp, random_randrange));
-    tp_set(tp, random_mod, tp_string("randint"),        tp_fnc(tp, random_randint));
-    tp_set(tp, random_mod, tp_string("choice"),         tp_fnc(tp, random_choice));
-    tp_set(tp, random_mod, tp_string("shuffle"),        tp_fnc(tp, random_shuffle));
+    tp_set(tp, random_mod, tp_string("uniform"),        tpy_fnc(tp, random_uniform));
+    tp_set(tp, random_mod, tp_string("normalvariate"),  tpy_fnc(tp, random_normalvariate));
+    tp_set(tp, random_mod, tp_string("lognormvariate"), tpy_fnc(tp, random_lognormvariate));
+    tp_set(tp, random_mod, tp_string("expovariate"),    tpy_fnc(tp, random_expovariate));
+    tp_set(tp, random_mod, tp_string("vonmisesvariate"), tpy_fnc(tp, random_vonmisesvariate));
+    tp_set(tp, random_mod, tp_string("gammavariate"),   tpy_fnc(tp, random_gammavariate));
+    tp_set(tp, random_mod, tp_string("betavariate"),    tpy_fnc(tp, random_betavariate));
+    tp_set(tp, random_mod, tp_string("paretovariate"),  tpy_fnc(tp, random_paretovariate));
+    tp_set(tp, random_mod, tp_string("weibullvariate"), tpy_fnc(tp, random_weibullvariate));
+    tp_set(tp, random_mod, tp_string("randrange"),      tpy_fnc(tp, random_randrange));
+    tp_set(tp, random_mod, tp_string("randint"),        tpy_fnc(tp, random_randint));
+    tp_set(tp, random_mod, tp_string("choice"),         tpy_fnc(tp, random_choice));
+    tp_set(tp, random_mod, tp_string("shuffle"),        tpy_fnc(tp, random_shuffle));
 
     /*
      * bind special attributes to random module

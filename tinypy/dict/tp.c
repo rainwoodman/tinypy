@@ -21,7 +21,7 @@ void tpd_dict_setx(TP, tpd_dict * self, tp_obj k, tp_obj v) {
 
 void tpd_dict_set(TP, tpd_dict *self, tp_obj k, tp_obj v) {
     tpd_dict_setx(tp, self, k, v);
-    tp_grey(tp,k);
+    tp_grey(tp, k);
     tp_grey(tp, v);
 }
 

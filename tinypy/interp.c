@@ -13,6 +13,9 @@
 #include "string/tp.c"
 #include "string/tpy.c"
 
+#include "func/tpy.c"
+#include "data/tpy.c"
+
 #include "interp/misc.c"
 #include "interp/meta.c"
 #include "interp/frame.c"

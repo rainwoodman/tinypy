@@ -5,9 +5,10 @@
 tp_obj tpy_bind(TP) {
     tp_obj r = TP_TYPE(TP_FNC);
     tp_obj self = TP_OBJ();
-    return tp_fnc_new(tp,
+    return tp_track(tp, tp_fnc_new(tp,
         r.fnc.ftype|2,r.fnc.cfnc,r.fnc.info->code,
-        self,r.fnc.info->globals);
+        self,r.fnc.info->globals)
+        );
 }
 
 tp_obj tpy_min(TP) {
@@ -334,12 +335,12 @@ void tp_module_builtins_init(TP) {
     {0,0},
     };
     int i; for(i=0; b[i].s; i++) {
-        tp_set(tp, builtins, tp_string(b[i].s), tp_fnc(tp,(tp_obj (*)(tp_vm *))b[i].f));
+        tp_set(tp, builtins, tp_string(b[i].s), tpy_fnc(tp,(tp_obj (*)(tp_vm *))b[i].f));
     }
     
     o = tp_object(tp);
-    tp_set(tp, o, tp_string("__call__"), tp_fnc(tp, tpy_object_call));
-    tp_set(tp, o, tp_string("__new__"),  tp_fnc(tp, tpy_object_new));
+    tp_set(tp, o, tp_string("__call__"), tpy_fnc(tp, tpy_object_call));
+    tp_set(tp, o, tp_string("__new__"),  tpy_fnc(tp, tpy_object_new));
     tp_set(tp, builtins, tp_string("object"), o);
 
     tp_set(tp, tp->modules, tp_string("tinypy.language.builtins"), builtins);

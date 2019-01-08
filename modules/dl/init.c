@@ -290,7 +290,7 @@ tp_obj dl_load(TP) {
     tp_set(tp, output, tp_string("symbol"), dl_dlsym(tp));
     tp_set(tp, output, tp_string("return_type"), return_type);
     tp_set(tp, output, tp_string("signature"), signature);
-    tp_set(tp, output, tp_string("__call__"), tp_method(tp, output, call_method));
+    tp_set(tp, output, tp_string("__call__"), tpy_method(tp, output, call_method));
 
     tp_params_v(tp, 1, handle);
     dl_dlclose(tp);
