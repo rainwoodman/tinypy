@@ -12,7 +12,7 @@ void random_init(TP)
     /*
      * module dict for random
      */
-    tp_obj random_mod = tp_dict(tp);
+    tp_obj random_mod = tpy_dict(tp);
 
     /*
      * bind functions to random module

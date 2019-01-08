@@ -260,7 +260,7 @@ void   _tp_raise(TP,tp_obj);
 }
 
 #define tp_raise_printf(r,fmt,...) { \
-    _tp_raise(tp, tp_printf(tp, fmt, __VA_ARGS__)); \
+    _tp_raise(tp, tp_printf_tracked(tp, fmt, __VA_ARGS__)); \
     return r; \
 }
 
@@ -411,10 +411,10 @@ tp_obj tpy_print(TP);
 tp_obj tpy_load(TP);
 tp_obj tpy_save(TP);
 
-tp_obj tp_list(TP);
-tp_obj tp_dict(TP);
+tp_obj tpy_list(TP);
+tp_obj tpy_dict(TP);
 tp_obj tp_fnc(TP, tp_obj v(TP));
-tp_obj tp_printf(TP, const char * fmt, ...);
+tp_obj tp_printf_tracked(TP, const char * fmt, ...);
 
 void tp_module_sys_init(TP, int argc, char * argv[]);
 void tp_module_builtins_init(TP);

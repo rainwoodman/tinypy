@@ -20,15 +20,19 @@ tp_vm *_tp_init(void) {
     tp->cur = 0;
     tp->jmp = 0;
     tp->ex = tp_None;
-    tp->root = tpy_list_nt(tp);
+    tp->root = tp_list_nt(tp);
+
     for (i=0; i<256; i++) { tp->chars[i][0]=i; }
+
     tp_gc_init(tp);
-    tp->_regs = tp_list(tp);
-    for (i=0; i<TP_REGS; i++) { tp_set(tp,tp->_regs,tp_None,tp_None); }
-    tp->builtins = tp_dict(tp);
-    tp->modules = tp_dict(tp);
-    tp->_params = tp_list(tp);
-    for (i=0; i<TP_FRAMES; i++) { tp_set(tp,tp->_params,tp_None,tp_list(tp)); }
+    
+    /* gc initialized, can use tpy_ functions. */
+    tp->_regs = tpy_list(tp);
+    for (i=0; i<TP_REGS; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
+    tp->builtins = tpy_dict(tp);
+    tp->modules = tpy_dict(tp);
+    tp->_params = tpy_list(tp);
+    for (i=0; i<TP_FRAMES; i++) { tp_set(tp, tp->_params, tp_None, tpy_list(tp)); }
     tp->echo = tp_default_echo;
     tp_set(tp,tp->root,tp_None,tp->builtins);
     tp_set(tp,tp->root,tp_None,tp->modules);
@@ -260,8 +264,8 @@ int tp_step(TP) {
             cur += (UVBC/4)+1;
             }
             break;
-        case TP_IDICT: RA = tp_dict_n(tp,VC/2,&RB); break;
-        case TP_ILIST: RA = tp_list_n(tp,VC,&RB); break;
+        case TP_IDICT: RA = tpy_dict_n(tp,VC/2,&RB); break;
+        case TP_ILIST: RA = tpy_list_n(tp,VC,&RB); break;
         case TP_IPARAMS: RA = tp_params_n(tp,VC,&RB); break;
         case TP_ILEN: RA = tp_len(tp,RB); break;
         case TP_IJUMP: cur += SVBC; continue; break;
@@ -372,7 +376,7 @@ tp_obj tpy_exec(TP) {
 
 
 tp_obj tp_args(TP, int argc, char *argv[]) {
-    tp_obj self = tp_list(tp);
+    tp_obj self = tpy_list(tp);
     int i;
     for (i=1; i<argc; i++) {
         tpd_list_append(tp, self.list.val, tp_string(argv[i]));
@@ -419,7 +423,7 @@ tp_obj tpy_eval(TP) {
 }
 
 void tp_module_sys_init (TP, int argc, char * argv[]) {
-    tp_obj sys = tp_dict(tp);
+    tp_obj sys = tpy_dict(tp);
     tp_obj args = tp_args(tp,argc,argv);
     tp_set(tp, sys, tp_string("version"), tp_string("tinypy 1.2+SVN"));
     tp_set(tp, sys, tp_string("modules"), tp->modules);

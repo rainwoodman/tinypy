@@ -1,10 +1,19 @@
 #include "interp.h"
 
 #include "interp/hash.c"
-#include "interp/list.c"
-#include "interp/dict.c"
+
+#include "list/tpd.c"
+#include "list/tp.c"
+#include "list/tpy.c"
+
+#include "dict/tpd.c"
+#include "dict/tp.c"
+#include "dict/tpy.c"
+
+#include "string/tp.c"
+#include "string/tpy.c"
+
 #include "interp/misc.c"
-#include "interp/string.c"
 #include "interp/meta.c"
 #include "interp/frame.c"
 #include "interp/import.c"

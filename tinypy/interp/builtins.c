@@ -32,9 +32,9 @@ tp_obj tpy_copy(TP) {
     tp_obj r = TP_OBJ();
     int type = r.type;
     if (type == TP_LIST) {
-        return tp_list_copy(tp,r);
+        return tp_track(tp, tp_list_copy(tp,r));
     } else if (type == TP_DICT) {
-        return tp_dict_copy(tp,r);
+        return tp_track(tp, tp_dict_copy(tp,r));
     }
     tp_raise(tp_None,tp_string("(tp_copy) TypeError: ?"));
 }
@@ -53,7 +53,7 @@ tp_obj tpy_assert(TP) {
 
 tp_obj tpy_range(TP) {
     int a,b,c,i;
-    tp_obj r = tp_list(tp);
+    tp_obj r = tpy_list(tp);
     switch (tp->params.list.val->len) {
         case 1: a = 0; b = TP_NUM(); c = 1; break;
         case 2:
@@ -228,7 +228,7 @@ tp_obj tpy_getmeta(TP) {
  * <tp_setmeta> to set a class. Also see <tp_object_new>.
  */
 tp_obj tp_object(TP) {
-    tp_obj self = tp_dict(tp);
+    tp_obj self = tpy_dict(tp);
     self.dict.dtype = 2;
     return self;
 }
@@ -278,7 +278,7 @@ tp_obj tpy_getraw(TP) {
  * A new, empty class (derived from tinypy's builtin "object" class).
  */
 tp_obj tp_class(TP) {
-    tp_obj klass = tp_dict(tp);
+    tp_obj klass = tpy_dict(tp);
     klass.dict.val->meta = tp_get(tp, tp->builtins, tp_string("object")); 
     return klass;
 }
@@ -308,7 +308,7 @@ tp_obj tpy_import(TP) {
 
 
 void tp_module_builtins_init(TP) {
-    tp_obj builtins = tp_dict(tp);
+    tp_obj builtins = tpy_dict(tp);
     tp_set(tp, builtins, tp_string("MODULES"), tp->modules);
     tp_set(tp,builtins, tp_string("__dict__"), tp->builtins);
 

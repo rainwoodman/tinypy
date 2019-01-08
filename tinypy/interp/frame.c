@@ -32,7 +32,7 @@ void tp_print_stack(TP) {
     for (i=0; i<=tp->cur; i++) {
         if (!tp->frames[i].lineno) { continue; }
         tp->echo("File \"", -1); tp_echo(tp,tp->frames[i].fname); tp->echo("\", ", -1);
-        tp_echo(tp, tp_printf(tp, "line %d, in ",tp->frames[i].lineno));
+        tp_echo(tp, tp_printf_tracked(tp, "line %d, in ",tp->frames[i].lineno));
         tp_echo(tp,tp->frames[i].name); tp->echo("\n ", -1);
         tp_echo(tp,tp->frames[i].line); tp->echo("\n", -1);
     }

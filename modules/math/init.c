@@ -9,7 +9,7 @@ void math_init(TP)
     /*
      * new a module dict for math
      */
-    tp_obj math_mod = tp_dict(tp);
+    tp_obj math_mod = tpy_dict(tp);
 
     /*
      * initialize pi and e

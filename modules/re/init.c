@@ -17,7 +17,7 @@ extern tp_obj tp_object_new(TP);
 extern tp_obj tp_object(TP);
 extern tp_obj tp_method(TP,tp_obj self,tp_obj v(TP));
 extern tp_obj tp_string_copy(TP, const char *s, int n);
-extern tp_obj tp_list(TP);
+extern tp_obj tpy_list(TP);
 extern tp_obj tp_copy(TP);
 
 /* last error message */
@@ -205,7 +205,7 @@ static tp_obj regex_obj_split(TP)
 	tp_obj maxsplit = TP_DEFAULT(tp_number(0));
 	tp_obj maobj;				/* match object */
 	regexobject *re = NULL;		/* lower level regex object */
-	tp_obj result	= tp_list(tp);
+	tp_obj result	= tpy_list(tp);
 	tp_obj grpstr;				/* group string */
 	int	slen;					/* string length */
 	int srchloc;				/* search location */
@@ -274,7 +274,7 @@ static tp_obj regex_obj_findall(TP)
 	tp_obj pos		= TP_DEFAULT(tp_number(0));
 	tp_obj maobj;				/* match object */
 	regexobject *re = NULL;		/* lower level regex object */
-	tp_obj result	= tp_list(tp);
+	tp_obj result	= tpy_list(tp);
 	tp_obj grpstr;				/* group string */
 	int	slen;					/* string length */
 	int srchloc;				/* search location */
@@ -366,7 +366,7 @@ static tp_obj match_obj_group(TP)
 	}
 
 	/* generate result string list */
-	result = tp_list(tp);
+	result = tpy_list(tp);
 	for (i = 0; i < RE_NREGS && indices[i] >= 0; i++) {
 		tp_obj grpstr;
 		start = re->re_regs.start[indices[i]];
@@ -395,7 +395,7 @@ static tp_obj match_obj_groups(TP)
 	int start;
 	int end;
 	int i;
-	tp_obj result = tp_list(tp);
+	tp_obj result = tpy_list(tp);
 
 	re = getre(tp, self);
 	if (re->re_lastok == NULL) {
@@ -500,7 +500,7 @@ static tp_obj match_obj_span(TP)
 	start = re->re_regs.start[(int)group.number.val];
 	end   = re->re_regs.end[(int)group.number.val];
 
-	result = tp_list(tp);
+	result = tpy_list(tp);
 	tp_set(tp, result, tp_None, tp_number(start));
 	tp_set(tp, result, tp_None, tp_number(end));
 
@@ -679,7 +679,7 @@ void re_init(TP)
 	/*
 	 * module dict for re
 	 */
-	tp_obj re_mod = tp_dict(tp);
+	tp_obj re_mod = tpy_dict(tp);
 
 	/*
 	 * bind to re module

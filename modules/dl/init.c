@@ -263,7 +263,7 @@ tp_obj dl_call(TP) {
 
 tp_obj call_method(TP) {
     tp_obj self = TP_OBJ();
-    tp_obj args = _tp_list_copy(tp, tp->params);
+    tp_obj args = tp_track(tp, tp_list_copy(tp, tp->params));
 
     tp_obj symbol = tp_get(tp, self, tp_string("symbol"));
     tp_obj return_type = tp_get(tp, self, tp_string("return_type"));

@@ -12,13 +12,13 @@ tp_obj tp_repr_(TP, tp_obj self, tp_obj visited) {
     if(self.type == TP_STRING) {
         tp_params_v(tp, 3, self, tp_string("'"), tp_string("\\'"));
         tp_obj replaced = tpy_str_replace(tp);
-        return tp_printf(tp, "\'%s\'", replaced.string.val);
+        return tp_printf_tracked(tp, "\'%s\'", replaced.string.val);
     }
     return tp_str_(tp, self, visited);
 }
 
 tp_obj tp_repr(TP, tp_obj self) {
-    tp_obj visited = tp_list(tp);
+    tp_obj visited = tpy_list(tp);
     tp_obj result = tp_repr_(tp, self, visited);
     return result;
 }
@@ -50,8 +50,8 @@ tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
         result = self; 
     } else if (type == TP_NUMBER) {
         tp_num v = self.number.val;
-        if ((fabs(v-(long)v)) < 0.000001) { return tp_printf(tp,"%ld",(long)v); }
-        result = tp_printf(tp,"%f",v);
+        if ((fabs(v-(long)v)) < 0.000001) { return tp_printf_tracked(tp,"%ld",(long)v); }
+        result = tp_printf_tracked(tp,"%f",v);
     } else if(type == TP_DICT) {
         result = tp_string("{");
         int i, n = 0;
@@ -65,7 +65,7 @@ tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
             }
         }
         result = tp_add(tp, result, tp_string("}"));
-        /*result = tp_printf(tp,"<dict 0x%x>",self.dict.val);*/
+        /*result = tp_printf_tracked(tp,"<dict 0x%x>",self.dict.val);*/
     } else if(type == TP_LIST) {
         result = tp_string("[");
         int i;
@@ -74,13 +74,13 @@ tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
             if(i < self.list.val->len - 1) result = tp_add(tp, result, tp_string(", "));
         }
         result = tp_add(tp, result, tp_string("]"));
-        /*result = tp_printf(tp,"<list 0x%x>",self.list.val);*/
+        /*result = tp_printf_tracked(tp,"<list 0x%x>",self.list.val);*/
     } else if (type == TP_NONE) {
         result = tp_string("None");
     } else if (type == TP_DATA) {
-        result = tp_printf(tp,"<data 0x%x>",self.data.val);
+        result = tp_printf_tracked(tp,"<data 0x%x>",self.data.val);
     } else if (type == TP_FNC) {
-        result = tp_printf(tp,"<fnc 0x%x>",self.fnc.info);
+        result = tp_printf_tracked(tp,"<fnc 0x%x>",self.fnc.info);
     } else {
         result = tp_string("<?>");
     }
@@ -91,7 +91,7 @@ tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
 }
 
 tp_obj tp_str(TP, tp_obj self) {
-    tp_obj visited = tp_list(tp);
+    tp_obj visited = tpy_list(tp);
     tp_obj result = tp_str_(tp, self, visited);
     return result;
 }
@@ -101,18 +101,18 @@ tp_obj tp_str_old(TP,tp_obj self) {
     if (type == TP_STRING) { return self; }
     if (type == TP_NUMBER) {
         tp_num v = self.number.val;
-        if ((fabs(v)-fabs((long)v)) < 0.000001) { return tp_printf(tp,"%ld",(long)v); }
-        return tp_printf(tp,"%f",v);
+        if ((fabs(v)-fabs((long)v)) < 0.000001) { return tp_printf_tracked(tp,"%ld",(long)v); }
+        return tp_printf_tracked(tp,"%f",v);
     } else if(type == TP_DICT) {
-        return tp_printf(tp,"<dict 0x%x>",self.dict.val);
+        return tp_printf_tracked(tp,"<dict 0x%x>",self.dict.val);
     } else if(type == TP_LIST) {
-        return tp_printf(tp,"<list 0x%x>",self.list.val);
+        return tp_printf_tracked(tp,"<list 0x%x>",self.list.val);
     } else if (type == TP_NONE) {
         return tp_string("None");
     } else if (type == TP_DATA) {
-        return tp_printf(tp,"<data 0x%x>",self.data.val);
+        return tp_printf_tracked(tp,"<data 0x%x>",self.data.val);
     } else if (type == TP_FNC) {
-        return tp_printf(tp,"<fnc 0x%x>",self.fnc.info);
+        return tp_printf_tracked(tp,"<fnc 0x%x>",self.fnc.info);
     }
     return tp_string("<?>");
 }
@@ -287,7 +287,7 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
         else { tp_raise(tp_None,tp_string("(tp_get) TypeError: indices must be numbers")); }
         a = _tp_max(0,(a<0?l+a:a)); b = _tp_min(l,(b<0?l+b:b));
         if (type == TP_LIST) {
-            return tp_list_n(tp,b-a,&self.list.val->items[a]);
+            return tpy_list_n(tp,b-a,&self.list.val->items[a]);
         } else if (type == TP_STRING) {
             return tp_string_sub(tp,self,a,b);
         }
@@ -352,13 +352,13 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
     tp_raise(,tp_string("(tp_set) TypeError: object does not support item assignment"));
 }
 
-tp_obj tp_add(TP,tp_obj a, tp_obj b) {
+tp_obj tp_add(TP, tp_obj a, tp_obj b) {
     if (a.type == TP_NUMBER && a.type == b.type) {
         return tp_number(a.number.val+b.number.val);
     } else if (a.type == TP_STRING && a.type == b.type) {
-        return tp_string_add(tp, a, b);
+        return tp_track(tp, tp_string_add(tp, a, b));
     } else if (a.type == TP_LIST && a.type == b.type) {
-        return tp_list_add(tp, a, b);
+        return tp_track(tp, tp_list_add(tp, a, b));
     }
     tp_raise(tp_None,tp_string("(tp_add) TypeError: ?"));
 }
@@ -372,11 +372,11 @@ tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
     }
     if(a.type == TP_STRING && b.type == TP_NUMBER) {
         int n = b.number.val;
-        return tp_string_mul(tp, a, n);
+        return tp_track(tp, tp_string_mul(tp, a, n));
     }
     if(a.type == TP_LIST && b.type == TP_NUMBER) {
         int n = b.number.val;
-        return tp_list_mul(tp, a, n);
+        return tp_track(tp, tp_list_mul(tp, a, n));
     }
     tp_raise(tp_None,tp_string("(tp_mul) TypeError: ?"));
 }

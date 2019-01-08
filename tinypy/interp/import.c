@@ -44,7 +44,7 @@ tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
         code = tpy_load(tp);
     }
 
-    g = tp_dict(tp);
+    g = tpy_dict(tp);
     tp_set(tp,g,tp_string("__name__"),name);
     tp_set(tp,g,tp_string("__code__"),code);
     tp_set(tp,g,tp_string("__dict__"),g);
