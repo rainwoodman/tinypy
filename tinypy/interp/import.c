@@ -1,10 +1,10 @@
 tp_obj tpy_save(TP) {
-    char fname[256];
-    tp_cstr(tp, TP_STR(), fname, 256);
+    char * fname = tp_cstr(tp, TP_STR());
     tp_obj v = TP_OBJ();
     FILE *f;
     f = fopen(fname,"wb");
-    if (!f) { tp_raise(tp_None,tp_string("(tp_save) IOError: ?")); }
+    tp_free(tp, fname);
+    if (!f) { tp_raise(tp_None, tp_string("(tp_save) IOError: ?")); }
     fwrite(v.string.val,v.string.len,1,f);
     fclose(f);
     return tp_None;
@@ -15,12 +15,12 @@ tp_obj tpy_load(TP) {
     long l;
     tp_obj r;
     char *s;
-    char fname[256];
-    tp_cstr(tp, TP_STR(), fname, 256);
+    char * fname = tp_cstr(tp, TP_STR());
     struct stat stbuf;
     stat(fname, &stbuf);
     l = stbuf.st_size;
     f = fopen(fname,"rb");
+    tp_free(tp, fname);
     if (!f) {
         tp_raise(tp_None,tp_string("(tp_load) IOError: ?"));
     }

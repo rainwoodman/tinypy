@@ -145,7 +145,7 @@ int tp_true(TP,tp_obj v) {
 tp_obj tp_has(TP,tp_obj self, tp_obj k) {
     int type = self.type;
     if (type == TP_DICT) {
-        if (tpd_dict_find(tp, self.dict.val, k) != -1) {
+        if (tpd_dict_hashfind(tp, self.dict.val, tp_hash(tp, k), k) != -1) {
             return tp_True;
         }
         return tp_False;
@@ -164,10 +164,10 @@ tp_obj tp_has(TP,tp_obj self, tp_obj k) {
  *
  * Note that unlike with Python, you cannot use this to remove list items.
  */
-void tp_del(TP,tp_obj self, tp_obj k) {
+void tp_del(TP, tp_obj self, tp_obj k) {
     int type = self.type;
     if (type == TP_DICT) {
-        tpd_dict_del(tp, self.dict.val,k, "tp_del");
+        tp_dict_del(tp, self, k);
         return;
     }
     tp_raise(,tp_string("(tp_del) TypeError: object does not support item deletion"));
@@ -223,7 +223,7 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
             return tp_call(tp,meta,tp_params_v(tp,1,k));
         TP_META_END;
         if (self.dict.dtype && _tp_lookup(tp,self,k,&r)) { return r; }
-        return tpd_dict_get(tp, self.dict.val,k, "tp_get");
+        return tp_dict_get(tp, self, k);
     } else if (type == TP_LIST) {
         if (k.type == TP_NUMBER) {
             int l = tp_len(tp,self).number.val;
@@ -305,7 +305,7 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
  */
 int tp_iget(TP,tp_obj *r, tp_obj self, tp_obj k) {
     if (self.type == TP_DICT) {
-        int n = tpd_dict_find(tp, self.dict.val, k);
+        int n = tpd_dict_hashfind(tp, self.dict.val, tp_hash(tp, k), k);
         if (n == -1) { return 0; }
         *r = self.dict.val->items[n].val;
         tp_grey(tp,*r);
@@ -331,7 +331,7 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
             return;
         TP_META_END;
 
-        tpd_dict_set(tp, self.dict.val, k, v);
+        tpd_dict_hashset(tp, self.dict.val, tp_hash(tp, k), k, v);
         return;
     } else if (type == TP_LIST) {
         if (k.type == TP_NUMBER) {

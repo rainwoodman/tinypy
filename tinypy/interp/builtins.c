@@ -75,8 +75,9 @@ tp_obj tpy_range(TP) {
  * enables this, you better remove it before deploying your app :P
  */
 tp_obj tpy_system(TP) {
-    char s[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),s,TP_CSTR_LEN);
+    char * s = tp_cstr(tp, TP_STR());
     int r = system(s);
+    tp_free(tp, s);
     return tp_number(r);
 }
 
@@ -176,15 +177,24 @@ tp_obj tpy_round(TP) {
 }
 
 tp_obj tpy_exists(TP) {
-    char fname[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),fname,TP_CSTR_LEN);
+    char * fname = tp_cstr(tp, TP_STR());
     struct stat stbuf;
-    return tp_number(!stat(fname,&stbuf));
+    tp_obj r = tp_number(!stat(fname, &stbuf));
+    tp_free(tp, fname);
+    return r;
 }
 tp_obj tpy_mtime(TP) {
-    char fname[TP_CSTR_LEN]; tp_cstr(tp,TP_STR(),fname,TP_CSTR_LEN);
+    char * fname = tp_cstr(tp, TP_STR());
     struct stat stbuf;
-    if (!stat(fname,&stbuf)) { return tp_number(stbuf.st_mtime); }
-    tp_raise(tp_None,tp_string("(tp_mtime) IOError: ?"));
+    tp_obj r;
+    if (!stat(fname, &stbuf)) {
+        tp_free(tp, fname);
+        r = tp_number(stbuf.st_mtime);
+        return r;
+    } else {
+        tp_free(tp, fname);
+        tp_raise(tp_None, tp_string("(tp_mtime) IOError: ?"));
+    }
 }
 
 /* Function: tp_setmeta

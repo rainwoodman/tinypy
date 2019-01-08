@@ -291,20 +291,26 @@ tp_obj tp_string(char const *v) {
 
 /* Function: tp_cstr
  *
- * Fill a C string from a tinypy string.
+ * Fill a C string from a tinypy string, and return as a buffer
+ * that needs to be freed by tp_free
  *
- * s must be a buffer at least can hold v.string.len + 1 bytes
  */
 tp_inline static
-void tp_cstr(TP, tp_obj v, char *s, int l) {
-    if (v.type != TP_STRING) { 
-        tp_raise( , tp_string("(tp_cstr) TypeError: value not a string"));
+char * tp_cstr(TP, tp_obj v) {
+    char * buffer;
+    char const * val;
+    if(v.type != TP_STRING) {
+        val = "NOT A STRING";
+        buffer = tp_malloc(tp, strlen(val) + 1);
+        memcpy(buffer, val, strlen(val) + 1);
+    } else {
+        val = v.string.val;
+        buffer = tp_malloc(tp, v.string.len + 1);
+        memset(buffer, 0, v.string.len + 1);
+        memcpy(buffer, val, v.string.len);
     }
-    if (v.string.len + 1 >= l) {
-        tp_raise( , tp_string("(tp_cstr) TypeError: value too long"));
-    }
-    memset(s, 0, v.string.len + 1);
-    memcpy(s, v.string.val, v.string.len);
+    
+    return buffer;
 }
 
 

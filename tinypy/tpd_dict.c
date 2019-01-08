@@ -25,7 +25,6 @@ void tpd_dict_hashset(TP, tpd_dict *self, int hash, tp_obj k, tp_obj v) {
         self->len += 1;
         return;
     }
-    tp_raise(,tp_string("(tpd_dict_hashset) RuntimeError: ?"));
 }
 
 void tpd_dict_realloc(TP, tpd_dict *self, int len) {
@@ -62,6 +61,20 @@ tpd_dict *tpd_dict_new(TP) {
     return self;
 }
 
+void tpd_dict_hashsetx(TP, tpd_dict * self, int hash, tp_obj k, tp_obj v) {
+    int n = tpd_dict_hashfind(tp, self, hash, k);
+    if (n == -1) {
+        if (self->len >= (self->alloc/2)) {
+            tpd_dict_realloc(tp, self, self->alloc*2);
+        } else if (self->used >= (self->alloc*3/4)) {
+            tpd_dict_realloc(tp, self, self->alloc);
+        }
+        tpd_dict_hashset(tp, self, hash, k, v);
+    } else {
+        self->items[n].val = v;
+    }
+}
+
 int tpd_dict_next(TP, tpd_dict *self) {
     if (!self->len) {
         tp_raise(0,tp_string("(tpd_dict_next) RuntimeError"));
@@ -74,3 +87,11 @@ int tpd_dict_next(TP, tpd_dict *self) {
     }
 }
 
+tp_obj tpd_dict_get(TP, tpd_dict * self, int n) {
+    return self->items[n].val;
+}
+
+void tpd_dict_del(TP, tpd_dict * self, int n) {
+    self->items[n].used = -1;
+    self->len -= 1;
+}

@@ -68,7 +68,7 @@ void tp_gc_deinit(TP) {
     tpd_list_free(tp, tp->black);
 }
 
-void tp_delete(TP,tp_obj v) {
+void tp_delete(TP, tp_obj v) {
     int type = v.type;
     if (type == TP_LIST) {
         tpd_list_free(tp, v.list.val);
@@ -89,7 +89,7 @@ void tp_delete(TP,tp_obj v) {
         tp_free(tp, v.fnc.info);
         return;
     }
-    tp_raise(,tp_string("(tp_delete) TypeError: ?"));
+    tp_raise(, tp_string("(tp_delete) TypeError: ?"));
 }
 
 void tp_collect(TP) {
