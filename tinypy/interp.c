@@ -2,19 +2,19 @@
 
 #include "interp/hash.c"
 
-#include "list/tpd.c"
-#include "list/tp.c"
-#include "list/tpy.c"
+#include "tpd_list.c"
+#include "tpd_dict.c"
 
-#include "dict/tpd.c"
-#include "dict/tp.c"
-#include "dict/tpy.c"
+#include "tp_list.c"
+#include "tp_dict.c"
+#include "tp_string.c"
 
-#include "string/tp.c"
-#include "string/tpy.c"
+#include "tpy_dict.c"
+#include "tpy_list.c"
+#include "tpy_string.c"
 
-#include "func/tpy.c"
-#include "data/tpy.c"
+#include "tpy_func.c"
+#include "tpy_data.c"
 
 #include "interp/misc.c"
 #include "interp/meta.c"
