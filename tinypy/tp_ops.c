@@ -302,7 +302,7 @@ int tp_cmp(TP, tp_obj a, tp_obj b) {
         case TP_STRING: return tp_string_cmp(&a, &b);
         case TP_LIST: return tp_list_cmp(tp, a, b);
         case TP_DICT: return a.dict.val - b.dict.val;
-        case TP_FNC: return a.func.info - b.func.info;
+        case TP_FUNC: return a.func.info - b.func.info;
         case TP_DATA: return (char*)a.data.val - (char*)b.data.val;
     }
     tp_raise(0,tp_string_const("(tp_cmp) TypeError: ?"));
@@ -382,7 +382,7 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
         }
     }
 
-    if (self.type.typeid == TP_FNC) {
+    if (self.type.typeid == TP_FUNC) {
         if(!(self.type.magic & TP_FUNC_MASK_C)) {
             /* external C function */
             /* FIXME: what if the func is a method? */

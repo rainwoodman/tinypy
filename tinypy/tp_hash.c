@@ -27,7 +27,7 @@ int tp_hash(TP, tp_obj v) {
             }
             return r;
         }
-        case TP_FNC: return tpd_lua_hash(&v.func.info, sizeof(void*));
+        case TP_FUNC: return tpd_lua_hash(&v.func.info, sizeof(void*));
         case TP_DATA: return tpd_lua_hash(&v.data.val, sizeof(void*));
     }
     tp_raise(0, tp_string_const("(tp_hash) TypeError: value unhashable"));

@@ -3,7 +3,7 @@
  */
 
 tp_obj tpy_bind(TP) {
-    tp_obj r = TP_TYPE(TP_FNC);
+    tp_obj r = TP_TYPE(TP_FUNC);
     tp_obj self = TP_OBJ();
     return tp_bind(tp, r, self);
 }
@@ -85,8 +85,8 @@ tp_obj tpy_istype(TP) {
     if (tp_cmp(tp,t,tp_string_const("list")) == 0) { return tp_number(v.type.typeid == TP_LIST); }
     if (tp_cmp(tp,t,tp_string_const("dict")) == 0) { return tp_number(v.type.typeid == TP_DICT); }
     if (tp_cmp(tp,t,tp_string_const("number")) == 0) { return tp_number(v.type.typeid == TP_NUMBER); }
-    if (tp_cmp(tp,t,tp_string_const("func")) == 0) { return tp_number(v.type.typeid == TP_FNC && (v.type.magic& TP_FUNC_MASK_METHOD) == 0); }
-    if (tp_cmp(tp,t,tp_string_const("method")) == 0) { return tp_number(v.type.typeid == TP_FNC && (v.type.magic& TP_FUNC_MASK_METHOD) != 0); }
+    if (tp_cmp(tp,t,tp_string_const("func")) == 0) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) == 0); }
+    if (tp_cmp(tp,t,tp_string_const("method")) == 0) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) != 0); }
     tp_raise(tp_None,tp_string_const("(is_type) TypeError: ?"));
 }
 

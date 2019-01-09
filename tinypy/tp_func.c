@@ -12,7 +12,7 @@ tp_obj tp_tcall(TP, tp_obj func) {
 }
 
 tp_obj tp_func_nt(TP, int t, void *v, tp_obj c,tp_obj s, tp_obj g) {
-    tp_obj r = {TP_FNC};
+    tp_obj r = {TP_FUNC};
     tpd_func *info = (tpd_func*)tp_malloc(tp, sizeof(tpd_func));
     info->code = c;
     info->self = s;

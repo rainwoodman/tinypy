@@ -11,7 +11,7 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *meta, int depth) {
     if (self.type.magic != TP_DICT_RAW
     && self.dict.val->meta.type.typeid == TP_DICT
     && _tp_lookup_(tp, self.dict.val->meta, hash, k, meta, depth)) {
-        if (self.type.magic == TP_DICT_OBJECT && meta->type.typeid == TP_FNC) {
+        if (self.type.magic == TP_DICT_OBJECT && meta->type.typeid == TP_FUNC) {
             /* make a copy of the function that is bound to the instance;
  *               FIXME: what does dtype == 2 mean? */
             *meta = tp_bind(tp, *meta, self);

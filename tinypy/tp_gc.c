@@ -34,7 +34,7 @@ void tp_follow(TP,tp_obj v) {
         }
         tp_grey(tp,v.dict.val->meta); 
     }
-    if (type == TP_FNC) {
+    if (type == TP_FUNC) {
         tp_grey(tp,v.func.info->self);
         tp_grey(tp,v.func.info->globals);
         tp_grey(tp,v.func.info->code);
@@ -85,7 +85,7 @@ void tp_delete(TP, tp_obj v) {
         }
         tp_free(tp, v.data.info);
         return;
-    } else if (type == TP_FNC) {
+    } else if (type == TP_FUNC) {
         tp_free(tp, v.func.info);
         return;
     }

@@ -157,7 +157,7 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         char buf[128];
         snprintf(buf, 120, "<data 0x%x>", self.data.val);
         string_builder_write(tp, sb, buf, -1);
-    } else if (type == TP_FNC) {
+    } else if (type == TP_FUNC) {
         char buf[128];
         snprintf(buf, 120, "<func 0x%x>", self.func.info);
         string_builder_write(tp, sb, buf, -1);

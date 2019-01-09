@@ -44,7 +44,7 @@
 
 enum TPTypeID {
     TP_NONE,TP_NUMBER,TP_STRING,TP_DICT,
-    TP_LIST,TP_FNC,TP_DATA,
+    TP_LIST,TP_FUNC,TP_DATA,
 };
 
 typedef struct TPTypeInfo {
@@ -82,7 +82,7 @@ typedef double tp_num;
  * string.len - Length in bytes of the string data.
  * dict - TP_DICT
  * list - TP_LIST
- * func - TP_FNC
+ * func - TP_FUNC
  * data - TP_DATA
  * data.val - The user-provided data pointer.
  * type.magic - The user-provided magic number for identifying the data type.
