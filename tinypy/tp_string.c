@@ -27,8 +27,8 @@ tp_obj tp_string_copy(TP, const char *s, int n) {
 
 /*
  * Create a new string which is a substring slice (view) of another STRING.
- * the returned object does not allocate new memory, and thus the object does not
- * need to be tracked by gc.
+ * the returned object does not allocate new memory. It refers to the same
+ * memory object to the original string.
  */
 tp_obj tp_string_sub(TP, tp_obj s, int a, int b) {
     int l = s.string.len;
@@ -55,7 +55,7 @@ tp_obj tp_printf_tracked(TP, char const *fmt,...) {
     return tp_track(tp, r);
 }
 
-int _tp_str_index(tp_obj s, tp_obj k) {
+int tp_str_index (tp_obj s, tp_obj k) {
     int i=0;
     while ((s.string.len - i) >= k.string.len) {
         if (memcmp(s.string.val+i,k.string.val,k.string.len) == 0) {
@@ -67,7 +67,7 @@ int _tp_str_index(tp_obj s, tp_obj k) {
 }
 
 
-int _tp_string_cmp(tp_obj * a, tp_obj * b)
+int tp_string_cmp(tp_obj * a, tp_obj * b)
 {
     int l = _tp_min(a->string.len, b->string.len);
     int v = memcmp(a->string.val, b->string.val, l);
@@ -80,9 +80,10 @@ int _tp_string_cmp(tp_obj * a, tp_obj * b)
 tp_obj tp_string_add(TP, tp_obj a, tp_obj b)
 {
     int al = a.string.len, bl = b.string.len;
-    tp_obj r = tp_string_t(tp,al+bl);
+    tp_obj r = tp_string_t(tp, al+bl);
     char *s = r.string.info->s;
-    memcpy(s,a.string.val,al); memcpy(s+al,b.string.val,bl);
+    memcpy(s,a.string.val,al);
+    memcpy(s+al,b.string.val,bl);
     return r;
 }
 

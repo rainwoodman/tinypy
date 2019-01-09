@@ -16,8 +16,11 @@
 #include "tpy_func.c"
 #include "tpy_data.c"
 
-#include "interp/misc.c"
 #include "interp/meta.c"
+
+#include "tp_repr.c"
+#include "interp/misc.c"
+
 #include "interp/frame.c"
 #include "interp/import.c"
 #include "interp/gc.c"

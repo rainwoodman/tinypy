@@ -6,7 +6,7 @@
 tp_obj tpy_list_index(TP) {
     tp_obj self = TP_OBJ();
     tp_obj v = TP_OBJ();
-    int i = tpd_list_find(tp,self.list.val,v);
+    int i = tpd_list_find(tp, self.list.val, v, tp_cmp);
     if (i < 0) {
         tp_raise(tp_None,tp_string("(tp_index) ValueError: list.index(x): x not in list"));
     }

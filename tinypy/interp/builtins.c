@@ -132,14 +132,14 @@ tp_obj tpy_join(TP) {
     tp_obj r;
     char *s;
     for (i=0; i<val.list.val->len; i++) {
-        l += tp_str(tp,val.list.val->items[i]).string.len;
+        l += tp_str_tracked(tp,val.list.val->items[i]).string.len;
     }
     r = tp_string_t(tp,l);
     s = r.string.info->s;
     l = 0;
     for (i=0; i<val.list.val->len; i++) {
         tp_obj e;
-        e = tp_str(tp,val.list.val->items[i]);
+        e = tp_str_tracked(tp,val.list.val->items[i]);
         memcpy(s+l,e.string.val,e.string.len); l += e.string.len;
     }
     return tp_track(tp,r);
@@ -328,7 +328,7 @@ void tp_module_builtins_init(TP) {
     {"print",tpy_print}, {"range",tpy_range}, {"min",tpy_min},
     {"max",tpy_max}, {"bind", tpy_bind}, {"copy",tpy_copy},
     {"__import__",tpy_import}, {"len",tpy_len}, {"assert", tpy_assert},
-    {"str",tpy_str2}, {"float",tpy_float}, {"system",tpy_system},
+    {"str", tpy_str}, {"float",tpy_float}, {"system",tpy_system},
     {"istype",tpy_istype}, {"isinstance",tpy_isinstance}, 
     {"chr",tpy_chr}, {"save",tpy_save},
     {"load",tpy_load}, {"read",tpy_load},

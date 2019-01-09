@@ -233,8 +233,8 @@ tp_obj tp_has(TP, tp_obj self, tp_obj k);
 tp_obj tp_len(TP, tp_obj);
 
 void   tp_del(TP, tp_obj, tp_obj);
-tp_obj tp_str(TP, tp_obj);
-tp_obj tp_repr(TP, tp_obj);
+tp_obj tp_str_tracked(TP, tp_obj);
+tp_obj tp_repr_tracked(TP, tp_obj);
 int    tp_true(TP, tp_obj);
 int    tp_cmp(TP, tp_obj, tp_obj);
 tp_obj tp_add(TP,tp_obj a, tp_obj b) ;
@@ -370,13 +370,6 @@ tp_inline static tp_obj tp_number(tp_num v) {
     tp_obj val = {TP_NUMBER};
     val.number.val = v;
     return val;
-}
-
-tp_obj tp_str_old(TP, tp_obj self);
-
-tp_inline static void tp_echo(TP,tp_obj e) {
-    e = tp_str(tp,e);
-    tp->echo(e.string.val, e.string.len);
 }
 
 /* Function: tp_string_n

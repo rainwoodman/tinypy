@@ -37,3 +37,12 @@ tp_obj tpy_data(TP, int magic, void *v) {
     return tp_track(tp,r);
 }
 
+/* creates an untracked tp_data */
+tp_obj tp_data(TP, int magic, void *v) {
+    tp_obj r = {TP_DATA};
+    r.data.info = NULL;
+    r.data.val = v;
+    r.data.magic = magic;
+    return r;
+}
+

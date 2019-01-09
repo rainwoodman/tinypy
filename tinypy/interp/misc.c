@@ -2,6 +2,11 @@
  * Various functions to help interface tinypy.
  */
 
+void tp_echo(TP, tp_obj e) {
+    e = tp_str_tracked(tp, e);
+    tp->echo(e.string.val, e.string.len);
+}
+
 /* Function: tp_params
  * Initialize the tinypy parameters.
  *

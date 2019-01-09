@@ -35,7 +35,7 @@ tp_obj tpy_load(TP) {
 tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     tp_obj g;
 
-    if (!((fname.type != TP_NONE && _tp_str_index(fname,tp_string(".tpc"))!=-1) || code.type != TP_NONE)) {
+    if (!((fname.type != TP_NONE && tp_str_index(fname,tp_string(".tpc"))!=-1) || code.type != TP_NONE)) {
         return tp_ez_call(tp,"tinypy.compiler.py2bc","import_fname",tp_params_v(tp,2,fname,name));
     }
 

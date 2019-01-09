@@ -38,3 +38,14 @@ tp_obj tp_list_nt(TP) {
     return r;
 }
 
+int tp_list_cmp(TP, tp_obj a, tp_obj b)
+{
+    int n, v;
+    for(n=0; n<_tp_min(a.list.val->len, b.list.val->len); n++) {
+        tp_obj aa = a.list.val->items[n];
+        tp_obj bb = b.list.val->items[n];
+        v = tp_cmp(tp, aa, bb);
+        if (v) { return v; }
+    }
+    return a.list.val->len - b.list.val->len;
+}

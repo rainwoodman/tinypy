@@ -77,7 +77,7 @@ void tpd_dict_hashsetx(TP, tpd_dict * self, int hash, tp_obj k, tp_obj v) {
 
 int tpd_dict_next(TP, tpd_dict *self) {
     if (!self->len) {
-        tp_raise(0,tp_string("(tpd_dict_next) RuntimeError"));
+        return -1;
     }
     while (1) {
         self->cur = ((self->cur + 1) & self->mask);

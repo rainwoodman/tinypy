@@ -1,122 +1,3 @@
-/* File: Operations
- * Various tinypy operations.
- */
-
-tp_obj tp_str_(TP, tp_obj self, tp_obj visited);
-tp_obj tp_has(TP,tp_obj self, tp_obj k);
-
-tp_obj tp_repr_(TP, tp_obj self, tp_obj visited) {
-    TP_META_BEGIN(self,"__repr__");
-        return tp_call(tp,meta,tp_params(tp));
-    TP_META_END;
-    if(self.type == TP_STRING) {
-        tp_params_v(tp, 3, self, tp_string("'"), tp_string("\\'"));
-        tp_obj replaced = tpy_str_replace(tp);
-        return tp_printf_tracked(tp, "\'%s\'", replaced.string.val);
-    }
-    return tp_str_(tp, self, visited);
-}
-
-tp_obj tp_repr(TP, tp_obj self) {
-    tp_obj visited = tpy_list(tp);
-    tp_obj result = tp_repr_(tp, self, visited);
-    return result;
-}
-
-/* Function: tp_str
- * String representation of an object.
- * Checks for recursive data structures
- *
- * Returns a string object representating self.
- */
-tp_obj tp_str_(TP, tp_obj self, tp_obj visited) {
-    /* if the class has __str__ or __repr__ use those */
-    TP_META_BEGIN(self,"__str__");
-        return tp_call(tp,meta,tp_params(tp));
-    TP_META_END;
-    TP_META_BEGIN(self,"__repr___");
-        return tp_call(tp,meta,tp_params(tp));
-    TP_META_END;
-    int type = self.type;
-    if(type == TP_DICT) {
-        if(tp_has(tp, visited, tpy_data(tp, 0, self.dict.val)).number.val) return tp_string("{...}");
-        tpd_list_append(tp, visited.list.val, tpy_data(tp, 0, self.dict.val));
-    } else if(type == TP_LIST) {
-        if(tp_has(tp, visited, tpy_data(tp, 0, self.list.val)).number.val) return tp_string("[...]");
-        tpd_list_append(tp, visited.list.val, tpy_data(tp, 0, self.list.val));
-    }
-    tp_obj result = tp_None;
-    if (type == TP_STRING) { 
-        result = self; 
-    } else if (type == TP_NUMBER) {
-        tp_num v = self.number.val;
-        if ((fabs(v-(long)v)) < 0.000001) { return tp_printf_tracked(tp,"%ld",(long)v); }
-        result = tp_printf_tracked(tp,"%f",v);
-    } else if(type == TP_DICT) {
-        result = tp_string("{");
-        int i, n = 0;
-        for(i = 0; i < self.dict.val->alloc; i++) {
-            if(self.dict.val->items[i].used > 0) {
-                result = tp_add(tp, result, tp_repr_(tp, self.dict.val->items[i].key, visited));
-                result = tp_add(tp, result, tp_string(": "));
-                result = tp_add(tp, result, tp_repr_(tp, self.dict.val->items[i].val, visited));
-                if(n < self.dict.val->len - 1) result = tp_add(tp, result, tp_string(", "));
-                n += 1;
-            }
-        }
-        result = tp_add(tp, result, tp_string("}"));
-        /*result = tp_printf_tracked(tp,"<dict 0x%x>",self.dict.val);*/
-    } else if(type == TP_LIST) {
-        result = tp_string("[");
-        int i;
-        for(i = 0; i < self.list.val->len; i++) {
-            result = tp_add(tp, result, tp_repr_(tp, self.list.val->items[i], visited));
-            if(i < self.list.val->len - 1) result = tp_add(tp, result, tp_string(", "));
-        }
-        result = tp_add(tp, result, tp_string("]"));
-        /*result = tp_printf_tracked(tp,"<list 0x%x>",self.list.val);*/
-    } else if (type == TP_NONE) {
-        result = tp_string("None");
-    } else if (type == TP_DATA) {
-        result = tp_printf_tracked(tp,"<data 0x%x>",self.data.val);
-    } else if (type == TP_FNC) {
-        result = tp_printf_tracked(tp,"<fnc 0x%x>",self.fnc.info);
-    } else {
-        result = tp_string("<?>");
-    }
-    if(type == TP_DICT || type == TP_LIST) {
-        tpd_list_pop(tp, visited.list.val, visited.list.val->len - 1, "visited list is empty");
-    }
-    return result;
-}
-
-tp_obj tp_str(TP, tp_obj self) {
-    tp_obj visited = tpy_list(tp);
-    tp_obj result = tp_str_(tp, self, visited);
-    return result;
-}
-
-tp_obj tp_str_old(TP,tp_obj self) {
-    int type = self.type;
-    if (type == TP_STRING) { return self; }
-    if (type == TP_NUMBER) {
-        tp_num v = self.number.val;
-        if ((fabs(v)-fabs((long)v)) < 0.000001) { return tp_printf_tracked(tp,"%ld",(long)v); }
-        return tp_printf_tracked(tp,"%f",v);
-    } else if(type == TP_DICT) {
-        return tp_printf_tracked(tp,"<dict 0x%x>",self.dict.val);
-    } else if(type == TP_LIST) {
-        return tp_printf_tracked(tp,"<list 0x%x>",self.list.val);
-    } else if (type == TP_NONE) {
-        return tp_string("None");
-    } else if (type == TP_DATA) {
-        return tp_printf_tracked(tp,"<data 0x%x>",self.data.val);
-    } else if (type == TP_FNC) {
-        return tp_printf_tracked(tp,"<fnc 0x%x>",self.fnc.info);
-    }
-    return tp_string("<?>");
-}
-
 
 /* Function: tp_true
  * Check the truth value of an object
@@ -150,9 +31,9 @@ tp_obj tp_has(TP,tp_obj self, tp_obj k) {
         }
         return tp_False;
     } else if (type == TP_STRING && k.type == TP_STRING) {
-        return tp_number(_tp_str_index(self,k)!=-1);
+        return tp_number(tp_str_index(self,k)!=-1);
     } else if (type == TP_LIST) {
-        return tp_number(tpd_list_find(tp,self.list.val,k)!=-1);
+        return tp_number(tpd_list_find(tp, self.list.val, k, tp_cmp)!=-1);
     }
     tp_raise(tp_None,tp_string("(tp_has) TypeError: iterable argument required"));
 }
@@ -403,8 +284,8 @@ int tp_cmp(TP, tp_obj a, tp_obj b) {
     switch(a.type) {
         case TP_NONE: return 0;
         case TP_NUMBER: return _tp_sign(a.number.val-b.number.val);
-        case TP_STRING: return _tp_string_cmp(&a, &b);
-        case TP_LIST: return tpd_list_cmp(tp, a.list.val, b.list.val);
+        case TP_STRING: return tp_string_cmp(&a, &b);
+        case TP_LIST: return tp_list_cmp(tp, a, b);
         case TP_DICT: return a.dict.val - b.dict.val;
         case TP_FNC: return a.fnc.info - b.fnc.info;
         case TP_DATA: return (char*)a.data.val - (char*)b.data.val;
