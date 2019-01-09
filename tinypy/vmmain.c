@@ -1,4 +1,4 @@
-#include "interp.h"
+#include "tp.h"
 
 int main(int argc,  char *argv[]) {
     tp_vm *tp = tp_init(argc, argv);

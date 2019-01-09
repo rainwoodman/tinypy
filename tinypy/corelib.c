@@ -1,4 +1,4 @@
-#include "interp.h"
+#include "tp.h"
 
 #include "corelib/builtins.c"
 

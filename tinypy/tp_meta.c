@@ -12,13 +12,9 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *meta, int depth) {
     && self.dict.val->meta.type == TP_DICT
     && _tp_lookup_(tp, self.dict.val->meta, hash, k, meta, depth)) {
         if (self.dict.dtype == 2 && meta->type == TP_FNC) {
-            /* make a copy of the function;  FIXME: what does dtype == 2 mean? */
-            *meta = tp_fnc_t(tp,
-                meta->fnc.ftype|2,
-                meta->fnc.cfnc,
-                meta->fnc.info->code,
-                self,
-                meta->fnc.info->globals);
+            /* make a copy of the function that is bound to the instance;
+ *               FIXME: what does dtype == 2 mean? */
+            *meta = tp_bind(tp, *meta, self);
         }
         return 1;
     }

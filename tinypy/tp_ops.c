@@ -124,11 +124,6 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
                 return tp_method(tp, self,tpy_list_sort);
             } else if (tp_cmp(tp,tp_string_const("extend"),k) == 0) {
                 return tp_method(tp, self,tpy_list_extend);
-            } else if (tp_cmp(tp,tp_string_const("*"),k) == 0) {
-                tp_params_v(tp,1,self);
-                r = tpy_copy(tp);
-                self.list.val->len=0;
-                return r;
             }
         } else if (k.type == TP_NONE) {
             return tpd_list_pop(tp, self.list.val, 0, "tp_get");
@@ -329,6 +324,70 @@ tp_obj tp_bitwise_not(TP, tp_obj a) {
         return tp_number(~(long)a.number.val);
     }
     tp_raise(tp_None,tp_string_const("(tp_bitwise_not) TypeError: unsupported operand type"));
+}
+
+/* Function: tp_call
+ * Calls a tinypy function.
+ *
+ * Use this to call a tinypy function.
+ *
+ * Parameters:
+ * tp - The VM instance.
+ * self - The object to call.
+ * params - Parameters to pass.
+ *
+ * Example:
+ * > tp_call(tp,
+ * >     tp_get(tp, tp->builtins, tp_string_const("foo")),
+ * >     tp_params_v(tp, tp_string_const("hello")))
+ * This will look for a global function named "foo", then call it with a single
+ * positional parameter containing the string "hello".
+ */
+tp_obj tp_call(TP, tp_obj self, tp_obj params) {
+    /* I'm not sure we should have to do this, but
+    just for giggles we will. */
+    tp->params = params;
+
+    if (self.type == TP_DICT) {
+        if (self.dict.dtype == 1) {
+            tp_obj meta;
+            if (_tp_lookup(tp, self, tp_string_const("__new__"), &meta)) {
+                tpd_list_insert(tp, params.list.val, 0, self);
+                return tp_call(tp, meta, params);
+            }
+        } else if (self.dict.dtype == 2) {
+            TP_META_BEGIN(self,"__call__");
+                return tp_call(tp, meta, params);
+            TP_META_END;
+        }
+    }
+
+    if (self.type == TP_FNC) {
+        if(!(self.fnc.ftype & 1)) {
+            /* external C function */
+            tp_obj r = tp_tcall(tp, self);
+            tp_grey(tp, r);
+            return r;
+        } else {
+            /* compiled Python function */
+            tp_obj dest = tp_None;
+            tp_enter_frame(tp, self.fnc.info->globals,
+                               self.fnc.info->code,
+                              &dest);
+            if ((self.fnc.ftype & 2)) {
+                /* method */
+                tp->frames[tp->cur].regs[0] = params;
+                tpd_list_insert(tp, params.list.val, 0, self.fnc.info->self);
+            } else {
+                /* function */
+                tp->frames[tp->cur].regs[0] = params;
+            }
+            tp_run_frame(tp);
+            return dest;
+        }
+    }
+    tp_echo(tp, self);
+    tp_raise(tp_None,tp_string_const("(tp_call) TypeError: object is not callable"));
 }
 
 /**/

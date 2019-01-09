@@ -5,9 +5,7 @@
 tp_obj tpy_bind(TP) {
     tp_obj r = TP_TYPE(TP_FNC);
     tp_obj self = TP_OBJ();
-    return tp_fnc_t(tp,
-        r.fnc.ftype|2,r.fnc.cfnc,r.fnc.info->code,
-        self,r.fnc.info->globals);
+    return tp_bind(tp, r, self);
 }
 
 tp_obj tpy_min(TP) {
@@ -331,6 +329,39 @@ tp_obj tpy_save(TP) {
     return tp_None;
 }
 
+tp_obj tpy_exec(TP) {
+    tp_obj code = TP_OBJ();
+    tp_obj globals = TP_OBJ();
+    tp_obj r = tp_None;
+
+    tp_enter_frame(tp, globals, code, &r);
+    tp_run_frame(tp);
+
+    return r;
+}
+
+tp_obj tpy_eval(TP) {
+    tp_obj text = TP_STR();
+    tp_obj globals = TP_TYPE(TP_DICT);
+
+    tp_obj code = tp_compile(tp, text, tp_string_const("<eval>"));
+
+    tp_exec(tp,code,globals);
+    return tp->last_result;
+}
+
+
+tp_obj tpy_print(TP) {
+    int n = 0;
+    tp_obj e;
+    TP_LOOP(e)
+        if (n) { tp->echo(" ", -1); }
+        tp_echo(tp,e);
+        n += 1;
+    TP_END;
+    tp->echo("\n", -1);
+    return tp_None;
+}
 
 
 void tp_module_builtins_init(TP) {

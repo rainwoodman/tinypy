@@ -27,6 +27,15 @@ tp_obj tp_fnc_t(TP, int t, void *v, tp_obj c, tp_obj s, tp_obj g) {
     return tp_track(tp, tp_fnc_nt(tp, t, v, c, s, g));
 }
 
+tp_obj tp_bind(TP, tp_obj function, tp_obj self) {
+    return tp_fnc_t(tp,
+                function.fnc.ftype|2,
+                function.fnc.cfnc,
+                function.fnc.info->code,
+                self,
+                function.fnc.info->globals);
+}
+
 tp_obj tp_def(TP, tp_obj code, tp_obj g) {
     return tp_fnc_t(tp,1,0,code,tp_None,g);
 }
@@ -44,3 +53,5 @@ tp_obj tp_function(TP, tp_obj v(TP)) {
 tp_obj tp_method(TP,tp_obj self, tp_obj v(TP)) {
     return tp_fnc_t(tp,2,v,tp_None,self,tp_None);
 }
+
+

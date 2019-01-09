@@ -51,7 +51,7 @@ tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     tp_enter_frame(tp, g, code, 0);
 
     if (!tp->jmp) {
-        tp_run(tp, tp->cur);
+        tp_run_frame(tp);
     }
 
     return g;

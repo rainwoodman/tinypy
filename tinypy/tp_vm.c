@@ -8,7 +8,7 @@ void tp_default_echo(const char* string, int length) {
  * Functionality pertaining to the virtual machine.
  */
 
-tp_vm *_tp_init(void) {
+tp_vm * tp_create_vm(void) {
     int i;
     tp_vm *tp = (tp_vm*)calloc(sizeof(tp_vm),1);
     tp->time_limit = TP_NO_LIMIT;
@@ -46,23 +46,14 @@ tp_vm *_tp_init(void) {
     return tp;
 }
 
+void tp_enter_frame(TP, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
+    tpd_frame f = tp_frame_nt(tp, globals, code, ret_dest);
 
-/* Function: tp_deinit
- * Destroys a VM instance.
- * 
- * When you no longer need an instance of tinypy, you can use this to free all
- * memory used by it. Even when you are using only a single tinypy instance, it
- * may be good practice to call this function on shutdown.
- */
-void tp_deinit(TP) {
-    while (tp->root.list.val->len) {
-        tpd_list_pop(tp, tp->root.list.val, 0, "tp_deinit");
+    if (f.regs+(256+TP_REGS_EXTRA) >= tp->regs+TP_REGS || tp->cur >= TP_FRAMES-1) {
+        tp_raise(,tp_string_const("(tp_frame) RuntimeError: stack overflow"));
     }
-    tp_full(tp); tp_full(tp);
-    tp_delete(tp,tp->root);
-    tp_gc_deinit(tp);
-    tp->mem_used -= sizeof(tp_vm); 
-    free(tp);
+    tp->cur += 1;
+    tp->frames[tp->cur] = f;
 }
 
 void _tp_raise(TP,tp_obj e) {
@@ -80,6 +71,20 @@ void _tp_raise(TP,tp_obj e) {
     tp_grey(tp,e);
     longjmp(tp->buf,1);
 }
+
+void tp_print_stack(TP) {
+    int i;
+    tp->echo("\n", -1);
+    for (i=0; i<=tp->cur; i++) {
+        if (!tp->frames[i].lineno) { continue; }
+        tp->echo("File \"", -1); tp_echo(tp,tp->frames[i].fname); tp->echo("\", ", -1);
+        tp_echo(tp, tp_printf(tp, "line %d, in ",tp->frames[i].lineno));
+        tp_echo(tp,tp->frames[i].name); tp->echo("\n ", -1);
+        tp_echo(tp,tp->frames[i].line); tp->echo("\n", -1);
+    }
+    tp->echo("\nException:\n", -1); tp_echo(tp,tp->ex); tp->echo("\n", -1);
+}
+
 
 void tp_handle(TP) {
     int i;
@@ -100,61 +105,27 @@ void tp_handle(TP) {
 #endif
 }
 
-/* Function: tp_call
- * Calls a tinypy function.
- *
- * Use this to call a tinypy function.
- *
- * Parameters:
- * tp - The VM instance.
- * self - The object to call.
- * params - Parameters to pass.
- *
- * Example:
- * > tp_call(tp,
- * >     tp_get(tp, tp->builtins, tp_string_const("foo")),
- * >     tp_params_v(tp, tp_string_const("hello")))
- * This will look for a global function named "foo", then call it with a single
- * positional parameter containing the string "hello".
- */
-tp_obj tp_call(TP,tp_obj self, tp_obj params) {
-    /* I'm not sure we should have to do this, but
-    just for giggles we will. */
-    tp->params = params;
 
-    if (self.type == TP_DICT) {
-        if (self.dict.dtype == 1) {
-            tp_obj meta; if (_tp_lookup(tp,self,tp_string_const("__new__"),&meta)) {
-                tpd_list_insert(tp, params.list.val, 0, self);
-                return tp_call(tp,meta,params);
-            }
-        } else if (self.dict.dtype == 2) {
-            TP_META_BEGIN(self,"__call__");
-                return tp_call(tp,meta,params);
-            TP_META_END;
-        }
+int tp_step(TP);
+void tp_continue_frame(TP, int cur) {
+    jmp_buf tmp;
+    memcpy(tmp, tp->buf, sizeof(jmp_buf));
+    tp->jmp += 1;
+    if (setjmp(tp->buf)) {
+        tp_handle(tp);
     }
-    if (self.type == TP_FNC && !(self.fnc.ftype&1)) {
-        tp_obj r = tp_tcall(tp, self);
-        tp_grey(tp, r);
-        return r;
+    /* keep runing till the frame drops back (aka function returns) */
+    while (tp->cur >= cur) {
+        if (tp_step(tp) == -1) break;
     }
-    if (self.type == TP_FNC) {
-        tp_obj dest = tp_None;
-        tp_enter_frame(tp, self.fnc.info->globals,
-                           self.fnc.info->code,
-                          &dest);
-        if ((self.fnc.ftype & 2)) {
-            tp->frames[tp->cur].regs[0] = params;
-            tpd_list_insert(tp, params.list.val, 0, self.fnc.info->self);
-        } else {
-            tp->frames[tp->cur].regs[0] = params;
-        }
-        tp_run(tp,tp->cur);
-        return dest;
-    }
-    tp_params_v(tp,1, self); tpy_print(tp);
-    tp_raise(tp_None,tp_string_const("(tp_call) TypeError: object is not callable"));
+
+    tp->jmp -= 1;
+    memcpy(tp->buf, tmp, sizeof(jmp_buf));
+}
+
+/* run the current frame till it returns */
+void tp_run_frame(TP) {
+    tp_continue_frame(tp, tp->cur);
 }
 
 
@@ -301,7 +272,9 @@ int tp_step(TP) {
         case TP_IRETURN: tp_return(tp,RA); SR(0); break;
         case TP_IRAISE: _tp_raise(tp,RA); SR(0); break;
         case TP_IDEBUG:
-            tp_params_v(tp,3,tp_string_const("DEBUG:"),tp_number(VA),RA); tpy_print(tp);
+            tp_echo(tp, tp_string_const("DEBUG:"));
+            tp_echo(tp, tp_number(VA));
+            tp_echo(tp, RA);
             break;
         case TP_INONE: RA = tp_None; break;
         case TP_ILINE: {
@@ -333,76 +306,6 @@ int tp_step(TP) {
     SR(0);
 }
 
-void tp_run(TP,int cur) {
-    jmp_buf tmp;
-    memcpy(tmp, tp->buf, sizeof(jmp_buf));
-    tp->jmp += 1;
-
-    if (setjmp(tp->buf)) {
-        tp_handle(tp);
-    }
-    /* keep runing till the frame drops back (aka function returns) */
-    while (tp->cur >= cur) {
-        if (tp_step(tp) == -1) break;
-    }
-
-    tp->jmp -= 1;
-    memcpy(tp->buf, tmp, sizeof(jmp_buf));
-}
-
-
-tp_obj tp_ez_call(TP, const char *mod, const char *fnc, tp_obj params) {
-    tp_obj tmp;
-    tmp = tp_get(tp,tp->modules,tp_string_const(mod));
-    tmp = tp_get(tp,tmp,tp_string_const(fnc));
-    return tp_call(tp,tmp,params);
-}
-
-tp_obj tpy_print(TP) {
-    int n = 0;
-    tp_obj e;
-    TP_LOOP(e)
-        if (n) { tp->echo(" ", -1); }
-        tp_echo(tp,e);
-        n += 1;
-    TP_END;
-    tp->echo("\n", -1);
-    return tp_None;
-}
-
-
-tp_obj tpy_exec(TP) {
-    tp_obj code = TP_OBJ();
-    tp_obj globals = TP_OBJ();
-    tp_obj r = tp_None;
-
-    tp_enter_frame(tp, globals, code, &r);
-
-    tp_run(tp, tp->cur);
-    return r;
-}
-
-
-tp_obj tp_args(TP, int argc, char *argv[]) {
-    tp_obj self = tp_list_t(tp);
-    int i;
-    for (i=1; i<argc; i++) {
-        tpd_list_append(tp, self.list.val, tp_string_const(argv[i]));
-    }
-    return self;
-}
-
-tp_obj tp_main(TP,char *fname, void *code, int len) {
-    return tp_import_from_buffer(tp,fname, "__main__", code, len);
-}
-
-/* Function: tp_compile
- * Compile some tinypy code.
- *
- */
-tp_obj tp_compile(TP, tp_obj text, tp_obj fname) {
-    return tp_ez_call(tp, "tinypy.language.builtins", "compile",tp_params_v(tp,2,text,fname));
-}
 
 /* Function: tp_exec
  * Execute VM code.
@@ -410,7 +313,7 @@ tp_obj tp_compile(TP, tp_obj text, tp_obj fname) {
 tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
     tp_obj r = tp_None;
     tp_enter_frame(tp, globals, code, &r);
-    tp_run(tp,tp->cur);
+    tp_run_frame(tp);
     return r;
 }
 
@@ -420,40 +323,3 @@ tp_obj tp_eval_from_cstr(TP, const char *text, tp_obj globals) {
     return tp->last_result;
 }
 
-tp_obj tpy_eval(TP) {
-    tp_obj text = TP_STR();
-    tp_obj globals = TP_TYPE(TP_DICT);
-
-    tp_obj code = tp_compile(tp, text, tp_string_const("<eval>"));
-
-    tp_exec(tp,code,globals);
-    return tp->last_result;
-}
-
-void tp_module_sys_init (TP, int argc, char * argv[]) {
-    tp_obj sys = tp_dict_t(tp);
-    tp_obj args = tp_args(tp,argc,argv);
-    tp_set(tp, sys, tp_string_const("version"), tp_string_const("tinypy 1.2+SVN"));
-    tp_set(tp, sys, tp_string_const("modules"), tp->modules);
-    tp_set(tp, sys, tp_string_const("argv"), args);
-    tp_set(tp, tp->modules, tp_string_const("sys"), sys);
-}
-/* Function: tp_init
- * Initializes a new virtual machine.
- *
- * The given parameters have the same format as the parameters to main, and
- * allow passing arguments to your tinypy scripts.
- *
- * Returns:
- * The newly created tinypy instance.
- */
-tp_vm *tp_init(int argc, char *argv[]) {
-    tp_vm *tp = _tp_init();
-    tp_module_sys_init(tp, argc, argv);
-    tp_module_builtins_init(tp);
-    tp_module_corelib_init(tp);
-    tp_module_compiler_init(tp);
-    return tp;
-}
-
-/**/

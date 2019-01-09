@@ -1,4 +1,4 @@
-#include <tinypy/interp.h>
+#include <tinypy/tp.h>
 
 #include "random.c"
 

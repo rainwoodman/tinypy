@@ -6,7 +6,7 @@
  * $Id$
  */
 
-#include <tinypy/interp.h>
+#include <tinypy/tp.h>
 #include <stdio.h>
 #include <assert.h>
 #include "regexpr.c"

@@ -225,25 +225,8 @@ void tp_sandbox(TP, double, unsigned long);
 void tp_time_update(TP);
 void tp_mem_update(TP);
 
-void   tp_run(TP,int cur);
-
-void   tp_set(TP, tp_obj, tp_obj, tp_obj);
-tp_obj tp_get(TP, tp_obj, tp_obj);
-tp_obj tp_has(TP, tp_obj self, tp_obj k);
-tp_obj tp_len(TP, tp_obj);
-
-void   tp_del(TP, tp_obj, tp_obj);
-tp_obj tp_str(TP, tp_obj);
-tp_obj tp_repr(TP, tp_obj);
-int    tp_true(TP, tp_obj);
-int    tp_cmp(TP, tp_obj, tp_obj);
-tp_obj tp_add(TP,tp_obj a, tp_obj b) ;
-tp_obj tp_mul(TP, tp_obj a, tp_obj b);
-int    tp_hash(TP, tp_obj v);
-
 tp_obj tp_track(TP, tp_obj);
 void   tp_grey(TP,tp_obj);
-tp_obj tp_call(TP, tp_obj fnc, tp_obj params);
 
 /* __func__ __VA_ARGS__ __FILE__ __LINE__ */
 
@@ -276,7 +259,6 @@ void   _tp_raise(TP,tp_obj);
  * use <tp_string_t> or <tp_string_slice> to create a string where tinypy
  * manages storage for you.
  */
-/* FIXME: rename this tp tp_string_const; */
 tp_inline static
 tp_obj tp_string_const(char const *v) {
     tp_obj r;
@@ -330,7 +312,6 @@ tp_obj tp_check_type(TP,int t, tp_obj v) {
 #define TP_OBJ() (tp_get(tp, tp->params, tp_None))
 #define TP_TYPE(t) tp_check_type(tp, t, TP_OBJ())
 #define TP_NUM() (TP_TYPE(TP_NUMBER).number.val)
-/* #define TP_STR() (TP_CSTR(TP_TYPE(TP_STRING))) */
 #define TP_STR() (TP_TYPE(TP_STRING))
 #define TP_DEFAULT(d) (tp->params.list.val->len?tp_get(tp, tp->params, tp_None):(d))
 
@@ -358,10 +339,6 @@ tp_obj tpd_list_get(TP, tpd_list *self, int k, const char *error);
         (e) = tpd_list_get(tp, tp->params.list.val, __i, "TP_LOOP");
 #define TP_END \
     }
-
-tp_inline static int _tp_min(int a, int b) { return (a<b?a:b); }
-tp_inline static int _tp_max(int a, int b) { return (a>b?a:b); }
-tp_inline static int _tp_sign(tp_num v) { return (v<0?-1:(v>0?1:0)); }
 
 /* Function: tp_number
  * Creates a new numeric object.
@@ -393,9 +370,6 @@ tp_obj tp_params(TP);
 tp_obj tp_params_n(TP, int n, tp_obj argv[]);
 tp_obj tp_params_v(TP, int n, ...);
 
-tp_vm *tp_init(int argc, char *argv[]);
-void tp_deinit(TP);
-
 tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code);
 tp_obj tp_import_from_buffer(TP, const char * fname, const char * name, void *codes, int len);
 tp_obj tp_ez_call(TP, const char *mod, const char *fnc, tp_obj params);
@@ -403,27 +377,26 @@ tp_obj tp_eval_from_cstr(TP, const char *text, tp_obj globals);
 tp_obj tp_exec(TP, tp_obj code, tp_obj globals);
 tp_obj tp_compile(TP, tp_obj text, tp_obj fname);
 
-void   tp_run(TP, int cur);
-
-tp_obj tpy_copy(TP);
-tp_obj tpy_print(TP);
-tp_obj tpy_load(TP);
-tp_obj tpy_save(TP);
-
 tp_obj tp_data_t(TP, int magic, void *v);
 tp_obj tp_list_t(TP);
 tp_obj tp_list_nt(TP);
 tp_obj tp_dict_t(TP);
 tp_obj tp_dict_nt(TP);
 tp_obj tp_function(TP, tp_obj v(TP));
-tp_obj tp_method(TP,tp_obj self,tp_obj v(TP));
+tp_obj tp_method(TP, tp_obj self,tp_obj v(TP));
 tp_obj tp_def(TP, tp_obj code, tp_obj g);
+tp_obj tp_bind(TP, tp_obj function, tp_obj self);
 
 tp_obj tp_printf(TP, const char * fmt, ...);
+
+tp_vm * tp_init(int argc, char *argv[]);
+void tp_deinit(TP);
 
 void tp_module_sys_init(TP, int argc, char * argv[]);
 void tp_module_builtins_init(TP);
 void tp_module_compiler_init(TP);
 void tp_module_corelib_init(TP);
+
+#include "tp_ops.h"
 
 #endif
