@@ -1,12 +1,11 @@
 #include "interp.h"
 
-#include "tp_hash.c"
-
 #include "tpd_list.c"
 #include "tpd_dict.c"
 
 #include "tp_gc.c"
 
+#include "tp_hash.c"
 #include "tp_list.c"
 #include "tp_dict.c"
 #include "tp_string.c"
@@ -15,9 +14,9 @@
 #include "tp_data.c"
 
 #include "tp_meta.c"
+#include "tp_repr.c"
 
 #include "tpy_string.c"
-#include "tp_repr.c"
 
 #include "tp_misc.c"
 #include "tp_frame.c"

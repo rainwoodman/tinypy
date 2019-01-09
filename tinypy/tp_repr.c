@@ -1,35 +1,53 @@
+typedef struct {
+    char * buffer;
+    int size;
+    int len;
+} StringBuilder;
 
-tp_obj tp_str_(TP, tp_obj self, tpd_list * visited);
-tp_obj tp_repr_(TP, tp_obj self, tpd_list * visited);
+void string_builder_write (TP, StringBuilder * sb, const char * s, int len)
+{
+    if(len < 0) len = strlen(s);
+    if(sb->len + len + 1 >= sb->size) {
+        sb->size = (sb->len + len + 1) + sb->len / 2;
+        sb->buffer = tp_realloc(tp, sb->buffer, sb->size);
+    }
+    memcpy(sb->buffer + sb->len, s, len);
+    sb->len += len;
+    sb->buffer[sb->len] = 0;
+}
+
+void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode);
 
 tp_obj tp_repr(TP, tp_obj self) {
     /* we only put unmanaged tp_data objects to the list.*/
     tpd_list * visited = tpd_list_new(tp);
-    tp_obj result = tp_repr_(tp, self, visited);
+    StringBuilder sb[1];
+    sb->buffer = tp_malloc(tp, 128);
+    sb->len = 0;
+    sb->size = 128;
+    tp_str_(tp, self, visited, sb, 0);
+
     tpd_list_free(tp, visited);
-    return result;
+    tp_obj r = tp_string_nt(sb->buffer, sb->len);
+
+    return tp_track(tp, r);
 }
 
 tp_obj tp_str(TP, tp_obj self) {
     /* we only put unmanaged tp_data objects to the list.*/
     tpd_list * visited = tpd_list_new(tp);
-    tp_obj result = tp_str_(tp, self, visited);
+    StringBuilder sb[1];
+    sb->buffer = tp_malloc(tp, 128);
+    sb->len = 0;
+    sb->size = 128;
+
+    tp_str_(tp, self, visited, sb, 1);
+
     tpd_list_free(tp, visited);
-    return result;
-}
+//    printf("tp-str: %d %s\n", sb->len, sb->buffer);
+    tp_obj r = tp_string_nt(sb->buffer, sb->len);
 
-tp_obj tp_repr_(TP, tp_obj self, tpd_list *visited) {
-    TP_META_BEGIN(self,"__repr__");
-        return tp_call(tp,meta,tp_params(tp));
-    TP_META_END;
-
-    if(self.type == TP_STRING) {
-        tp_params_v(tp, 3, self, tp_string_const("'"), tp_string_const("\\'"));
-        tp_obj replaced = tpy_str_replace(tp);
-        return tp_printf(tp, "\'%s\'", replaced.string.val);
-    }
-
-    return tp_str_(tp, self, visited);
+    return tp_track(tp, r);
 }
 
 /* Function: tp_str
@@ -38,73 +56,118 @@ tp_obj tp_repr_(TP, tp_obj self, tpd_list *visited) {
  *
  * Returns a string object representating self.
  */
-tp_obj tp_str_(TP, tp_obj self, tpd_list * visited) {
+void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) {
     /* if the class has __str__ or __repr__ use those */
-    TP_META_BEGIN(self,"__str__");
-        return tp_call(tp, meta, tp_params(tp));
-    TP_META_END;
+    if(mode != 0) { /* str mode */
+        TP_META_BEGIN(self,"__str__");
+            tp_obj obj = tp_call(tp, meta, tp_params(tp));
+            string_builder_write(tp, sb, obj.string.val, obj.string.len);
+            return;
+        TP_META_END;
+    }
     TP_META_BEGIN(self,"__repr___");
-        return tp_call(tp, meta, tp_params(tp));
+        tp_obj obj = tp_call(tp, meta, tp_params(tp));
+        string_builder_write(tp, sb, obj.string.val, obj.string.len);
+        return;
     TP_META_END;
+
     int type = self.type;
     if(type == TP_DICT) {
         tp_obj data = tp_data_nt(tp, 0, self.dict.val);
         /* FIXME: use tp_data_cmp */
-        if(tpd_list_find(tp, visited, data, tp_cmp) >= 0)
-            return tp_string_const("{...}");
+        if(tpd_list_find(tp, visited, data, tp_cmp) >= 0) {
+            string_builder_write(tp, sb, "{...}", -1);
+            return;
+        }
         tpd_list_append(tp, visited, data);
-
     } else if(type == TP_LIST) {
         tp_obj data = tp_data_nt(tp, 0, self.list.val);
-        if(tpd_list_find(tp, visited, data, tp_cmp) >= 0)
-            return tp_string_const("[...]");
+        if(tpd_list_find(tp, visited, data, tp_cmp) >= 0) {
+            string_builder_write(tp, sb, "[...]", -1);
+            return;
+        }
         tpd_list_append(tp, visited, data);
     }
-    tp_obj result = tp_None;
+
     if (type == TP_STRING) { 
-        result = self; 
+        if(mode != 0) { /* str */
+            string_builder_write(tp, sb, self.string.val, self.string.len);
+        } else { /* repr */
+            int i;
+            string_builder_write(tp, sb, "'", 1);
+            for (i = 0; i < self.string.len; i ++) {
+                const char * s = self.string.val + i;
+                switch(s[0]) {
+                    case '\n':
+                        string_builder_write(tp, sb, "\\n", 2);
+                        break;
+                    case '\r':
+                        string_builder_write(tp, sb, "\\r", 2);
+                        break;
+                    case '\t':
+                        string_builder_write(tp, sb, "\\t", 2);
+                        break;
+                    case '\'':
+                    case '\"':
+                        string_builder_write(tp, sb, "\\", 1);
+                    /* leak through */
+                    default:
+                        string_builder_write(tp, sb, s, 1);
+                }
+            }
+            string_builder_write(tp, sb, "'", 1);
+        } 
     } else if (type == TP_NUMBER) {
+        char buf[128];
         tp_num v = self.number.val;
         if ((fabs(v-(long)v)) < 0.000001) {
-            return tp_printf(tp,"%ld",(long)v);
+            snprintf(buf, 120, "%ld", (long)v);
+            string_builder_write(tp, sb, buf, -1);
+        } else {
+            snprintf(buf, 120, "%f", v);
         }
-        result = tp_printf(tp, "%f", v);
     } else if(type == TP_DICT) {
-        result = tp_string_const("{");
+        string_builder_write(tp, sb, "{", -1);
         int i, n = 0;
         for(i = 0; i < self.dict.val->alloc; i++) {
             if(self.dict.val->items[i].used > 0) {
-                result = tp_add(tp, result, tp_repr_(tp, self.dict.val->items[i].key, visited));
-                result = tp_add(tp, result, tp_string_const(": "));
-                result = tp_add(tp, result, tp_repr_(tp, self.dict.val->items[i].val, visited));
-                if(n < self.dict.val->len - 1) result = tp_add(tp, result, tp_string_const(", "));
+                tp_str_(tp, self.dict.val->items[i].key, visited, sb, mode);
+                string_builder_write(tp, sb, ": ", -1);
+                tp_str_(tp, self.dict.val->items[i].val, visited, sb, mode);
+                if(n < self.dict.val->len - 1) {
+                    string_builder_write(tp, sb, ", ", -1);
+                }
                 n += 1;
             }
         }
-        result = tp_add(tp, result, tp_string_const("}"));
-        /*result = tp_printf(tp,"<dict 0x%x>",self.dict.val);*/
+        string_builder_write(tp, sb, "}", -1);
     } else if(type == TP_LIST) {
-        result = tp_string_const("[");
+        string_builder_write(tp, sb, "[", -1);
         int i;
         for(i = 0; i < self.list.val->len; i++) {
-            result = tp_add(tp, result, tp_repr_(tp, self.list.val->items[i], visited));
-            if(i < self.list.val->len - 1) result = tp_add(tp, result, tp_string_const(", "));
+            tp_str_(tp, self.list.val->items[i], visited, sb, mode);
+            if(i < self.list.val->len - 1) {
+                string_builder_write(tp, sb, ", ", -1);
+            }
         }
-        result = tp_add(tp, result, tp_string_const("]"));
-        /*result = tp_printf(tp,"<list 0x%x>",self.list.val);*/
+        string_builder_write(tp, sb, "]", -1);
     } else if (type == TP_NONE) {
-        result = tp_string_const("None");
+        string_builder_write(tp, sb, "None", -1);
     } else if (type == TP_DATA) {
-        result = tp_printf(tp,"<data 0x%x>",self.data.val);
+        char buf[128];
+        snprintf(buf, 120, "<data 0x%x>", self.data.val);
+        string_builder_write(tp, sb, buf, -1);
     } else if (type == TP_FNC) {
-        result = tp_printf(tp,"<fnc 0x%x>",self.fnc.info);
+        char buf[128];
+        snprintf(buf, 120, "<func 0x%x>", self.fnc.info);
+        string_builder_write(tp, sb, buf, -1);
     } else {
-        result = tp_string_const("<?>");
+        string_builder_write(tp, sb, "<?>", -1);
     }
     if(type == TP_DICT || type == TP_LIST) {
         tpd_list_pop(tp, visited, visited->len - 1, "visited list is empty");
     }
-    return result;
+    return;
 }
 
 tp_obj tpy_str(TP) {
