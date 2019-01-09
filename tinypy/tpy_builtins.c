@@ -34,7 +34,7 @@ tp_obj tpy_copy(TP) {
     } else if (type == TP_DICT) {
         return tp_dict_copy(tp,r);
     }
-    tp_raise(tp_None,tp_string_const("(tp_copy) TypeError: ?"));
+    tp_raise(tp_None,tp_string_atom(tp, "(tp_copy) TypeError: ?"));
 }
 
 
@@ -46,7 +46,7 @@ tp_obj tpy_len(TP) {
 tp_obj tpy_assert(TP) {
     int a = TP_NUM();
     if (a) { return tp_None; }
-    tp_raise(tp_None, tp_string_const("(tp_assert) AssertionError"));
+    tp_raise(tp_None, tp_string_atom(tp, "(tp_assert) AssertionError"));
 }
 
 tp_obj tpy_range(TP) {
@@ -81,13 +81,13 @@ tp_obj tpy_system(TP) {
 tp_obj tpy_istype(TP) {
     tp_obj v = TP_OBJ();
     tp_obj t = TP_STR();
-    if (tp_cmp(tp,t,tp_string_const("string")) == 0) { return tp_number(v.type.typeid == TP_STRING); }
-    if (tp_cmp(tp,t,tp_string_const("list")) == 0) { return tp_number(v.type.typeid == TP_LIST); }
-    if (tp_cmp(tp,t,tp_string_const("dict")) == 0) { return tp_number(v.type.typeid == TP_DICT); }
-    if (tp_cmp(tp,t,tp_string_const("number")) == 0) { return tp_number(v.type.typeid == TP_NUMBER); }
-    if (tp_cmp(tp,t,tp_string_const("func")) == 0) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) == 0); }
-    if (tp_cmp(tp,t,tp_string_const("method")) == 0) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) != 0); }
-    tp_raise(tp_None,tp_string_const("(is_type) TypeError: ?"));
+    if (tp_cmp(tp,t,tp_string_atom(tp, "string")) == 0) { return tp_number(v.type.typeid == TP_STRING); }
+    if (tp_cmp(tp,t,tp_string_atom(tp, "list")) == 0) { return tp_number(v.type.typeid == TP_LIST); }
+    if (tp_cmp(tp,t,tp_string_atom(tp, "dict")) == 0) { return tp_number(v.type.typeid == TP_DICT); }
+    if (tp_cmp(tp,t,tp_string_atom(tp, "number")) == 0) { return tp_number(v.type.typeid == TP_NUMBER); }
+    if (tp_cmp(tp,t,tp_string_atom(tp, "func")) == 0) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) == 0); }
+    if (tp_cmp(tp,t,tp_string_atom(tp, "method")) == 0) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) != 0); }
+    tp_raise(tp_None,tp_string_atom(tp, "(is_type) TypeError: ?"));
 }
 
 tp_obj tpy_isinstance(TP) {
@@ -96,7 +96,7 @@ tp_obj tpy_isinstance(TP) {
     
     tp_obj * pv = &v;
     if(t.type.typeid != TP_DICT) {
-        tp_raise(tp_None, tp_string_const("isinstance TypeError: class argument must be a dictionary."));
+        tp_raise(tp_None, tp_string_atom(tp, "isinstance TypeError: class argument must be a dictionary."));
     }
 
     while(pv->type.typeid == TP_DICT) {
@@ -114,13 +114,13 @@ tp_obj tpy_float(TP) {
     int ord = TP_DEFAULT(tp_number(0)).number.val;
     int type = v.type.typeid;
     if (type == TP_NUMBER) { return v; }
-    if (type == TP_STRING && v.string.len < 32) {
-        char s[32]; memset(s,0,v.string.len+1);
-        memcpy(s,v.string.val,v.string.len);
+    if (type == TP_STRING && v.string.val->len < 32) {
+        char s[32]; memset(s,0,v.string.val->len+1);
+        memcpy(s,v.string.val->s,v.string.val->len);
         if (strchr(s,'.')) { return tp_number(atof(s)); }
         return(tp_number(strtol(s,0,ord)));
     }
-    tp_raise(tp_None,tp_string_const("(tpy_float) TypeError: ?"));
+    tp_raise(tp_None,tp_string_atom(tp, "(tpy_float) TypeError: ?"));
 }
 
 tp_obj tpy_join(TP) {
@@ -129,15 +129,16 @@ tp_obj tpy_join(TP) {
     tp_obj r;
     char *s;
     for (i=0; i<val.list.val->len; i++) {
-        l += tp_str(tp,val.list.val->items[i]).string.len;
+        l += tp_str(tp,val.list.val->items[i]).string.val->len;
     }
     r = tp_string_t(tp,l);
-    s = r.string.info->s;
+    s = r.string.val->s;
     l = 0;
     for (i=0; i<val.list.val->len; i++) {
         tp_obj e;
         e = tp_str(tp,val.list.val->items[i]);
-        memcpy(s+l,e.string.val,e.string.len); l += e.string.len;
+        memcpy(s+l, e.string.val->s, e.string.val->len);
+        l += e.string.val->len;
     }
     return r;
 }
@@ -145,16 +146,16 @@ tp_obj tpy_join(TP) {
 tp_obj tpy_fpack(TP) {
     tp_num v = TP_NUM();
     tp_obj r = tp_string_t(tp,sizeof(tp_num));
-    *(tp_num*)r.string.val = v;
+    *(tp_num*)r.string.val->s = v;
     return r;
 }
 
 tp_obj tpy_funpack(TP) {
     tp_obj v = TP_STR();
-    if (v.string.len != sizeof(tp_num)) {
-        tp_raise(tp_None, tp_string_const("funpack ValueError: length of string is incorrect."));
+    if (v.string.val->len != sizeof(tp_num)) {
+        tp_raise(tp_None, tp_string_atom(tp, "funpack ValueError: length of string is incorrect."));
     }
-    tp_num r = *((tp_num*) v.string.val);
+    tp_num r = *((tp_num*) v.string.val->s);
     return tp_number(r);
 }
 
@@ -190,7 +191,7 @@ tp_obj tpy_mtime(TP) {
         return r;
     } else {
         tp_free(tp, fname);
-        tp_raise(tp_None, tp_string_const("(tp_mtime) IOError: ?"));
+        tp_raise(tp_None, tp_string_atom(tp, "(tp_mtime) IOError: ?"));
     }
 }
 
@@ -287,7 +288,7 @@ tp_obj tpy_getraw(TP) {
  */
 tp_obj tp_class(TP) {
     tp_obj klass = tp_dict_t(tp);
-    klass.dict.val->meta = tp_get(tp, tp->builtins, tp_string_const("object")); 
+    klass.dict.val->meta = tp_get(tp, tp->builtins, tp_string_atom(tp, "object")); 
     return klass;
 }
 
@@ -310,7 +311,7 @@ tp_obj tpy_import(TP) {
         return tp_get(tp,tp->modules,mod);
     }
     
-    /* r = _tp_import(tp,tp_add(tp,mod,tp_string_const(".tpc")),mod,tp_None); */
+    /* r = _tp_import(tp,tp_add(tp,mod,tp_string_atom(tp, ".tpc")),mod,tp_None); */
     return tp_None;
 }
 
@@ -344,7 +345,7 @@ tp_obj tpy_eval(TP) {
     tp_obj text = TP_STR();
     tp_obj globals = TP_TYPE(TP_DICT);
 
-    tp_obj code = tp_compile(tp, text, tp_string_const("<eval>"));
+    tp_obj code = tp_compile(tp, text, tp_string_atom(tp, "<eval>"));
 
     tp_exec(tp,code,globals);
     return tp->last_result;
@@ -366,8 +367,8 @@ tp_obj tpy_print(TP) {
 
 void tp_module_builtins_init(TP) {
     tp_obj builtins = tp_dict_t(tp);
-    tp_set(tp, builtins, tp_string_const("MODULES"), tp->modules);
-    tp_set(tp, builtins, tp_string_const("__dict__"), tp->builtins);
+    tp_set(tp, builtins, tp_string_atom(tp, "MODULES"), tp->modules);
+    tp_set(tp, builtins, tp_string_atom(tp, "__dict__"), tp->builtins);
 
     tp_obj o;
     struct {const char *s;void *f;} b[] = {
@@ -391,15 +392,15 @@ void tp_module_builtins_init(TP) {
     {0,0},
     };
     int i; for(i=0; b[i].s; i++) {
-        tp_set(tp, builtins, tp_string_const(b[i].s), tp_function(tp,(tp_obj (*)(tp_vm *))b[i].f));
+        tp_set(tp, builtins, tp_string_atom(tp, b[i].s), tp_function(tp,(tp_obj (*)(tp_vm *))b[i].f));
     }
     
     o = tp_object(tp);
-    tp_set(tp, o, tp_string_const("__call__"), tp_function(tp, tpy_object_call));
-    tp_set(tp, o, tp_string_const("__new__"),  tp_function(tp, tpy_object_new));
-    tp_set(tp, builtins, tp_string_const("object"), o);
+    tp_set(tp, o, tp_string_atom(tp, "__call__"), tp_function(tp, tpy_object_call));
+    tp_set(tp, o, tp_string_atom(tp, "__new__"),  tp_function(tp, tpy_object_new));
+    tp_set(tp, builtins, tp_string_atom(tp, "object"), o);
 
-    tp_set(tp, tp->modules, tp_string_const("tinypy.language.builtins"), builtins);
+    tp_set(tp, tp->modules, tp_string_atom(tp, "tinypy.language.builtins"), builtins);
     tp->builtins = builtins;
 }
 

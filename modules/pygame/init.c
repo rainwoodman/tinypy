@@ -19,7 +19,7 @@ void pygame_surf_free(TP,tp_obj d) {
 }
 
 SDL_Surface *pygame_obj_to_surf(TP,tp_obj self) {
-    tp_obj d = tp_get(tp,self,tp_string_const("__surf"));
+    tp_obj d = tp_get(tp,self,tp_string_atom(tp, "__surf"));
     if (d.type.magic != PYGAME_TYPE_SURF) { tp_raise(0,tp_printf(tp, "%s","not a surface")); }
     return (SDL_Surface*)d.data.val;
 }
@@ -46,8 +46,8 @@ tp_obj pygame_surf_to_obj(TP,SDL_Surface *s) {
     tp_obj d = tpy_data(tp,PYGAME_TYPE_SURF,s);
     d.data.info->free = pygame_surf_free;
 
-    tp_set(tp,self,tp_string_const("__surf"),d);
-    tp_set(tp,self,tp_string_const("set_at"),tp_method(tp,self,pygame_surface_set_at));
+    tp_set(tp,self,tp_string_atom(tp, "__surf"),d);
+    tp_set(tp,self,tp_string_atom(tp, "set_at"),tp_method(tp,self,pygame_surface_set_at));
     return self;
 }
 
@@ -90,22 +90,22 @@ tp_obj pygame_event_get(TP) {
     tp_obj r = tp_list(tp);
     while (SDL_PollEvent(&e)) {
         tp_obj d = tp_dict(tp);
-        tp_set(tp,d,tp_string_const("type"),tp_number(e.type.typeid));
+        tp_set(tp,d,tp_string_atom(tp, "type"),tp_number(e.type.typeid));
         switch (e.type.typeid) {
             case SDL_KEYDOWN:
             case SDL_KEYUP:
-                tp_set(tp,d,tp_string_const("key"),tp_number(e.key.keysym.sym));
-                tp_set(tp,d,tp_string_const("mod"),tp_number(e.key.keysym.mod));
+                tp_set(tp,d,tp_string_atom(tp, "key"),tp_number(e.key.keysym.sym));
+                tp_set(tp,d,tp_string_atom(tp, "mod"),tp_number(e.key.keysym.mod));
                 break;
             case SDL_MOUSEMOTION:
-                tp_set(tp,d,tp_string_const("pos"),tp_list_n(tp,2,(tp_obj[]){tp_number(e.motion.x),tp_number(e.motion.y)}));
-                tp_set(tp,d,tp_string_const("rel"),tp_list_n(tp,2,(tp_obj[]){tp_number(e.motion.xrel),tp_number(e.motion.yrel)}));
-                tp_set(tp,d,tp_string_const("state"),tp_number(e.motion.state));
+                tp_set(tp,d,tp_string_atom(tp, "pos"),tp_list_n(tp,2,(tp_obj[]){tp_number(e.motion.x),tp_number(e.motion.y)}));
+                tp_set(tp,d,tp_string_atom(tp, "rel"),tp_list_n(tp,2,(tp_obj[]){tp_number(e.motion.xrel),tp_number(e.motion.yrel)}));
+                tp_set(tp,d,tp_string_atom(tp, "state"),tp_number(e.motion.state));
                 break;
             case SDL_MOUSEBUTTONDOWN:
             case SDL_MOUSEBUTTONUP:
-                tp_set(tp,d,tp_string_const("pos"),tp_list_n(tp,2,(tp_obj[]){tp_number(e.button.x),tp_number(e.button.y)}));
-                tp_set(tp,d,tp_string_const("button"),tp_number(e.button.button));
+                tp_set(tp,d,tp_string_atom(tp, "pos"),tp_list_n(tp,2,(tp_obj[]){tp_number(e.button.x),tp_number(e.button.y)}));
+                tp_set(tp,d,tp_string_atom(tp, "button"),tp_number(e.button.button));
                 break;
         }
         tp_set(tp,r,tp_None,d);
@@ -128,7 +128,7 @@ tp_obj pygame_time_get_ticks(TP) {
     
 
 /* pygame */
-#define PYGAME_LOCALS(a,b) tp_set(tp,m,tp_string_const(a),tp_number(b));
+#define PYGAME_LOCALS(a,b) tp_set(tp,m,tp_string_atom(tp, a),tp_number(b));
 
 tp_obj _pygame_init(TP) {
     SDL_Init(SDL_INIT_VIDEO);
@@ -139,21 +139,21 @@ tp_obj _pygame_init(TP) {
 void pygame_init(TP) {
     tp_obj g,m;
     g = tp_dict(tp);
-    tp_set(tp,tp->modules,tp_string_const("pygame"),g);
-    tp_set(tp,g,tp_string_const("init"),tp_func(tp,_pygame_init));
+    tp_set(tp,tp->modules,tp_string_atom(tp, "pygame"),g);
+    tp_set(tp,g,tp_string_atom(tp, "init"),tp_func(tp,_pygame_init));
     
     /* display */
-    m = tp_dict(tp); tp_set(tp,g,tp_string_const("display"),m);
-    tp_set(tp,m,tp_string_const("set_mode"),tp_func(tp,pygame_display_set_mode));
-    tp_set(tp,m,tp_string_const("flip"),tp_func(tp,pygame_display_flip));
-    tp_set(tp,m,tp_string_const("update"),tp_func(tp,pygame_display_update));
+    m = tp_dict(tp); tp_set(tp,g,tp_string_atom(tp, "display"),m);
+    tp_set(tp,m,tp_string_atom(tp, "set_mode"),tp_func(tp,pygame_display_set_mode));
+    tp_set(tp,m,tp_string_atom(tp, "flip"),tp_func(tp,pygame_display_flip));
+    tp_set(tp,m,tp_string_atom(tp, "update"),tp_func(tp,pygame_display_update));
     
     /* event */
-    m = tp_dict(tp); tp_set(tp,g,tp_string_const("event"),m);
-    tp_set(tp,m,tp_string_const("get"),tp_func(tp,pygame_event_get));
+    m = tp_dict(tp); tp_set(tp,g,tp_string_atom(tp, "event"),m);
+    tp_set(tp,m,tp_string_atom(tp, "get"),tp_func(tp,pygame_event_get));
     
     /* locals */
-    m = tp_dict(tp); tp_set(tp,g,tp_string_const("locals"),m);
+    m = tp_dict(tp); tp_set(tp,g,tp_string_atom(tp, "locals"),m);
     PYGAME_LOCALS("QUIT",SDL_QUIT);
     PYGAME_LOCALS("KEYDOWN",SDL_KEYDOWN);
     PYGAME_LOCALS("KEYUP",SDL_KEYUP);
@@ -169,12 +169,12 @@ void pygame_init(TP) {
     PYGAME_LOCALS("K_RETURN",SDLK_RETURN);
     
     /* mouse */
-    m = tp_dict(tp); tp_set(tp,g,tp_string_const("mouse"),m);
-    tp_set(tp,m,tp_string_const("get_pos"),tp_func(tp,pygame_mouse_get_pos));
+    m = tp_dict(tp); tp_set(tp,g,tp_string_atom(tp, "mouse"),m);
+    tp_set(tp,m,tp_string_atom(tp, "get_pos"),tp_func(tp,pygame_mouse_get_pos));
     
     /* time */
-    m = tp_dict(tp); tp_set(tp,g,tp_string_const("time"),m);
-    tp_set(tp,m,tp_string_const("get_ticks"),tp_func(tp,pygame_time_get_ticks));
+    m = tp_dict(tp); tp_set(tp,g,tp_string_atom(tp, "time"),m);
+    tp_set(tp,m,tp_string_atom(tp, "get_ticks"),tp_func(tp,pygame_time_get_ticks));
     
 
 }

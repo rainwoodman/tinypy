@@ -2,9 +2,9 @@ void tp_save(TP, const char * fname, tp_obj v) {
     FILE *f;
     f = fopen(fname,"wb");
     if (!f) {
-        tp_raise(, tp_string_const("(tp_save) IOError: ?"));
+        tp_raise(, tp_string_atom(tp, "(tp_save) IOError: ?"));
     }
-    fwrite(v.string.val, v.string.len, 1, f);
+    fwrite(v.string.val->s, v.string.val->len, 1, f);
     fclose(f);
 }
 
@@ -18,10 +18,10 @@ tp_obj tp_load(TP, const char * fname) {
     l = stbuf.st_size;
     f = fopen(fname,"rb");
     if (!f) {
-        tp_raise(tp_None,tp_string_const("(tp_load) IOError: ?"));
+        tp_raise(tp_None,tp_string_atom(tp, "(tp_load) IOError: ?"));
     }
     r = tp_string_t(tp,l);
-    s = r.string.info->s;
+    s = r.string.val->s;
     fread(s,1,l,f);
 /*    if (rr !=l) { printf("hmmn: %d %d\n",rr,(int)l); }*/
     fclose(f);
@@ -31,7 +31,7 @@ tp_obj tp_load(TP, const char * fname) {
 tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     tp_obj g;
 
-    if (!((fname.type.typeid != TP_NONE && tp_str_index(fname,tp_string_const(".tpc"))!=-1) || code.type.typeid != TP_NONE)) {
+    if (!((fname.type.typeid != TP_NONE && tp_str_index(fname,tp_string_atom(tp, ".tpc"))!=-1) || code.type.typeid != TP_NONE)) {
         return tp_ez_call(tp,"tinypy.compiler.py2bc","import_fname",tp_params_v(tp,2,fname,name));
     }
 
@@ -42,9 +42,9 @@ tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     }
 
     g = tp_dict_t(tp);
-    tp_set(tp, g, tp_string_const("__name__"), name);
-    tp_set(tp, g, tp_string_const("__code__"), code);
-    tp_set(tp, g, tp_string_const("__dict__"), g);
+    tp_set(tp, g, tp_string_atom(tp, "__name__"), name);
+    tp_set(tp, g, tp_string_atom(tp, "__code__"), code);
+    tp_set(tp, g, tp_string_atom(tp, "__dict__"), g);
 
     tp_set(tp, tp->modules, name, g);
 
@@ -70,7 +70,7 @@ tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
  * The module object.
  */
 tp_obj tp_import_from_buffer(TP, const char * fname, const char * name, void *codes, int len) {
-    tp_obj f = fname?tp_string_const(fname):tp_None;
-    tp_obj bc = codes?tp_string_nt((const char*)codes,len):tp_None;
-    return tp_import(tp, f, tp_string_const(name), bc);
+    tp_obj f = fname?tp_string_atom(tp, fname):tp_None;
+    tp_obj bc = codes?tp_string_from_const(tp, (const char*)codes, len):tp_None;
+    return tp_import(tp, f, tp_string_atom(tp, name), bc);
 }

@@ -50,7 +50,7 @@ void tp_enter_frame(TP, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
     tpd_frame f = tp_frame_nt(tp, globals, code, ret_dest);
 
     if (f.regs+(256+TP_REGS_EXTRA) >= tp->regs+TP_REGS || tp->cur >= TP_FRAMES-1) {
-        tp_raise(,tp_string_const("(tp_frame) RuntimeError: stack overflow"));
+        tp_raise(,tp_string_atom(tp, "(tp_frame) RuntimeError: stack overflow"));
     }
     tp->cur += 1;
     tp->frames[tp->cur] = f;
@@ -178,7 +178,7 @@ int tp_step(TP) {
     #endif
     tpd_code e = *cur;
     /*
-     fprintf(stderr,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur,cur - (tpd_code*)f->code.string.val,tp_strings[e.i],VA,VB,VC);
+     fprintf(stderr,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur,cur - (tpd_code*)f->code.string.val->s,tp_strings[e.i],VA,VB,VC);
        int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(regs[i])); }
     */
     switch (e.i) {
@@ -224,16 +224,16 @@ int tp_step(TP) {
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,sizeof(tp_num)/4);
             #endif
-            RA = tp_number(*(tp_num*)(*++cur).string.val);
+            RA = tp_number(*(tp_num*)((*++cur).string.val));
             cur += sizeof(tp_num)/4;
             continue;
         case TP_ISTRING: {
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,(UVBC/4)+1);
             #endif
-            /* RA = tp_string_nt((*(cur+1)).string.val,UVBC); */
-            int a = (*(cur+1)).string.val-f->code.string.val;
-            RA = tp_string_sub(tp,f->code,a,a+UVBC),
+            /* RA = tp_string_from_const((*(cur+1)).string.val->s,UVBC); */
+            int a = (*(cur+1)).string.val - f->code.string.val->s;
+            RA = tp_string_sub(tp, f->code, a, a+UVBC),
             cur += (UVBC/4)+1;
             }
             break;
@@ -256,14 +256,14 @@ int tp_step(TP) {
             break;
         case TP_IGSET: tp_set(tp,f->globals,RA,RB); break;
         case TP_IDEF: {
-/*            RA = tp_def(tp,(*(cur+1)).string.val,f->globals);*/
+/*            RA = tp_def(tp,(*(cur+1)).string.val->s,f->globals);*/
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,SVBC);
             #endif
-            int a = (*(cur+1)).string.val-f->code.string.val;
+            int a = (*(cur+1)).string.val - f->code.string.val->s;
             RA = tp_def(tp,
-                /*tp_string_nt((*(cur+1)).string.val,(SVBC-1)*4),*/
-                tp_string_sub(tp,f->code,a,a+(SVBC-1)*4),
+                /*tp_string_from_const((*(cur+1)).string.val->s,(SVBC-1)*4),*/
+                tp_string_sub(tp,f->code, a, a+(SVBC-1)*4),
                 f->globals);
             cur += SVBC; continue;
             }
@@ -272,7 +272,7 @@ int tp_step(TP) {
         case TP_IRETURN: tp_return(tp,RA); SR(0); break;
         case TP_IRAISE: _tp_raise(tp,RA); SR(0); break;
         case TP_IDEBUG:
-            tp_echo(tp, tp_string_const("DEBUG:"));
+            tp_echo(tp, tp_string_atom(tp, "DEBUG:"));
             tp_echo(tp, tp_number(VA));
             tp_echo(tp, RA);
             break;
@@ -282,10 +282,10 @@ int tp_step(TP) {
             tp_bounds(tp,cur,VA);
             #endif
             ;
-            int a = (*(cur+1)).string.val-f->code.string.val;
-/*            f->line = tp_string_nt((*(cur+1)).string.val,VA*4-1);*/
+            int a = (*(cur+1)).string.val - f->code.string.val->s;
+/*            f->line = tp_string_from_const((*(cur+1)).string.val->s,VA*4-1);*/
             f->line = tp_string_sub(tp,f->code,a,a+VA*4-1);
-/*             fprintf(stderr,"%7d: %s\n",UVBC,f->line.string.val);*/
+/*             fprintf(stderr,"%7d: %s\n",UVBC,f->line.string.val->s);*/
             cur += VA; f->lineno = UVBC;
             }
             break;
@@ -293,7 +293,7 @@ int tp_step(TP) {
         case TP_INAME: f->name = RA; break;
         case TP_IREGS: f->cregs = VA; break;
         default:
-            tp_raise(0,tp_string_const("(tp_step) RuntimeError: invalid instruction"));
+            tp_raise(0,tp_string_atom(tp, "(tp_step) RuntimeError: invalid instruction"));
             break;
     }
     #ifdef TP_SANDBOX
@@ -318,7 +318,7 @@ tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
 }
 
 tp_obj tp_eval_from_cstr(TP, const char *text, tp_obj globals) {
-    tp_obj code = tp_compile(tp,tp_string_const(text),tp_string_const("<eval>"));
+    tp_obj code = tp_compile(tp,tp_string_atom(tp, text),tp_string_atom(tp, "<eval>"));
     tp_exec(tp,code,globals);
     return tp->last_result;
 }

@@ -10,7 +10,7 @@ int tp_true(TP,tp_obj v) {
     switch(v.type.typeid) {
         case TP_NUMBER: return v.number.val != 0;
         case TP_NONE: return 0;
-        case TP_STRING: return v.string.len != 0;
+        case TP_STRING: return v.string.val->len != 0;
         case TP_LIST: return v.list.val->len != 0;
         case TP_DICT: return v.dict.val->len != 0;
     }
@@ -35,7 +35,7 @@ tp_obj tp_has(TP,tp_obj self, tp_obj k) {
     } else if (type == TP_LIST) {
         return tp_number(tpd_list_find(tp, self.list.val, k, tp_cmp)!=-1);
     }
-    tp_raise(tp_None,tp_string_const("(tp_has) TypeError: iterable argument required"));
+    tp_raise(tp_None,tp_string_atom(tp, "(tp_has) TypeError: iterable argument required"));
 }
 
 /* Function: tp_del
@@ -51,7 +51,7 @@ void tp_del(TP, tp_obj self, tp_obj k) {
         tp_dict_del(tp, self, k);
         return;
     }
-    tp_raise(,tp_string_const("(tp_del) TypeError: object does not support item deletion"));
+    tp_raise(,tp_string_atom(tp, "(tp_del) TypeError: object does not support item deletion"));
 }
 
 
@@ -83,7 +83,7 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
     if (type == TP_DICT && k.type.typeid == TP_NUMBER) {
         return self.dict.val->items[tpd_dict_next(tp,self.dict.val)].key;
     }
-    tp_raise(tp_None,tp_string_const("(tp_iter) TypeError: iteration over non-sequence"));
+    tp_raise(tp_None,tp_string_atom(tp, "(tp_iter) TypeError: iteration over non-sequence"));
 }
 
 
@@ -114,15 +114,15 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
         } else if (k.type.typeid == TP_STRING) {
             /* FIXME: move these to the prototype object of list, after
              * adding meta to all objects */
-            if (tp_cmp(tp,tp_string_const("append"),k) == 0) {
+            if (tp_cmp(tp,tp_string_atom(tp, "append"),k) == 0) {
                 return tp_method(tp, self, tpy_list_append);
-            } else if (tp_cmp(tp,tp_string_const("pop"),k) == 0) {
+            } else if (tp_cmp(tp,tp_string_atom(tp, "pop"),k) == 0) {
                 return tp_method(tp, self,tpy_list_pop);
-            } else if (tp_cmp(tp,tp_string_const("index"),k) == 0) {
+            } else if (tp_cmp(tp,tp_string_atom(tp, "index"),k) == 0) {
                 return tp_method(tp, self,tpy_list_index);
-            } else if (tp_cmp(tp,tp_string_const("sort"),k) == 0) {
+            } else if (tp_cmp(tp,tp_string_atom(tp, "sort"),k) == 0) {
                 return tp_method(tp, self,tpy_list_sort);
-            } else if (tp_cmp(tp,tp_string_const("extend"),k) == 0) {
+            } else if (tp_cmp(tp,tp_string_atom(tp, "extend"),k) == 0) {
                 return tp_method(tp, self,tpy_list_extend);
             }
         } else if (k.type.typeid == TP_NONE) {
@@ -130,20 +130,20 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
         }
     } else if (type == TP_STRING) {
         if (k.type.typeid == TP_NUMBER) {
-            int l = self.string.len;
+            int l = self.string.val->len;
             int n = k.number.val;
             n = (n<0?l+n:n);
-            if (n >= 0 && n < l) { return tp_string_nt(tp->chars[(unsigned char)self.string.val[n]],1); }
+            if (n >= 0 && n < l) { return tp_string_from_const(tp, tp->chars[(unsigned char)self.string.val->s[n]],1); }
         } else if (k.type.typeid == TP_STRING) {
-            if (tp_cmp(tp,tp_string_const("join"),k) == 0) {
+            if (tp_cmp(tp,tp_string_atom(tp, "join"),k) == 0) {
                 return tp_method(tp,self,tpy_str_join);
-            } else if (tp_cmp(tp,tp_string_const("split"),k) == 0) {
+            } else if (tp_cmp(tp,tp_string_atom(tp, "split"),k) == 0) {
                 return tp_method(tp,self,tpy_str_split);
-            } else if (tp_cmp(tp,tp_string_const("index"),k) == 0) {
+            } else if (tp_cmp(tp,tp_string_atom(tp, "index"),k) == 0) {
                 return tp_method(tp,self,tpy_str_index);
-            } else if (tp_cmp(tp,tp_string_const("strip"),k) == 0) {
+            } else if (tp_cmp(tp,tp_string_atom(tp, "strip"),k) == 0) {
                 return tp_method(tp,self,tpy_str_strip);
-            } else if (tp_cmp(tp,tp_string_const("replace"),k) == 0) {
+            } else if (tp_cmp(tp,tp_string_atom(tp, "replace"),k) == 0) {
                 return tp_method(tp,self,tpy_str_replace);
             }
         }
@@ -156,11 +156,11 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
         tmp = tp_get(tp,k,tp_number(0));
         if (tmp.type.typeid == TP_NUMBER) { a = tmp.number.val; }
         else if(tmp.type.typeid == TP_NONE) { a = 0; }
-        else { tp_raise(tp_None,tp_string_const("(tp_get) TypeError: indices must be numbers")); }
+        else { tp_raise(tp_None,tp_string_atom(tp, "(tp_get) TypeError: indices must be numbers")); }
         tmp = tp_get(tp,k,tp_number(1));
         if (tmp.type.typeid == TP_NUMBER) { b = tmp.number.val; }
         else if(tmp.type.typeid == TP_NONE) { b = l; }
-        else { tp_raise(tp_None,tp_string_const("(tp_get) TypeError: indices must be numbers")); }
+        else { tp_raise(tp_None,tp_string_atom(tp, "(tp_get) TypeError: indices must be numbers")); }
         a = _tp_max(0,(a<0?l+a:a)); b = _tp_min(l,(b<0?l+b:b));
         if (type == TP_LIST) {
             return tp_list_from_items(tp,b-a,&self.list.val->items[a]);
@@ -170,7 +170,7 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
     } else if (k.type.typeid == TP_STRING) {
         return tp_copy(tp, self);
     }
-    tp_raise(tp_None,tp_string_const("(tp_get) TypeError: ?"));
+    tp_raise(tp_None,tp_string_atom(tp, "(tp_get) TypeError: ?"));
 }
 
 /* function: tp_copy
@@ -181,7 +181,7 @@ tp_obj tp_copy(TP, tp_obj self) {
         return self;
     }
     if (type == TP_STRING) {
-        return tp_string_copy(tp, self.string.val, self.string.len);
+        return tp_string_from_buffer(tp, self.string.val->s, self.string.val->len);
     }
     if (type == TP_LIST) {
         return tp_list_copy(tp, self);
@@ -189,7 +189,7 @@ tp_obj tp_copy(TP, tp_obj self) {
     if (type == TP_DICT) {
         return tp_dict_copy(tp, self);
     }
-    tp_raise(tp_None, tp_string_const("(tp_copy) TypeError: object does not support copy"));
+    tp_raise(tp_None, tp_string_atom(tp, "(tp_copy) TypeError: object does not support copy"));
 }
 
 /* Function: tp_iget
@@ -238,13 +238,13 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
         } else if (k.type.typeid == TP_STRING) {
             /* WTF is this syntax? a['*'] = b will extend a by b ??
              * FIXME: remove this support. Use a + b */
-            if (tp_cmp(tp, tp_string_const("*"), k) == 0) {
+            if (tp_cmp(tp, tp_string_atom(tp, "*"), k) == 0) {
                 tpd_list_extend(tp, self.list.val, v.list.val);
                 return;
             }
         }
     }
-    tp_raise(,tp_string_const("(tp_set) TypeError: object does not support item assignment"));
+    tp_raise(,tp_string_atom(tp, "(tp_set) TypeError: object does not support item assignment"));
 }
 
 tp_obj tp_add(TP, tp_obj a, tp_obj b) {
@@ -255,7 +255,7 @@ tp_obj tp_add(TP, tp_obj a, tp_obj b) {
     } else if (a.type.typeid == TP_LIST && a.type.typeid == b.type.typeid) {
         return tp_list_add(tp, a, b);
     }
-    tp_raise(tp_None,tp_string_const("(tp_add) TypeError: ?"));
+    tp_raise(tp_None,tp_string_atom(tp, "(tp_add) TypeError: ?"));
 }
 
 tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
@@ -273,7 +273,7 @@ tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
         int n = b.number.val;
         return tp_list_mul(tp, a, n);
     }
-    tp_raise(tp_None,tp_string_const("(tp_mul) TypeError: ?"));
+    tp_raise(tp_None,tp_string_atom(tp, "(tp_mul) TypeError: ?"));
 }
 
 /* Function: tp_len
@@ -284,14 +284,14 @@ tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
 tp_obj tp_len(TP,tp_obj self) {
     int type = self.type.typeid;
     if (type == TP_STRING) {
-        return tp_number(self.string.len);
+        return tp_number(self.string.val->len);
     } else if (type == TP_DICT) {
         return tp_number(self.dict.val->len);
     } else if (type == TP_LIST) {
         return tp_number(self.list.val->len);
     }
     
-    tp_raise(tp_None,tp_string_const("(tp_len) TypeError: len() of unsized object"));
+    tp_raise(tp_None,tp_string_atom(tp, "(tp_len) TypeError: len() of unsized object"));
 }
 
 int tp_cmp(TP, tp_obj a, tp_obj b) {
@@ -305,7 +305,7 @@ int tp_cmp(TP, tp_obj a, tp_obj b) {
         case TP_FUNC: return a.func.info - b.func.info;
         case TP_DATA: return (char*)a.data.val - (char*)b.data.val;
     }
-    tp_raise(0,tp_string_const("(tp_cmp) TypeError: ?"));
+    tp_raise(0,tp_string_atom(tp, "(tp_cmp) TypeError: ?"));
 }
 
 tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
@@ -318,7 +318,7 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
             return tp_ez_call(tp, "__builtins__", "format", tp_params_v(tp, 2, a, b));
         
     }
-    tp_raise(tp_None, tp_string_const("(tp_mod) TypeError: ?"));
+    tp_raise(tp_None, tp_string_atom(tp, "(tp_mod) TypeError: ?"));
 }
 
 #define TP_OP(name,expr) \
@@ -327,7 +327,7 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
         tp_num a = _a.number.val; tp_num b = _b.number.val; \
         return tp_number(expr); \
     } \
-    tp_raise(tp_None,tp_string_const("(" #name ") TypeError: unsupported operand type(s)")); \
+    tp_raise(tp_None,tp_string_atom(tp, "(" #name ") TypeError: unsupported operand type(s)")); \
 }
 
 TP_OP(tp_bitwise_and,((long)a)&((long)b));
@@ -343,7 +343,7 @@ tp_obj tp_bitwise_not(TP, tp_obj a) {
     if (a.type.typeid == TP_NUMBER) {
         return tp_number(~(long)a.number.val);
     }
-    tp_raise(tp_None,tp_string_const("(tp_bitwise_not) TypeError: unsupported operand type"));
+    tp_raise(tp_None,tp_string_atom(tp, "(tp_bitwise_not) TypeError: unsupported operand type"));
 }
 
 /* Function: tp_call
@@ -358,8 +358,8 @@ tp_obj tp_bitwise_not(TP, tp_obj a) {
  *
  * Example:
  * > tp_call(tp,
- * >     tp_get(tp, tp->builtins, tp_string_const("foo")),
- * >     tp_params_v(tp, tp_string_const("hello")))
+ * >     tp_get(tp, tp->builtins, tp_string_atom(tp, "foo")),
+ * >     tp_params_v(tp, tp_string_atom(tp, "hello")))
  * This will look for a global function named "foo", then call it with a single
  * positional parameter containing the string "hello".
  */
@@ -371,7 +371,7 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
     if (self.type.typeid == TP_DICT) {
         if (self.type.magic == TP_DICT_CLASS) {
             tp_obj meta;
-            if (_tp_lookup(tp, self, tp_string_const("__new__"), &meta)) {
+            if (_tp_lookup(tp, self, tp_string_atom(tp, "__new__"), &meta)) {
                 tpd_list_insert(tp, params.list.val, 0, self);
                 return tp_call(tp, meta, params);
             }
@@ -413,7 +413,7 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
         }
     }
     tp_echo(tp, self);
-    tp_raise(tp_None,tp_string_const("(tp_call) TypeError: object is not callable"));
+    tp_raise(tp_None,tp_string_atom(tp, "(tp_call) TypeError: object is not callable"));
 }
 
 /**/

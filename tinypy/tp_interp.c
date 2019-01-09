@@ -5,8 +5,8 @@ tp_obj tp_main(TP,char *fname, void *code, int len) {
 
 tp_obj tp_ez_call(TP, const char *mod, const char *func, tp_obj params) {
     tp_obj tmp;
-    tmp = tp_get(tp,tp->modules,tp_string_const(mod));
-    tmp = tp_get(tp,tmp,tp_string_const(func));
+    tmp = tp_get(tp,tp->modules,tp_string_atom(tp, mod));
+    tmp = tp_get(tp,tmp,tp_string_atom(tp, func));
     return tp_call(tp,tmp,params);
 }
 
@@ -22,7 +22,7 @@ tp_obj tp_args(TP, int argc, char *argv[]) {
     tp_obj self = tp_list_t(tp);
     int i;
     for (i=1; i<argc; i++) {
-        tpd_list_append(tp, self.list.val, tp_string_const(argv[i]));
+        tpd_list_append(tp, self.list.val, tp_string_atom(tp, argv[i]));
     }
     return self;
 }
@@ -30,10 +30,10 @@ tp_obj tp_args(TP, int argc, char *argv[]) {
 void tp_module_sys_init (TP, int argc, char * argv[]) {
     tp_obj sys = tp_dict_t(tp);
     tp_obj args = tp_args(tp,argc,argv);
-    tp_set(tp, sys, tp_string_const("version"), tp_string_const("tinypy 1.2+SVN"));
-    tp_set(tp, sys, tp_string_const("modules"), tp->modules);
-    tp_set(tp, sys, tp_string_const("argv"), args);
-    tp_set(tp, tp->modules, tp_string_const("sys"), sys);
+    tp_set(tp, sys, tp_string_atom(tp, "version"), tp_string_atom(tp, "tinypy 1.2+SVN"));
+    tp_set(tp, sys, tp_string_atom(tp, "modules"), tp->modules);
+    tp_set(tp, sys, tp_string_atom(tp, "argv"), args);
+    tp_set(tp, tp->modules, tp_string_atom(tp, "sys"), sys);
 }
 /* Function: tp_init
  * Initializes a new virtual machine.

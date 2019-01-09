@@ -6,7 +6,7 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *meta, int depth) {
     }
     depth--;
     if (!depth) {
-        tp_raise(0,tp_string_const("(tp_lookup) RuntimeError: maximum lookup depth exceeded"));
+        tp_raise(0,tp_string_atom(tp, "(tp_lookup) RuntimeError: maximum lookup depth exceeded"));
     }
     if (self.type.magic != TP_DICT_RAW
     && self.dict.val->meta.type.typeid == TP_DICT
@@ -27,7 +27,7 @@ int _tp_lookup(TP, tp_obj self, tp_obj k, tp_obj *meta) {
 
 #define TP_META_BEGIN(self,name) \
     if (self.type.typeid == TP_DICT && self.type.magic == TP_DICT_OBJECT) { \
-        tp_obj meta; if (_tp_lookup(tp,self,tp_string_const(name),&meta)) {
+        tp_obj meta; if (_tp_lookup(tp,self,tp_string_atom(tp, name),&meta)) {
 
 #define TP_META_END \
         } \

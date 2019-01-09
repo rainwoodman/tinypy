@@ -14,7 +14,7 @@ int tp_hash(TP, tp_obj v) {
     switch (v.type.typeid) {
         case TP_NONE: return 0;
         case TP_NUMBER: return tpd_lua_hash(&v.number.val, sizeof(tp_num));
-        case TP_STRING: return tpd_lua_hash(v.string.val, v.string.len);
+        case TP_STRING: return tpd_lua_hash(v.string.val->s, v.string.val->len);
         case TP_DICT: return tpd_lua_hash(&v.dict.val, sizeof(void*));
         case TP_LIST: {
             int r = v.list.val->len;
@@ -30,6 +30,6 @@ int tp_hash(TP, tp_obj v) {
         case TP_FUNC: return tpd_lua_hash(&v.func.info, sizeof(void*));
         case TP_DATA: return tpd_lua_hash(&v.data.val, sizeof(void*));
     }
-    tp_raise(0, tp_string_const("(tp_hash) TypeError: value unhashable"));
+    tp_raise(0, tp_string_atom(tp, "(tp_hash) TypeError: value unhashable"));
 }
 

@@ -8,7 +8,7 @@ tp_obj tpy_list_index(TP) {
     tp_obj v = TP_OBJ();
     int i = tpd_list_find(tp, self.list.val, v, tp_cmp);
     if (i < 0) {
-        tp_raise(tp_None,tp_string_const("(tp_index) ValueError: list.index(x): x not in list"));
+        tp_raise(tp_None,tp_string_atom(tp, "(tp_index) ValueError: list.index(x): x not in list"));
     }
     return tp_number(i);
 }

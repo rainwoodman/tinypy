@@ -25,7 +25,7 @@ jvalue jNULL = {.l=NULL};
 
 tp_obj jni_find_class(TP) {
     tp_obj class_name = TP_STR();
-    jclass cls = (*env)->FindClass(env, class_name.string.val);
+    jclass cls = (*env)->FindClass(env, class_name.string.val->s);
     return tpy_data(tp, 0, cls);
 }
 
@@ -34,14 +34,14 @@ tp_obj jni_get_method_id(TP) {
     tp_obj name = TP_STR();
     tp_obj signature = TP_STR();
 
-    jmethodID id = (*env)->GetMethodID(env, cls.data.val, name.string.val, signature.string.val);
+    jmethodID id = (*env)->GetMethodID(env, cls.data.val, name.string.val->s, signature.string.val->s);
     if(id == NULL) return tp_None;
 
     jni_method_t* method = malloc(sizeof(jni_method_t));
     method->cls = cls.data.val;
     method->id = id; //(*env)->NewGlobalRef(env, id);
-    method->name = strdup(name.string.val);
-    method->signature = strdup(signature.string.val);
+    method->name = strdup(name.string.val->s);
+    method->signature = strdup(signature.string.val->s);
     //(*env)->DeleteLocalRef(env, id);
 
     tp_obj result = tpy_data(tp, DATA_METHOD, method);
@@ -72,7 +72,7 @@ jvalue jni_map_value(TP, const char* type, tp_obj value) {
         case 'L': if(value.type.typeid == TP_NONE) {
                       result.l = NULL;
                   } else if(!strncmp(type, "Ljava/lang/String;", 18) && value.type.typeid == TP_STRING) {
-                      result.l = (*env)->NewStringUTF(env, value.string.val); 
+                      result.l = (*env)->NewStringUTF(env, value.string.val->s); 
                       return result;
                   } else if(value.type.typeid == TP_DATA) {
                       result.l = value.data.val; 
@@ -102,7 +102,7 @@ tp_obj jni_unmap_value(TP, const char* type, jvalue value) {
         case 'L': if(value.l == NULL) {
                       return tp_None;
                   } else if(!strncmp(type, "Ljava/lang/String;", 18)) {
-                          return tp_string_const((*env)->GetStringUTFChars(env, value.l, NULL));
+                          return tp_string_atom(tp, (*env)->GetStringUTFChars(env, value.l, NULL));
                   } else {
                       return tpy_data(tp, 0, value.l);
                   } 
@@ -184,23 +184,23 @@ void jni_init(TP)
      */
     tp_obj jni_mod = tp_dict(tp);
 
-    tp_set(tp, jni_mod, tp_string_const("find_class"), tp_func(tp, jni_find_class));
-    tp_set(tp, jni_mod, tp_string_const("get_method_id"), tp_func(tp, jni_get_method_id));
-    tp_set(tp, jni_mod, tp_string_const("get_static_method_id"), tp_func(tp, jni_get_method_id));
-    tp_set(tp, jni_mod, tp_string_const("call_object_method"), tp_func(tp, jni_call_object_method));
-    tp_set(tp, jni_mod, tp_string_const("new_object"), tp_func(tp, jni_new_object));
-    tp_set(tp, jni_mod, tp_string_const("find_class"), tp_func(tp, jni_find_class));
+    tp_set(tp, jni_mod, tp_string_atom(tp, "find_class"), tp_func(tp, jni_find_class));
+    tp_set(tp, jni_mod, tp_string_atom(tp, "get_method_id"), tp_func(tp, jni_get_method_id));
+    tp_set(tp, jni_mod, tp_string_atom(tp, "get_static_method_id"), tp_func(tp, jni_get_method_id));
+    tp_set(tp, jni_mod, tp_string_atom(tp, "call_object_method"), tp_func(tp, jni_call_object_method));
+    tp_set(tp, jni_mod, tp_string_atom(tp, "new_object"), tp_func(tp, jni_new_object));
+    tp_set(tp, jni_mod, tp_string_atom(tp, "find_class"), tp_func(tp, jni_find_class));
 
     /*
      * bind special attributes to jni module
      */
-    tp_set(tp, jni_mod, tp_string_const("__doc__"), tp_string_const("This module gives access to java classes."));
-    tp_set(tp, jni_mod, tp_string_const("__name__"), tp_string_const("jni"));
-    tp_set(tp, jni_mod, tp_string_const("__file__"), tp_string_const(__FILE__));
+    tp_set(tp, jni_mod, tp_string_atom(tp, "__doc__"), tp_string_atom(tp, "This module gives access to java classes."));
+    tp_set(tp, jni_mod, tp_string_atom(tp, "__name__"), tp_string_atom(tp, "jni"));
+    tp_set(tp, jni_mod, tp_string_atom(tp, "__file__"), tp_string_atom(tp, __FILE__));
 
     /*
      * bind to tiny modules[]
      */
-    tp_set(tp, tp->modules, tp_string_const("jni"), jni_mod);
+    tp_set(tp, tp->modules, tp_string_atom(tp, "jni"), jni_mod);
 }
 

@@ -63,6 +63,11 @@ enum TPFuncMagic {
     TP_FUNC_MASK_METHOD = 2,
 };
 
+enum TPStringMagic {
+    TP_STRING_NONE = 0,
+    TP_STRING_ATOM = 1,
+    TP_STRING_VIEW = 0,
+};
 typedef double tp_num;
 
 /* Type: tp_obj
@@ -93,15 +98,16 @@ typedef union tp_obj {
     struct { TPTypeInfo type; tp_num val; } number;
     struct { TPTypeInfo type; struct tpd_list *val; } list;
     struct { TPTypeInfo type; struct tpd_dict *val; } dict;
-    struct { TPTypeInfo type; struct tpd_string *info; char const *val; int len; } string;
+    struct { TPTypeInfo type; struct tpd_string *val; } string;
     struct { TPTypeInfo type; struct tpd_func *info; void *cfnc; } func;
     struct { TPTypeInfo type; struct tpd_data *info; void *val; } data;
 } tp_obj;
 
 typedef struct tpd_string {
     int gci;
+    tp_obj base;
+    char * s;
     int len;
-    char s[1];
 } tpd_string;
 
 typedef struct tpd_list {
@@ -263,7 +269,7 @@ void   _tp_raise(TP,tp_obj);
     return r; \
 }
 
-/* Function: tp_string_nt
+/* Function: tp_string_from_const
  * Creates a new string object from a C string.
  * 
  * Given a pointer to a C string, creates a tinypy object representing the
@@ -275,17 +281,7 @@ void   _tp_raise(TP,tp_obj);
  * use <tp_string_t> or <tp_string_slice> to create a string where tinypy
  * manages storage for you.
  */
-tp_inline static
-tp_obj tp_string_const(char const *v) {
-    tp_obj r;
-    r.string.type.typeid = TP_STRING;
-    r.string.info = NULL;
-    r.string.val = v;
-    r.string.len = strlen(v);
-    return r;
-}
-
-#define TP_CSTR_LEN 256
+tp_obj tp_string_atom(TP, const char * v);
 
 /* Function: tp_cstr
  *
@@ -302,10 +298,10 @@ char * tp_cstr(TP, tp_obj v) {
         buffer = tp_malloc(tp, strlen(val) + 1);
         memcpy(buffer, val, strlen(val) + 1);
     } else {
-        val = v.string.val;
-        buffer = tp_malloc(tp, v.string.len + 1);
-        memset(buffer, 0, v.string.len + 1);
-        memcpy(buffer, val, v.string.len);
+        val = v.string.val->s;
+        buffer = tp_malloc(tp, v.string.val->len + 1);
+        memset(buffer, 0, v.string.val->len + 1);
+        memcpy(buffer, val, v.string.val->len);
     }
     
     return buffer;
@@ -313,10 +309,10 @@ char * tp_cstr(TP, tp_obj v) {
 
 
 tp_inline static
-tp_obj tp_check_type(TP,int t, tp_obj v) {
+tp_obj tp_check_type(TP, int t, tp_obj v) {
     if (v.type.typeid != t) {
         tp_raise(tp_None,
-            tp_string_const("(tp_check_type) TypeError: unexpected type"));
+            tp_string_atom(tp, "(tp_check_type) TypeError: unexpected type"));
     }
     return v;
 }
@@ -373,14 +369,7 @@ tp_inline static tp_obj tp_number(tp_num v) {
  * string reference and length are kept, but no actual substring is stored.
  */
 tp_inline static
-tp_obj tp_string_nt(char const * v, int n) {
-    tp_obj r;
-    r.string.type.typeid = TP_STRING;
-    r.string.info = NULL;
-    r.string.val = v;
-    r.string.len = n;
-    return r;
-}
+tp_obj tp_string_from_const(TP, char const * v, int n);
 
 tp_obj tp_params(TP);
 tp_obj tp_params_n(TP, int n, tp_obj argv[]);

@@ -28,9 +28,9 @@ tp_obj tp_repr(TP, tp_obj self) {
     tp_str_(tp, self, visited, sb, 0);
 
     tpd_list_free(tp, visited);
-    tp_obj r = tp_string_nt(sb->buffer, sb->len);
+    tp_obj r = tp_string_from_buffer(tp, sb->buffer, sb->len);
 
-    return tp_track(tp, r);
+    return r;
 }
 
 tp_obj tp_str(TP, tp_obj self) {
@@ -45,9 +45,9 @@ tp_obj tp_str(TP, tp_obj self) {
 
     tpd_list_free(tp, visited);
 //    printf("tp-str: %d %s\n", sb->len, sb->buffer);
-    tp_obj r = tp_string_nt(sb->buffer, sb->len);
+    tp_obj r = tp_string_from_buffer(tp, sb->buffer, sb->len);
 
-    return tp_track(tp, r);
+    return r;
 }
 
 /* Function: tp_str
@@ -61,13 +61,13 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
     if(mode != 0) { /* str mode */
         TP_META_BEGIN(self,"__str__");
             tp_obj obj = tp_call(tp, meta, tp_params(tp));
-            string_builder_write(tp, sb, obj.string.val, obj.string.len);
+            string_builder_write(tp, sb, obj.string.val->s, obj.string.val->len);
             return;
         TP_META_END;
     }
     TP_META_BEGIN(self,"__repr___");
         tp_obj obj = tp_call(tp, meta, tp_params(tp));
-        string_builder_write(tp, sb, obj.string.val, obj.string.len);
+        string_builder_write(tp, sb, obj.string.val->s, obj.string.val->len);
         return;
     TP_META_END;
 
@@ -91,12 +91,12 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
 
     if (type == TP_STRING) { 
         if(mode != 0) { /* str */
-            string_builder_write(tp, sb, self.string.val, self.string.len);
+            string_builder_write(tp, sb, self.string.val->s, self.string.val->len);
         } else { /* repr */
             int i;
             string_builder_write(tp, sb, "'", 1);
-            for (i = 0; i < self.string.len; i ++) {
-                const char * s = self.string.val + i;
+            for (i = 0; i < self.string.val->len; i ++) {
+                const char * s = self.string.val->s + i;
                 switch(s[0]) {
                     case '\n':
                         string_builder_write(tp, sb, "\\n", 2);

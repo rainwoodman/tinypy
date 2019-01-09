@@ -28,7 +28,7 @@ Tinypy_ConvertObj(tp_obj obj)
         }
     }
     else if(obj.type.typeid == TP_STRING) {
-        return Py_BuildValue("s#", obj.string.val, obj.string.len);
+        return Py_BuildValue("s#", obj.string.val->s, obj.string.val->len);
     }
     else if(obj.type.typeid == TP_NONE) {
         Py_INCREF(Py_None);
