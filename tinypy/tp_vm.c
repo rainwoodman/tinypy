@@ -233,7 +233,7 @@ int tp_step(TP) {
             #endif
             /* RA = tp_string_from_const((*(cur+1)).string.val->s,UVBC); */
             int a = (*(cur+1)).string.val - f->code.string.val->s;
-            RA = tp_string_sub(tp, f->code, a, a+UVBC);
+            RA = tp_string_view(tp, f->code, a, a+UVBC);
             cur += (UVBC/4)+1;
             }
             break;
@@ -264,7 +264,7 @@ int tp_step(TP) {
             if(f->code.string.val->s[a] == ';') abort();
             RA = tp_def(tp,
                 /*tp_string_from_const((*(cur+1)).string.val->s,(SVBC-1)*4),*/
-                tp_string_sub(tp, f->code, a, a + (SVBC-1)*4),
+                tp_string_view(tp, f->code, a, a + (SVBC-1)*4),
                 f->globals);
             cur += SVBC; continue;
             }
@@ -286,7 +286,7 @@ int tp_step(TP) {
             int a = (*(cur+1)).string.val - f->code.string.val->s;
 /*            f->line = tp_string_from_const((*(cur+1)).string.val->s,VA*4-1);*/
             if(f->code.string.val->s[a] == ';') abort();
-            f->line = tp_string_sub(tp, f->code, a, a+VA*4-1);
+            f->line = tp_string_view(tp, f->code, a, a+VA*4-1);
 /*             fprintf(stderr,"%7d: %s\n",UVBC,f->line.string.val->s);*/
             cur += VA; f->lineno = UVBC;
             }

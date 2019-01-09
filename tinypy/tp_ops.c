@@ -165,7 +165,7 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
         if (type == TP_LIST) {
             return tp_list_from_items(tp,b-a,&self.list.val->items[a]);
         } else if (type == TP_STRING) {
-            return tp_string_sub(tp,self,a,b);
+            return tp_string_view(tp,self,a,b);
         }
     } else if (k.type.typeid == TP_STRING) {
         return tp_copy(tp, self);

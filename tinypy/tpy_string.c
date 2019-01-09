@@ -28,15 +28,15 @@ tp_obj tpy_str_split(TP) {
     tp_obj d = TP_OBJ();
     tp_obj r = tp_list_t(tp);
 
-    v = tp_string_sub(tp, v, 0, v.string.val->len);
+    v = tp_string_view(tp, v, 0, v.string.val->len);
 
     int i;
     while ((i = tp_str_index(v, d))!=-1) {
-        tpd_list_append(tp, r.list.val, tp_string_sub(tp, v, 0, i));
+        tpd_list_append(tp, r.list.val, tp_string_view(tp, v, 0, i));
         v.string.val->s += i + d.string.val->len;
         v.string.val->len -= i + d.string.val->len;
     }
-    tpd_list_append(tp, r.list.val, tp_string_sub(tp, v, 0, v.string.val->len));
+    tpd_list_append(tp, r.list.val, tp_string_view(tp, v, 0, v.string.val->len));
     return r;
 }
 
@@ -90,7 +90,7 @@ tp_obj tpy_str_replace(TP) {
     tp_obj s = TP_OBJ();
     tp_obj k = TP_OBJ();
     tp_obj v = TP_OBJ();
-    tp_obj p = tp_string_sub(tp, s, 0, s.string.val->len);
+    tp_obj p = tp_string_view(tp, s, 0, s.string.val->len);
     int i,n = 0;
     int c;
     int l;

@@ -48,7 +48,7 @@ tp_obj tp_string_from_buffer(TP, const char *s, int n) {
  * the returned object does not allocate new memory. It refers to the same
  * memory object to the original string.
  */
-tp_obj tp_string_sub(TP, tp_obj s, int a, int b) {
+tp_obj tp_string_view(TP, tp_obj s, int a, int b) {
     int l = s.string.val->len;
     a = _tp_max(0,(a<0?l+a:a)); b = _tp_min(l,(b<0?l+b:b));
     tp_obj r = tp_string_from_const(tp, s.string.val->s + a, b - a);
