@@ -103,7 +103,7 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
         TP_META_BEGIN(self,"__get__");
             return tp_call(tp,meta,tp_params_v(tp,1,k));
         TP_META_END;
-        if (self.type.magic && _tp_lookup(tp,self,k,&r)) { return r; }
+        if (self.type.magic != TP_DICT_RAW && _tp_lookup(tp,self,k,&r)) { return r; }
         return tp_dict_get(tp, self, k);
     } else if (type == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
@@ -369,13 +369,13 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
     tp->params = params;
 
     if (self.type.typeid == TP_DICT) {
-        if (self.type.magic == 1) {
+        if (self.type.magic == TP_DICT_DICT) {
             tp_obj meta;
             if (_tp_lookup(tp, self, tp_string_const("__new__"), &meta)) {
                 tpd_list_insert(tp, params.list.val, 0, self);
                 return tp_call(tp, meta, params);
             }
-        } else if (self.type.magic == 2) {
+        } else if (self.type.magic == TP_DICT_OBJECT) {
             TP_META_BEGIN(self,"__call__");
                 return tp_call(tp, meta, params);
             TP_META_END;
@@ -383,8 +383,9 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
     }
 
     if (self.type.typeid == TP_FNC) {
-        if(!(self.type.magic & 1)) {
+        if(!(self.type.magic & TP_FUNC_MASK_C)) {
             /* external C function */
+            /* FIXME: what if the func is a method? */
             tp_obj r = tp_tcall(tp, self);
             tp_grey(tp, r);
             return r;
@@ -394,7 +395,7 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
             tp_enter_frame(tp, self.func.info->globals,
                                self.func.info->code,
                               &dest);
-            if ((self.type.magic & 2)) {
+            if ((self.type.magic & TP_FUNC_MASK_METHOD)) {
                 /* method */
                 tp->frames[tp->cur].regs[0] = params;
                 tpd_list_insert(tp, params.list.val, 0, self.func.info->self);

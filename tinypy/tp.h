@@ -52,6 +52,17 @@ typedef struct TPTypeInfo {
     unsigned int magic: 32;
 } TPTypeInfo;
 
+enum TPDictMagic {
+    TP_DICT_RAW = 0,
+    TP_DICT_DICT = 1,
+    TP_DICT_OBJECT = 2,
+};
+
+enum TPFuncMagic {
+    TP_FUNC_MASK_C = 1,
+    TP_FUNC_MASK_METHOD = 2,
+};
+
 typedef double tp_num;
 
 /* Type: tp_obj
@@ -80,9 +91,9 @@ typedef union tp_obj {
     TPTypeInfo type;
     struct { TPTypeInfo type; int *data; } gci;
     struct { TPTypeInfo type; tp_num val; } number;
-    struct { TPTypeInfo type; struct tpd_string *info; char const *val; int len; } string;
     struct { TPTypeInfo type; struct tpd_list *val; } list;
     struct { TPTypeInfo type; struct tpd_dict *val; } dict;
+    struct { TPTypeInfo type; struct tpd_string *info; char const *val; int len; } string;
     struct { TPTypeInfo type; struct tpd_func *info; void *cfnc; } func;
     struct { TPTypeInfo type; struct tpd_data *info; void *val; } data;
 } tp_obj;

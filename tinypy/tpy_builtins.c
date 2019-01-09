@@ -85,8 +85,8 @@ tp_obj tpy_istype(TP) {
     if (tp_cmp(tp,t,tp_string_const("list")) == 0) { return tp_number(v.type.typeid == TP_LIST); }
     if (tp_cmp(tp,t,tp_string_const("dict")) == 0) { return tp_number(v.type.typeid == TP_DICT); }
     if (tp_cmp(tp,t,tp_string_const("number")) == 0) { return tp_number(v.type.typeid == TP_NUMBER); }
-    if (tp_cmp(tp,t,tp_string_const("func")) == 0) { return tp_number(v.type.typeid == TP_FNC && (v.type.magic&2) == 0); }
-    if (tp_cmp(tp,t,tp_string_const("method")) == 0) { return tp_number(v.type.typeid == TP_FNC && (v.type.magic&2) != 0); }
+    if (tp_cmp(tp,t,tp_string_const("func")) == 0) { return tp_number(v.type.typeid == TP_FNC && (v.type.magic& TP_FUNC_MASK_METHOD) == 0); }
+    if (tp_cmp(tp,t,tp_string_const("method")) == 0) { return tp_number(v.type.typeid == TP_FNC && (v.type.magic& TP_FUNC_MASK_METHOD) != 0); }
     tp_raise(tp_None,tp_string_const("(is_type) TypeError: ?"));
 }
 
@@ -237,7 +237,7 @@ tp_obj tpy_getmeta(TP) {
  */
 tp_obj tp_object(TP) {
     tp_obj self = tp_dict_t(tp);
-    self.type.magic = 2;
+    self.type.magic = TP_DICT_OBJECT;
     return self;
 }
 
@@ -255,7 +255,7 @@ tp_obj tpy_object_call(TP) {
     tp_obj self;
     if (tp->params.list.val->len) {
         self = TP_TYPE(TP_DICT);
-        self.type.magic = 2;
+        self.type.magic = TP_DICT_OBJECT;
     } else {
         self = tp_object(tp);
     }
@@ -272,7 +272,7 @@ tp_obj tpy_object_call(TP) {
  */
 tp_obj tpy_getraw(TP) {
     tp_obj self = TP_TYPE(TP_DICT);
-    self.type.magic = 0;
+    self.type.magic = TP_DICT_RAW;
     return self;
 }
 

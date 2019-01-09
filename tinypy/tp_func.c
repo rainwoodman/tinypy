@@ -4,7 +4,7 @@ tp_obj tpd_call(TP, tp_obj func(TP)) {
 }
 
 tp_obj tp_tcall(TP, tp_obj func) {
-    if (func.type.magic & 2) {
+    if (func.type.magic & TP_FUNC_MASK_METHOD) {
         /* METHOD */
         tpd_list_insert(tp, tp->params.list.val, 0, func.func.info->self);
     }
@@ -29,7 +29,7 @@ tp_obj tp_func_t(TP, int t, void *v, tp_obj c, tp_obj s, tp_obj g) {
 
 tp_obj tp_bind(TP, tp_obj function, tp_obj self) {
     return tp_func_t(tp,
-                function.type.magic|2,
+                function.type.magic | TP_FUNC_MASK_METHOD,
                 function.func.cfnc,
                 function.func.info->code,
                 self,

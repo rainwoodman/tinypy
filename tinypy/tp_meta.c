@@ -8,10 +8,10 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *meta, int depth) {
     if (!depth) {
         tp_raise(0,tp_string_const("(tp_lookup) RuntimeError: maximum lookup depth exceeded"));
     }
-    if (self.type.magic != 0
+    if (self.type.magic != TP_DICT_RAW
     && self.dict.val->meta.type.typeid == TP_DICT
     && _tp_lookup_(tp, self.dict.val->meta, hash, k, meta, depth)) {
-        if (self.type.magic == 2 && meta->type.typeid == TP_FNC) {
+        if (self.type.magic == TP_DICT_OBJECT && meta->type.typeid == TP_FNC) {
             /* make a copy of the function that is bound to the instance;
  *               FIXME: what does dtype == 2 mean? */
             *meta = tp_bind(tp, *meta, self);
@@ -26,7 +26,7 @@ int _tp_lookup(TP, tp_obj self, tp_obj k, tp_obj *meta) {
 }
 
 #define TP_META_BEGIN(self,name) \
-    if (self.type.typeid == TP_DICT && self.type.magic == 2) { \
+    if (self.type.typeid == TP_DICT && self.type.magic == TP_DICT_OBJECT) { \
         tp_obj meta; if (_tp_lookup(tp,self,tp_string_const(name),&meta)) {
 
 #define TP_META_END \
