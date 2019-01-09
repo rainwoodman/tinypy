@@ -18,36 +18,28 @@ void string_builder_write (TP, StringBuilder * sb, const char * s, int len)
 
 void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode);
 
-tp_obj tp_repr(TP, tp_obj self) {
+tp_obj tp_str_internal(TP, tp_obj self, int mode) {
     /* we only put unmanaged tp_data objects to the list.*/
     tpd_list * visited = tpd_list_new(tp);
     StringBuilder sb[1];
     sb->buffer = tp_malloc(tp, 128);
     sb->len = 0;
     sb->size = 128;
-    tp_str_(tp, self, visited, sb, 0);
+
+    tp_str_(tp, self, visited, sb, mode);
 
     tpd_list_free(tp, visited);
+    /* FIXME: add API to steal a buffer to form a string. */
     tp_obj r = tp_string_from_buffer(tp, sb->buffer, sb->len);
-
+    tp_free(tp, sb->buffer);
     return r;
 }
 
 tp_obj tp_str(TP, tp_obj self) {
-    /* we only put unmanaged tp_data objects to the list.*/
-    tpd_list * visited = tpd_list_new(tp);
-    StringBuilder sb[1];
-    sb->buffer = tp_malloc(tp, 128);
-    sb->len = 0;
-    sb->size = 128;
-
-    tp_str_(tp, self, visited, sb, 1);
-
-    tpd_list_free(tp, visited);
-//    printf("tp-str: %d %s\n", sb->len, sb->buffer);
-    tp_obj r = tp_string_from_buffer(tp, sb->buffer, sb->len);
-
-    return r;
+    return tp_str_internal(tp, self, 1);
+}
+tp_obj tp_repr(TP, tp_obj self) {
+    return tp_str_internal(tp, self, 0);
 }
 
 /* Function: tp_str
