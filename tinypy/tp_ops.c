@@ -369,7 +369,7 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
     tp->params = params;
 
     if (self.type.typeid == TP_DICT) {
-        if (self.type.magic == TP_DICT_DICT) {
+        if (self.type.magic == TP_DICT_CLASS) {
             tp_obj meta;
             if (_tp_lookup(tp, self, tp_string_const("__new__"), &meta)) {
                 tpd_list_insert(tp, params.list.val, 0, self);
@@ -384,9 +384,14 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
 
     if (self.type.typeid == TP_FUNC) {
         if(!(self.type.magic & TP_FUNC_MASK_C)) {
-            /* external C function */
-            /* FIXME: what if the func is a method? */
-            tp_obj r = tp_tcall(tp, self);
+            if (self.type.magic & TP_FUNC_MASK_METHOD) {
+                /* METHOD */
+                tpd_list_insert(tp, tp->params.list.val, 0, self.func.info->instance);
+            }
+            tp_obj (* cfunc)(tp_vm *);
+            cfunc = self.func.cfnc;
+
+            tp_obj r = cfunc(tp);
             tp_grey(tp, r);
             return r;
         } else {
@@ -398,7 +403,7 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
             if ((self.type.magic & TP_FUNC_MASK_METHOD)) {
                 /* method */
                 tp->frames[tp->cur].regs[0] = params;
-                tpd_list_insert(tp, params.list.val, 0, self.func.info->self);
+                tpd_list_insert(tp, params.list.val, 0, self.func.info->instance);
             } else {
                 /* function */
                 tp->frames[tp->cur].regs[0] = params;

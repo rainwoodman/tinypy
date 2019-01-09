@@ -1,7 +1,7 @@
 tp_obj tp_dict_nt(TP) {
     tp_obj r = {TP_DICT};
     r.dict.val = tpd_dict_new(tp);
-    r.type.magic = TP_DICT_DICT;
+    r.type.magic = TP_DICT_CLASS;
     return r;
 }
 
@@ -68,7 +68,7 @@ tp_obj tp_dict_copy(TP, tp_obj rr) {
     r->items = (tpd_item*) tp_malloc(tp, sizeof(tpd_item)*o->alloc);
     memcpy(r->items, o->items, sizeof(tpd_item)*o->alloc);
     obj.dict.val = r;
-    obj.type.magic = TP_DICT_DICT;
+    obj.type.magic = TP_DICT_CLASS;
     return obj;
 }
 

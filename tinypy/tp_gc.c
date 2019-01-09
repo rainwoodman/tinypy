@@ -35,7 +35,7 @@ void tp_follow(TP,tp_obj v) {
         tp_grey(tp,v.dict.val->meta); 
     }
     if (type == TP_FUNC) {
-        tp_grey(tp,v.func.info->self);
+        tp_grey(tp,v.func.info->instance);
         tp_grey(tp,v.func.info->globals);
         tp_grey(tp,v.func.info->code);
     }

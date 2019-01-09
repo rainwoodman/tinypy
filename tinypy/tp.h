@@ -54,8 +54,8 @@ typedef struct TPTypeInfo {
 
 enum TPDictMagic {
     TP_DICT_RAW = 0,
-    TP_DICT_DICT = 1,
-    TP_DICT_OBJECT = 2,
+    TP_DICT_CLASS = 1, /* do not bind func members */
+    TP_DICT_OBJECT = 2, /* bind func members */
 };
 
 enum TPFuncMagic {
@@ -131,7 +131,7 @@ typedef struct tpd_dict {
 
 typedef struct tpd_func {
     int gci;
-    tp_obj self;
+    tp_obj instance;
     tp_obj globals;
     tp_obj code;
 } tpd_func;

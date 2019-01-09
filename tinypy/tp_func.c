@@ -1,21 +1,11 @@
-
-tp_obj tpd_call(TP, tp_obj func(TP)) {
-    return func(tp);
+tp_obj tp_call_extern(TP, tp_obj func) {
 }
 
-tp_obj tp_tcall(TP, tp_obj func) {
-    if (func.type.magic & TP_FUNC_MASK_METHOD) {
-        /* METHOD */
-        tpd_list_insert(tp, tp->params.list.val, 0, func.func.info->self);
-    }
-    return tpd_call(tp,(tp_obj (*)(tp_vm *))func.func.cfnc);
-}
-
-tp_obj tp_func_nt(TP, int t, void *v, tp_obj c,tp_obj s, tp_obj g) {
+tp_obj tp_func_nt(TP, int t, void *v, tp_obj c, tp_obj s, tp_obj g) {
     tp_obj r = {TP_FUNC};
     tpd_func *info = (tpd_func*)tp_malloc(tp, sizeof(tpd_func));
     info->code = c;
-    info->self = s;
+    info->instance = s;
     info->globals = g;
     r.type.magic = t;
     r.func.info = info;
