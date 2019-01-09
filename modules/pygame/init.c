@@ -140,17 +140,17 @@ void pygame_init(TP) {
     tp_obj g,m;
     g = tp_dict(tp);
     tp_set(tp,tp->modules,tp_string_const("pygame"),g);
-    tp_set(tp,g,tp_string_const("init"),tp_fnc(tp,_pygame_init));
+    tp_set(tp,g,tp_string_const("init"),tp_func(tp,_pygame_init));
     
     /* display */
     m = tp_dict(tp); tp_set(tp,g,tp_string_const("display"),m);
-    tp_set(tp,m,tp_string_const("set_mode"),tp_fnc(tp,pygame_display_set_mode));
-    tp_set(tp,m,tp_string_const("flip"),tp_fnc(tp,pygame_display_flip));
-    tp_set(tp,m,tp_string_const("update"),tp_fnc(tp,pygame_display_update));
+    tp_set(tp,m,tp_string_const("set_mode"),tp_func(tp,pygame_display_set_mode));
+    tp_set(tp,m,tp_string_const("flip"),tp_func(tp,pygame_display_flip));
+    tp_set(tp,m,tp_string_const("update"),tp_func(tp,pygame_display_update));
     
     /* event */
     m = tp_dict(tp); tp_set(tp,g,tp_string_const("event"),m);
-    tp_set(tp,m,tp_string_const("get"),tp_fnc(tp,pygame_event_get));
+    tp_set(tp,m,tp_string_const("get"),tp_func(tp,pygame_event_get));
     
     /* locals */
     m = tp_dict(tp); tp_set(tp,g,tp_string_const("locals"),m);
@@ -170,11 +170,11 @@ void pygame_init(TP) {
     
     /* mouse */
     m = tp_dict(tp); tp_set(tp,g,tp_string_const("mouse"),m);
-    tp_set(tp,m,tp_string_const("get_pos"),tp_fnc(tp,pygame_mouse_get_pos));
+    tp_set(tp,m,tp_string_const("get_pos"),tp_func(tp,pygame_mouse_get_pos));
     
     /* time */
     m = tp_dict(tp); tp_set(tp,g,tp_string_const("time"),m);
-    tp_set(tp,m,tp_string_const("get_ticks"),tp_fnc(tp,pygame_time_get_ticks));
+    tp_set(tp,m,tp_string_const("get_ticks"),tp_func(tp,pygame_time_get_ticks));
     
 
 }

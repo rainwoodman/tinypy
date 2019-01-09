@@ -316,15 +316,15 @@ void dl_init(TP)
     /*
      * bind functions to dl module
      */
-    tp_set(tp, mod, tp_string_const("open"),        tp_fnc(tp, dl_dlopen));
-    tp_set(tp, mod, tp_string_const("close"),       tp_fnc(tp, dl_dlclose));
-    tp_set(tp, mod, tp_string_const("sym"),         tp_fnc(tp, dl_dlsym));
-    tp_set(tp, mod, tp_string_const("call"),        tp_fnc(tp, dl_call));
-    tp_set(tp, mod, tp_string_const("load"),        tp_fnc(tp, dl_load)); 
-    tp_set(tp, mod, tp_string_const("size"),        tp_fnc(tp, dl_size)); /* size of data according to signature */
-    tp_set(tp, mod, tp_string_const("pack"),        tp_fnc(tp, dl_pack));
-    tp_set(tp, mod, tp_string_const("unpack"),      tp_fnc(tp, dl_unpack));
-    tp_set(tp, mod, tp_string_const("exception"),   tp_fnc(tp, dl_exception)); /* get current exception */
+    tp_set(tp, mod, tp_string_const("open"),        tp_func(tp, dl_dlopen));
+    tp_set(tp, mod, tp_string_const("close"),       tp_func(tp, dl_dlclose));
+    tp_set(tp, mod, tp_string_const("sym"),         tp_func(tp, dl_dlsym));
+    tp_set(tp, mod, tp_string_const("call"),        tp_func(tp, dl_call));
+    tp_set(tp, mod, tp_string_const("load"),        tp_func(tp, dl_load)); 
+    tp_set(tp, mod, tp_string_const("size"),        tp_func(tp, dl_size)); /* size of data according to signature */
+    tp_set(tp, mod, tp_string_const("pack"),        tp_func(tp, dl_pack));
+    tp_set(tp, mod, tp_string_const("unpack"),      tp_func(tp, dl_unpack));
+    tp_set(tp, mod, tp_string_const("exception"),   tp_func(tp, dl_exception)); /* get current exception */
 
     /*
      * bind special attributes to random module

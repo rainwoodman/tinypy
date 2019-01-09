@@ -184,12 +184,12 @@ void jni_init(TP)
      */
     tp_obj jni_mod = tp_dict(tp);
 
-    tp_set(tp, jni_mod, tp_string_const("find_class"), tp_fnc(tp, jni_find_class));
-    tp_set(tp, jni_mod, tp_string_const("get_method_id"), tp_fnc(tp, jni_get_method_id));
-    tp_set(tp, jni_mod, tp_string_const("get_static_method_id"), tp_fnc(tp, jni_get_method_id));
-    tp_set(tp, jni_mod, tp_string_const("call_object_method"), tp_fnc(tp, jni_call_object_method));
-    tp_set(tp, jni_mod, tp_string_const("new_object"), tp_fnc(tp, jni_new_object));
-    tp_set(tp, jni_mod, tp_string_const("find_class"), tp_fnc(tp, jni_find_class));
+    tp_set(tp, jni_mod, tp_string_const("find_class"), tp_func(tp, jni_find_class));
+    tp_set(tp, jni_mod, tp_string_const("get_method_id"), tp_func(tp, jni_get_method_id));
+    tp_set(tp, jni_mod, tp_string_const("get_static_method_id"), tp_func(tp, jni_get_method_id));
+    tp_set(tp, jni_mod, tp_string_const("call_object_method"), tp_func(tp, jni_call_object_method));
+    tp_set(tp, jni_mod, tp_string_const("new_object"), tp_func(tp, jni_new_object));
+    tp_set(tp, jni_mod, tp_string_const("find_class"), tp_func(tp, jni_find_class));
 
     /*
      * bind special attributes to jni module

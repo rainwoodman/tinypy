@@ -78,7 +78,7 @@ typedef union tp_obj {
     struct { enum TPTypeID type; struct tpd_string *info; char const *val; int len; } string;
     struct { enum TPTypeID type; struct tpd_list *val; } list;
     struct { enum TPTypeID type; struct tpd_dict *val; int dtype; } dict;
-    struct { enum TPTypeID type; struct tpd_fnc *info; int ftype; void *cfnc; } fnc;
+    struct { enum TPTypeID type; struct tpd_func *info; int ftype; void *cfnc; } fnc;
     struct { enum TPTypeID type; struct tpd_data *info; void *val; int magic; } data;
 } tp_obj;
 
@@ -113,12 +113,12 @@ typedef struct tpd_dict {
     tp_obj meta;
 } tpd_dict;
 
-typedef struct tpd_fnc {
+typedef struct tpd_func {
     int gci;
     tp_obj self;
     tp_obj globals;
     tp_obj code;
-} tpd_fnc;
+} tpd_func;
 
 typedef union tpd_code {
     unsigned char i;
