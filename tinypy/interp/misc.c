@@ -3,7 +3,7 @@
  */
 
 void tp_echo(TP, tp_obj e) {
-    e = tp_str_tracked(tp, e);
+    e = tp_str(tp, e);
     tp->echo(e.string.val, e.string.len);
 }
 

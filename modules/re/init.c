@@ -12,11 +12,8 @@
 #include "regexpr.c"
 
 /* tinypy API to be use in this unit */
-extern tp_obj tpy_data(TP,int magic,void *v);
-extern tp_obj tp_object_new(TP);
 extern tp_obj tp_object(TP);
 extern tp_obj tp_string_copy(TP, const char *s, int n);
-extern tp_obj tpy_list(TP);
 
 /* last error message */
 static const char * LastError = NULL;
@@ -48,7 +45,7 @@ static tp_obj match_obj_span(TP);
  */
 static regexobject * getre(TP, tp_obj rmobj)
 {
-	tp_obj reobj_data = tp_get(tp, rmobj, tp_string("__data__"));
+	tp_obj reobj_data = tp_get(tp, rmobj, tp_string_const("__data__"));
 	regexobject *re = NULL;
 
 	/* validate magic */
@@ -72,17 +69,17 @@ static tp_obj match_object(TP, tp_obj reobj)
 	tp_obj madata;				/* match object data */
 	regexobject *re = NULL;		/* lower level regex object */
 
-	redata = tp_get(tp, reobj, tp_string("__data__"));
+	redata = tp_get(tp, reobj, tp_string_const("__data__"));
 	re = (regexobject *)redata.data.val;
 	assert(re);
-	madata = tpy_data(tp, (int)sizeof(regexobject), re);
+	madata = tp_data_t(tp, (int)sizeof(regexobject), re);
 
-	tp_set(tp, mo, tp_string("group"),	tpy_method(tp, mo, match_obj_group));
-	tp_set(tp, mo, tp_string("groups"),	tpy_method(tp, mo, match_obj_groups));
-	tp_set(tp, mo, tp_string("start"),	tpy_method(tp, mo, match_obj_start));
-	tp_set(tp, mo, tp_string("end"),	tpy_method(tp, mo, match_obj_end));
-	tp_set(tp, mo, tp_string("span"),	tpy_method(tp, mo, match_obj_span));
-	tp_set(tp, mo, tp_string("__data__"), madata);
+	tp_set(tp, mo, tp_string_const("group"),	tp_method(tp, mo, match_obj_group));
+	tp_set(tp, mo, tp_string_const("groups"),	tp_method(tp, mo, match_obj_groups));
+	tp_set(tp, mo, tp_string_const("start"),	tp_method(tp, mo, match_obj_start));
+	tp_set(tp, mo, tp_string_const("end"),	tp_method(tp, mo, match_obj_end));
+	tp_set(tp, mo, tp_string_const("span"),	tp_method(tp, mo, match_obj_span));
+	tp_set(tp, mo, tp_string_const("__data__"), madata);
 
 	return (mo);
 }
@@ -139,7 +136,7 @@ notfind:
 	return (tp_None);
 exception:
 	re->re_lastok = NULL;
-	tp_raise(tp_None, tp_string("regex search error"));
+	tp_raise(tp_None, tp_string_const("regex search error"));
 }
 
 /*
@@ -187,7 +184,7 @@ nomatch:
 	return (tp_None);
 exception:
 	re->re_lastok = NULL;
-	tp_raise(tp_None, tp_string("regex match error"));
+	tp_raise(tp_None, tp_string_const("regex match error"));
 }
 
 /*
@@ -203,7 +200,7 @@ static tp_obj regex_obj_split(TP)
 	tp_obj maxsplit = TP_DEFAULT(tp_number(0));
 	tp_obj maobj;				/* match object */
 	regexobject *re = NULL;		/* lower level regex object */
-	tp_obj result	= tpy_list(tp);
+	tp_obj result	= tp_list_t(tp);
 	tp_obj grpstr;				/* group string */
 	int	slen;					/* string length */
 	int srchloc;				/* search location */
@@ -225,7 +222,7 @@ static tp_obj regex_obj_split(TP)
 
 		re = getre(tp, maobj);
 		if (re->re_lastok == NULL) {
-			tp_raise(tp_None, tp_string("no match for split()"));
+			tp_raise(tp_None, tp_string_const("no match for split()"));
 		}
 
 		/* extract fields */
@@ -272,7 +269,7 @@ static tp_obj regex_obj_findall(TP)
 	tp_obj pos		= TP_DEFAULT(tp_number(0));
 	tp_obj maobj;				/* match object */
 	regexobject *re = NULL;		/* lower level regex object */
-	tp_obj result	= tpy_list(tp);
+	tp_obj result	= tp_list_t(tp);
 	tp_obj grpstr;				/* group string */
 	int	slen;					/* string length */
 	int srchloc;				/* search location */
@@ -280,7 +277,7 @@ static tp_obj regex_obj_findall(TP)
 	srchloc = (int)pos.number.val;
 	slen	= strlen((char *)restr.string.val);
 	if (srchloc < 0 || srchloc >= slen)
-		tp_raise(tp_None, tp_string("starting position out of range"));
+		tp_raise(tp_None, tp_string_const("starting position out of range"));
 
 	do {
 		/* generate a temp match object */
@@ -291,7 +288,7 @@ static tp_obj regex_obj_findall(TP)
 
 		re = getre(tp, maobj);
 		if (re->re_lastok == NULL) {
-			tp_raise(tp_None, tp_string("no match for findall()"));
+			tp_raise(tp_None, tp_string_const("no match for findall()"));
 		}
 
 		/* extract fields */
@@ -339,7 +336,7 @@ static tp_obj match_obj_group(TP)
 	re = getre(tp, self);
 	if (re->re_lastok == NULL)
 		tp_raise(tp_None, 
-				tp_string("group() only valid after successful match/search"));
+				tp_string_const("group() only valid after successful match/search"));
 
 	for (i = 0; i < RE_NREGS; i++)
 		indices[i] = -1;
@@ -358,13 +355,13 @@ static tp_obj match_obj_group(TP)
 		i = 0;
 		TP_LOOP(grpidx)
 		if (grpidx.number.val < 0 || grpidx.number.val > RE_NREGS)
-			tp_raise(tp_None, tp_string("group() grpidx out of range"));
+			tp_raise(tp_None, tp_string_const("group() grpidx out of range"));
 		indices[i++] = (int)grpidx.number.val;
 		TP_END
 	}
 
 	/* generate result string list */
-	result = tpy_list(tp);
+	result = tp_list_t(tp);
 	for (i = 0; i < RE_NREGS && indices[i] >= 0; i++) {
 		tp_obj grpstr;
 		start = re->re_regs.start[indices[i]];
@@ -393,12 +390,12 @@ static tp_obj match_obj_groups(TP)
 	int start;
 	int end;
 	int i;
-	tp_obj result = tpy_list(tp);
+	tp_obj result = tp_list_t(tp);
 
 	re = getre(tp, self);
 	if (re->re_lastok == NULL) {
 		tp_raise(tp_None, 
-				tp_string("groups() only valid after successful match/search"));
+				tp_string_const("groups() only valid after successful match/search"));
 	}
 
 	for (i = 1; i < RE_NREGS; i++) {
@@ -433,11 +430,11 @@ static tp_obj match_obj_start(TP)
 	re = getre(tp, self);
 	if (re->re_lastok == NULL) {
 		tp_raise(tp_None, 
-				tp_string("start() only valid after successful match/search"));
+				tp_string_const("start() only valid after successful match/search"));
 	}
 
 	if (group.number.val < 0 || group.number.val > RE_NREGS)
-		tp_raise(tp_None, tp_string("IndexError: group index out of range"));
+		tp_raise(tp_None, tp_string_const("IndexError: group index out of range"));
 
 	start = re->re_regs.start[(int)group.number.val];
 
@@ -460,11 +457,11 @@ static tp_obj match_obj_end(TP)
 	re = getre(tp, self);
 	if (re->re_lastok == NULL) {
 		tp_raise(tp_None, 
-				tp_string("end() only valid after successful match/search"));
+				tp_string_const("end() only valid after successful match/search"));
 	}
 
 	if (group.number.val < 0 || group.number.val > RE_NREGS)
-		tp_raise(tp_None, tp_string("IndexError: group index out of range"));
+		tp_raise(tp_None, tp_string_const("IndexError: group index out of range"));
 
 	end = re->re_regs.end[(int)group.number.val];
 
@@ -489,16 +486,16 @@ static tp_obj match_obj_span(TP)
 	re = getre(tp, self);
 	if (re->re_lastok == NULL) {
 		tp_raise(tp_None, 
-				tp_string("span() only valid after successful match/search"));
+				tp_string_const("span() only valid after successful match/search"));
 	}
 
 	if (group.number.val < 0 || group.number.val > RE_NREGS)
-		tp_raise(tp_None, tp_string("IndexError: group index out of range"));
+		tp_raise(tp_None, tp_string_const("IndexError: group index out of range"));
 
 	start = re->re_regs.start[(int)group.number.val];
 	end   = re->re_regs.end[(int)group.number.val];
 
-	result = tpy_list(tp);
+	result = tp_list_t(tp);
 	tp_set(tp, result, tp_None, tp_number(start));
 	tp_set(tp, result, tp_None, tp_number(end));
 
@@ -551,24 +548,24 @@ static tp_obj regex_compile(TP)
 	}
 
 	/* regexobject's size as magic */
-	reobj_data = tpy_data(tp, (int)sizeof(regexobject), re);
+	reobj_data = tp_data_t(tp, (int)sizeof(regexobject), re);
 
 	/*
 	 * bind to regex object
 	 */
-	tp_set(tp, reobj, tp_string("search"), 
-			tpy_method(tp, reobj, regex_obj_search));
-	tp_set(tp, reobj, tp_string("match"), 
-			tpy_method(tp, reobj, regex_obj_match));
-	tp_set(tp, reobj, tp_string("split"),
-			tpy_method(tp, reobj, regex_obj_split));
-	tp_set(tp, reobj, tp_string("findall"),
-			tpy_method(tp, reobj, regex_obj_findall));
-	tp_set(tp, reobj, tp_string("__data__"), reobj_data);
+	tp_set(tp, reobj, tp_string_const("search"), 
+			tp_method(tp, reobj, regex_obj_search));
+	tp_set(tp, reobj, tp_string_const("match"), 
+			tp_method(tp, reobj, regex_obj_match));
+	tp_set(tp, reobj, tp_string_const("split"),
+			tp_method(tp, reobj, regex_obj_split));
+	tp_set(tp, reobj, tp_string_const("findall"),
+			tp_method(tp, reobj, regex_obj_findall));
+	tp_set(tp, reobj, tp_string_const("__data__"), reobj_data);
 
-	tp_set(tp, reobj, tp_string("__name__"), 
-			tp_string("regular expression object"));
-	tp_set(tp, reobj, tp_string("__doc__"), tp_string(
+	tp_set(tp, reobj, tp_string_const("__name__"), 
+			tp_string_const("regular expression object"));
+	tp_set(tp, reobj, tp_string_const("__doc__"), tp_string_const(
 				"regular expression object, support methods:\n"
 				"search(str[,pos=0])-search 'str' from 'pos'\n"
 				"match(str[,pos=0])	-match 'str' from 'pos'\n"
@@ -577,7 +574,7 @@ static tp_obj regex_compile(TP)
 	return (reobj);
 
 finally:
-	tp_raise(tp_None, tp_string(error));
+	tp_raise(tp_None, tp_string_const(error));
 }
 
 /*
@@ -677,33 +674,33 @@ void re_init(TP)
 	/*
 	 * module dict for re
 	 */
-	tp_obj re_mod = tpy_dict(tp);
+	tp_obj re_mod = tp_dict_t(tp);
 
 	/*
 	 * bind to re module
 	 */
-	tp_set(tp, re_mod, tp_string("compile"),	  tpy_fnc(tp, regex_compile));
-	tp_set(tp, re_mod, tp_string("search"),		  tpy_fnc(tp, regex_search));
-	tp_set(tp, re_mod, tp_string("match"),		  tpy_fnc(tp, regex_match));
-	tp_set(tp, re_mod, tp_string("split"),		  tpy_fnc(tp, regex_split));
-	tp_set(tp, re_mod, tp_string("findall"),	  tpy_fnc(tp, regex_findall));
-	tp_set(tp, re_mod, tp_string("AWK_SYNTAX"),   tp_number(RE_SYNTAX_AWK));
-	tp_set(tp, re_mod, tp_string("EGREP_SYNTAX"), tp_number(RE_SYNTAX_EGREP));
-	tp_set(tp, re_mod, tp_string("GREP_SYNTAX"),  tp_number(RE_SYNTAX_GREP));
-	tp_set(tp, re_mod, tp_string("EMACS_SYNTAX"), tp_number(RE_SYNTAX_EMACS));
+	tp_set(tp, re_mod, tp_string_const("compile"),	  tp_function(tp, regex_compile));
+	tp_set(tp, re_mod, tp_string_const("search"),		  tp_function(tp, regex_search));
+	tp_set(tp, re_mod, tp_string_const("match"),		  tp_function(tp, regex_match));
+	tp_set(tp, re_mod, tp_string_const("split"),		  tp_function(tp, regex_split));
+	tp_set(tp, re_mod, tp_string_const("findall"),	  tp_function(tp, regex_findall));
+	tp_set(tp, re_mod, tp_string_const("AWK_SYNTAX"),   tp_number(RE_SYNTAX_AWK));
+	tp_set(tp, re_mod, tp_string_const("EGREP_SYNTAX"), tp_number(RE_SYNTAX_EGREP));
+	tp_set(tp, re_mod, tp_string_const("GREP_SYNTAX"),  tp_number(RE_SYNTAX_GREP));
+	tp_set(tp, re_mod, tp_string_const("EMACS_SYNTAX"), tp_number(RE_SYNTAX_EMACS));
 
 	/*
 	 * bind special attibutes to re module
 	 */
-	tp_set(tp, re_mod, tp_string("__name__"), 
-			tp_string("regular expression module"));
-	tp_set(tp, re_mod, tp_string("__file__"), tp_string(__FILE__));
-	tp_set(tp, re_mod, tp_string("__doc__"), 
-			tp_string("simple regular express implementation"));
+	tp_set(tp, re_mod, tp_string_const("__name__"), 
+			tp_string_const("regular expression module"));
+	tp_set(tp, re_mod, tp_string_const("__file__"), tp_string_const(__FILE__));
+	tp_set(tp, re_mod, tp_string_const("__doc__"), 
+			tp_string_const("simple regular express implementation"));
 
 	/*
 	 * bind regex module to tinypy modules[]
 	 */
-	tp_set(tp, tp->modules, tp_string("re"), re_mod);
+	tp_set(tp, tp->modules, tp_string_const("re"), re_mod);
 }
 

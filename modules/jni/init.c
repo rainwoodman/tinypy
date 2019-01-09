@@ -102,7 +102,7 @@ tp_obj jni_unmap_value(TP, const char* type, jvalue value) {
         case 'L': if(value.l == NULL) {
                       return tp_None;
                   } else if(!strncmp(type, "Ljava/lang/String;", 18)) {
-                          return tp_string((*env)->GetStringUTFChars(env, value.l, NULL));
+                          return tp_string_const((*env)->GetStringUTFChars(env, value.l, NULL));
                   } else {
                       return tpy_data(tp, 0, value.l);
                   } 
@@ -184,23 +184,23 @@ void jni_init(TP)
      */
     tp_obj jni_mod = tp_dict(tp);
 
-    tp_set(tp, jni_mod, tp_string("find_class"), tp_fnc(tp, jni_find_class));
-    tp_set(tp, jni_mod, tp_string("get_method_id"), tp_fnc(tp, jni_get_method_id));
-    tp_set(tp, jni_mod, tp_string("get_static_method_id"), tp_fnc(tp, jni_get_method_id));
-    tp_set(tp, jni_mod, tp_string("call_object_method"), tp_fnc(tp, jni_call_object_method));
-    tp_set(tp, jni_mod, tp_string("new_object"), tp_fnc(tp, jni_new_object));
-    tp_set(tp, jni_mod, tp_string("find_class"), tp_fnc(tp, jni_find_class));
+    tp_set(tp, jni_mod, tp_string_const("find_class"), tp_fnc(tp, jni_find_class));
+    tp_set(tp, jni_mod, tp_string_const("get_method_id"), tp_fnc(tp, jni_get_method_id));
+    tp_set(tp, jni_mod, tp_string_const("get_static_method_id"), tp_fnc(tp, jni_get_method_id));
+    tp_set(tp, jni_mod, tp_string_const("call_object_method"), tp_fnc(tp, jni_call_object_method));
+    tp_set(tp, jni_mod, tp_string_const("new_object"), tp_fnc(tp, jni_new_object));
+    tp_set(tp, jni_mod, tp_string_const("find_class"), tp_fnc(tp, jni_find_class));
 
     /*
      * bind special attributes to jni module
      */
-    tp_set(tp, jni_mod, tp_string("__doc__"), tp_string("This module gives access to java classes."));
-    tp_set(tp, jni_mod, tp_string("__name__"), tp_string("jni"));
-    tp_set(tp, jni_mod, tp_string("__file__"), tp_string(__FILE__));
+    tp_set(tp, jni_mod, tp_string_const("__doc__"), tp_string_const("This module gives access to java classes."));
+    tp_set(tp, jni_mod, tp_string_const("__name__"), tp_string_const("jni"));
+    tp_set(tp, jni_mod, tp_string_const("__file__"), tp_string_const(__FILE__));
 
     /*
      * bind to tiny modules[]
      */
-    tp_set(tp, tp->modules, tp_string("jni"), jni_mod);
+    tp_set(tp, tp->modules, tp_string_const("jni"), jni_mod);
 }
 

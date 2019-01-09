@@ -14,13 +14,13 @@ void tp_frame(TP,tp_obj globals,tp_obj code,tp_obj *ret_dest) {
     
     f.ret_dest = ret_dest;
     f.lineno = 0;
-    f.line = tp_string("");
-    f.name = tp_string("?");
-    f.fname = tp_string("?");
+    f.line = tp_string_const("");
+    f.name = tp_string_const("?");
+    f.fname = tp_string_const("?");
     f.cregs = 0;
 /*     return f;*/
     if (f.regs+(256+TP_REGS_EXTRA) >= tp->regs+TP_REGS || tp->cur >= TP_FRAMES-1) {
-        tp_raise(,tp_string("(tp_frame) RuntimeError: stack overflow"));
+        tp_raise(,tp_string_const("(tp_frame) RuntimeError: stack overflow"));
     }
     tp->cur += 1;
     tp->frames[tp->cur] = f;
@@ -32,7 +32,7 @@ void tp_print_stack(TP) {
     for (i=0; i<=tp->cur; i++) {
         if (!tp->frames[i].lineno) { continue; }
         tp->echo("File \"", -1); tp_echo(tp,tp->frames[i].fname); tp->echo("\", ", -1);
-        tp_echo(tp, tp_printf_tracked(tp, "line %d, in ",tp->frames[i].lineno));
+        tp_echo(tp, tp_printf(tp, "line %d, in ",tp->frames[i].lineno));
         tp_echo(tp,tp->frames[i].name); tp->echo("\n ", -1);
         tp_echo(tp,tp->frames[i].line); tp->echo("\n", -1);
     }

@@ -89,7 +89,7 @@ void tp_delete(TP, tp_obj v) {
         tp_free(tp, v.fnc.info);
         return;
     }
-    tp_raise(, tp_string("(tp_delete) TypeError: ?"));
+    tp_raise(, tp_string_const("(tp_delete) TypeError: ?"));
 }
 
 void tp_collect(TP) {

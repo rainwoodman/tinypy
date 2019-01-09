@@ -7,8 +7,8 @@ Functions are into several namespaces from lower-level to higher-level:
 - `tp_*` : tinypy interpreter C-API;
            arguments from C arguments;
            functions may return any C value;
-           return values are usually not tracked by gc,
-           unless the name indicates tracked.
+           return values are usually tracked by gc,
+           unless the name indicates untracked (ending with _nt)
            add the result to gc before dropping to the Python land.
 
 - `tpy_*` : python language C-API

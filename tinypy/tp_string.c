@@ -4,20 +4,17 @@
  
 /*
  * Create a new empty string of a certain size.
- * Does not put it in for GC tracking, since contents should be
- * filled after returning.
  */ 
 tp_obj tp_string_t(TP, int n) {
-    tp_obj r = tp_string_n(0,n);
+    tp_obj r = tp_string_nt(0, n);
     r.string.info = (tpd_string*)tp_malloc(tp, sizeof(tpd_string)+n);
     r.string.info->len = n;
     r.string.val = r.string.info->s;
-    return r;
+    return tp_track(tp, r);
 }
 
 /*
  * Create a new string which is a copy of some memory.
- * This does not put into GC tracking for you.
  */
 tp_obj tp_string_copy(TP, const char *s, int n) {
     tp_obj r = tp_string_t(tp,n);
@@ -39,7 +36,7 @@ tp_obj tp_string_sub(TP, tp_obj s, int a, int b) {
     return r;
 }
 
-tp_obj tp_printf_tracked(TP, char const *fmt,...) {
+tp_obj tp_printf(TP, char const *fmt,...) {
     int l;
     tp_obj r;
     char *s;
@@ -52,7 +49,7 @@ tp_obj tp_printf_tracked(TP, char const *fmt,...) {
     va_start(arg, fmt);
     vsnprintf(s, l + 1, fmt, arg);
     va_end(arg);
-    return tp_track(tp, r);
+    return r;
 }
 
 int tp_str_index (tp_obj s, tp_obj k) {
@@ -92,7 +89,7 @@ tp_obj tp_string_mul(TP, tp_obj a, int n)
     int al = a.string.len;
     if(n <= 0) {
         tp_obj r = tp_string_t(tp, 0);
-        return tp_track(tp, r);
+        return r;
     }
     tp_obj r = tp_string_t(tp, al*n);
     char *s = r.string.info->s;

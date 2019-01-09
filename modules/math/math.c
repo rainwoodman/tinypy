@@ -180,7 +180,7 @@ static tp_obj math_frexp(TP) {
     double x = TP_NUM();
     int    y = 0;   
     double r = 0.0;
-    tp_obj rList = tpy_list(tp);
+    tp_obj rList = tp_list_t(tp);
 
     errno = 0;
     r = frexp(x, &y);
@@ -273,7 +273,7 @@ static tp_obj math_modf(TP) {
     double x = TP_NUM();
     double y = 0.0; 
     double r = 0.0;
-    tp_obj rList = tpy_list(tp);
+    tp_obj rList = tp_list_t(tp);
 
     errno = 0;
     r = modf(x, &y);

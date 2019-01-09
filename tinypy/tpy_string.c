@@ -7,7 +7,7 @@ tp_obj tpy_str_join(TP) {
     char *s;
     for (i=0; i<val.list.val->len; i++) {
         if (i!=0) { l += delim.string.len; }
-        l += tp_str_tracked(tp, val.list.val->items[i]).string.len;
+        l += tp_str(tp, val.list.val->items[i]).string.len;
     }
     r = tp_string_t(tp,l);
     s = r.string.info->s;
@@ -17,16 +17,16 @@ tp_obj tpy_str_join(TP) {
         if (i!=0) {
             memcpy(s+l,delim.string.val, delim.string.len); l += delim.string.len;
         }
-        e = tp_str_tracked(tp, val.list.val->items[i]);
+        e = tp_str(tp, val.list.val->items[i]);
         memcpy(s+l,e.string.val,e.string.len); l += e.string.len;
     }
-    return tp_track(tp,r);
+    return r;
 }
 
 tp_obj tpy_str_split(TP) {
     tp_obj v = TP_OBJ();
     tp_obj d = TP_OBJ();
-    tp_obj r = tpy_list(tp);
+    tp_obj r = tp_list_t(tp);
 
     int i;
     while ((i = tp_str_index(v, d))!=-1) {
@@ -49,18 +49,18 @@ tp_obj tpy_str_index(TP) {
     tp_obj v = TP_OBJ();
     int n = tp_str_index(s,v);
     if (n >= 0) { return tp_number(n); }
-    tp_raise(tp_None,tp_string("(tp_str_index) ValueError: substring not found"));
+    tp_raise(tp_None,tp_string_const("(tp_str_index) ValueError: substring not found"));
 }
 
 tp_obj tpy_chr(TP) {
     int v = TP_NUM();
     /* returns an untracked string, since we do not own the memory. */
-    return tp_string_n(tp->chars[(unsigned char)v],1);
+    return tp_string_nt(tp->chars[(unsigned char)v], 1);
 }
 tp_obj tpy_ord(TP) {
     tp_obj s = TP_STR();
     if (s.string.len != 1) {
-        tp_raise(tp_None,tp_string("(tp_ord) TypeError: ord() expected a character"));
+        tp_raise(tp_None,tp_string_const("(tp_ord) TypeError: ord() expected a character"));
     }
     return tp_number((unsigned char)s.string.val[0]);
 }
@@ -76,11 +76,11 @@ tp_obj tpy_str_strip(TP) {
             a = _tp_min(a,i); b = _tp_max(b,i+1);
         }
     }
-    if ((b-a) < 0) { return tp_string(""); }
+    if ((b-a) < 0) { return tp_string_const(""); }
     r = tp_string_t(tp,b-a);
     s = r.string.info->s;
     memcpy(s,v+a,b-a);
-    return tp_track(tp,r);
+    return r;
 }
 
 tp_obj tpy_str_replace(TP) {
@@ -101,7 +101,7 @@ tp_obj tpy_str_replace(TP) {
     }
 /*     fprintf(stderr,"ns: %d\n",n); */
     l = s.string.len + n * (v.string.len-k.string.len);
-    rr = tp_string_t(tp,l);
+    rr = tp_string_t(tp, l);
     r = rr.string.info->s;
     d = r;
     z = p = s;
@@ -114,5 +114,5 @@ tp_obj tpy_str_replace(TP) {
     }
     memcpy(d,z.string.val,(s.string.val + s.string.len) - z.string.val);
 
-    return tp_track(tp,rr);
+    return rr;
 }

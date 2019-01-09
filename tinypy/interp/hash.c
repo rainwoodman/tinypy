@@ -30,6 +30,6 @@ int tp_hash(TP, tp_obj v) {
         case TP_FNC: return tpd_lua_hash(&v.fnc.info, sizeof(void*));
         case TP_DATA: return tpd_lua_hash(&v.data.val, sizeof(void*));
     }
-    tp_raise(0, tp_string("(tp_hash) TypeError: value unhashable"));
+    tp_raise(0, tp_string_const("(tp_hash) TypeError: value unhashable"));
 }
 

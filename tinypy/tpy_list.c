@@ -8,7 +8,7 @@ tp_obj tpy_list_index(TP) {
     tp_obj v = TP_OBJ();
     int i = tpd_list_find(tp, self.list.val, v, tp_cmp);
     if (i < 0) {
-        tp_raise(tp_None,tp_string("(tp_index) ValueError: list.index(x): x not in list"));
+        tp_raise(tp_None,tp_string_const("(tp_index) ValueError: list.index(x): x not in list"));
     }
     return tp_number(i);
 }
@@ -53,18 +53,3 @@ tp_obj tpy_list_sort(TP) {
     return tp_None;
 }
 
-tp_obj tpy_list(TP) {
-    tp_obj r = {TP_LIST};
-    r.list.val = tpd_list_new(tp);
-    return tp_track(tp,r);
-}
-
-tp_obj tpy_list_n(TP, int n, tp_obj *argv) {
-    int i;
-    tp_obj r = tpy_list(tp);
-    tpd_list_realloc(tp, r.list.val,n);
-    for (i=0; i<n; i++) {
-        tpd_list_append(tp, r.list.val, argv[i]);
-    }
-    return r;
-}

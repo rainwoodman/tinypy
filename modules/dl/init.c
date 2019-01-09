@@ -263,11 +263,11 @@ tp_obj dl_call(TP) {
 
 tp_obj call_method(TP) {
     tp_obj self = TP_OBJ();
-    tp_obj args = tp_track(tp, tp_list_copy(tp, tp->params));
+    tp_obj args = tp_list_copy(tp, tp->params);
 
-    tp_obj symbol = tp_get(tp, self, tp_string("symbol"));
-    tp_obj return_type = tp_get(tp, self, tp_string("return_type"));
-    tp_obj signature = tp_get(tp, self, tp_string("signature"));
+    tp_obj symbol = tp_get(tp, self, tp_string_const("symbol"));
+    tp_obj return_type = tp_get(tp, self, tp_string_const("return_type"));
+    tp_obj signature = tp_get(tp, self, tp_string_const("signature"));
 
     tp_params_v(tp, 4, symbol, return_type, signature, args);
     return dl_call(tp);
@@ -286,11 +286,11 @@ tp_obj dl_load(TP) {
     tp_obj output = tp_object(tp);
 
     tp_params_v(tp, 2, handle, name);
-    tp_set(tp, output, tp_string("__name__"), name);
-    tp_set(tp, output, tp_string("symbol"), dl_dlsym(tp));
-    tp_set(tp, output, tp_string("return_type"), return_type);
-    tp_set(tp, output, tp_string("signature"), signature);
-    tp_set(tp, output, tp_string("__call__"), tpy_method(tp, output, call_method));
+    tp_set(tp, output, tp_string_const("__name__"), name);
+    tp_set(tp, output, tp_string_const("symbol"), dl_dlsym(tp));
+    tp_set(tp, output, tp_string_const("return_type"), return_type);
+    tp_set(tp, output, tp_string_const("signature"), signature);
+    tp_set(tp, output, tp_string_const("__call__"), tp_method(tp, output, call_method));
 
     tp_params_v(tp, 1, handle);
     dl_dlclose(tp);
@@ -316,25 +316,25 @@ void dl_init(TP)
     /*
      * bind functions to dl module
      */
-    tp_set(tp, mod, tp_string("open"),        tp_fnc(tp, dl_dlopen));
-    tp_set(tp, mod, tp_string("close"),       tp_fnc(tp, dl_dlclose));
-    tp_set(tp, mod, tp_string("sym"),         tp_fnc(tp, dl_dlsym));
-    tp_set(tp, mod, tp_string("call"),        tp_fnc(tp, dl_call));
-    tp_set(tp, mod, tp_string("load"),        tp_fnc(tp, dl_load)); 
-    tp_set(tp, mod, tp_string("size"),        tp_fnc(tp, dl_size)); /* size of data according to signature */
-    tp_set(tp, mod, tp_string("pack"),        tp_fnc(tp, dl_pack));
-    tp_set(tp, mod, tp_string("unpack"),      tp_fnc(tp, dl_unpack));
-    tp_set(tp, mod, tp_string("exception"),   tp_fnc(tp, dl_exception)); /* get current exception */
+    tp_set(tp, mod, tp_string_const("open"),        tp_fnc(tp, dl_dlopen));
+    tp_set(tp, mod, tp_string_const("close"),       tp_fnc(tp, dl_dlclose));
+    tp_set(tp, mod, tp_string_const("sym"),         tp_fnc(tp, dl_dlsym));
+    tp_set(tp, mod, tp_string_const("call"),        tp_fnc(tp, dl_call));
+    tp_set(tp, mod, tp_string_const("load"),        tp_fnc(tp, dl_load)); 
+    tp_set(tp, mod, tp_string_const("size"),        tp_fnc(tp, dl_size)); /* size of data according to signature */
+    tp_set(tp, mod, tp_string_const("pack"),        tp_fnc(tp, dl_pack));
+    tp_set(tp, mod, tp_string_const("unpack"),      tp_fnc(tp, dl_unpack));
+    tp_set(tp, mod, tp_string_const("exception"),   tp_fnc(tp, dl_exception)); /* get current exception */
 
     /*
      * bind special attributes to random module
      */
-    tp_set(tp, mod, tp_string("__doc__"),  tp_string("Dynamic library loader."));
-    tp_set(tp, mod, tp_string("__name__"), tp_string("dl"));
-    tp_set(tp, mod, tp_string("__FILE__"), tp_string(__FILE__));
+    tp_set(tp, mod, tp_string_const("__doc__"),  tp_string_const("Dynamic library loader."));
+    tp_set(tp, mod, tp_string_const("__name__"), tp_string_const("dl"));
+    tp_set(tp, mod, tp_string_const("__FILE__"), tp_string_const(__FILE__));
 
     /*
      * bind random module to tinypy modules[]
      */
-    tp_set(tp, tp->modules, tp_string("dl"), mod);
+    tp_set(tp, tp->modules, tp_string_const("dl"), mod);
 }

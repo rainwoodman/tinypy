@@ -20,19 +20,19 @@ tp_vm *_tp_init(void) {
     tp->cur = 0;
     tp->jmp = 0;
     tp->ex = tp_None;
-    tp->root = tp_list_nt(tp);
+    tp->root = tp_list_nt(tp); /* root is not tracked by gc, as gc is not defined yet.*/
 
     for (i=0; i<256; i++) { tp->chars[i][0]=i; }
 
     tp_gc_init(tp);
     
     /* gc initialized, can use tpy_ functions. */
-    tp->_regs = tpy_list(tp);
+    tp->_regs = tp_list_t(tp);
     for (i=0; i<TP_REGS; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
-    tp->builtins = tpy_dict(tp);
-    tp->modules = tpy_dict(tp);
-    tp->_params = tpy_list(tp);
-    for (i=0; i<TP_FRAMES; i++) { tp_set(tp, tp->_params, tp_None, tpy_list(tp)); }
+    tp->builtins = tp_dict_t(tp);
+    tp->modules = tp_dict_t(tp);
+    tp->_params = tp_list_t(tp);
+    for (i=0; i<TP_FRAMES; i++) { tp_set(tp, tp->_params, tp_None, tp_list_t(tp)); }
     tp->echo = tp_default_echo;
     tp_set(tp,tp->root,tp_None,tp->builtins);
     tp_set(tp,tp->root,tp_None,tp->modules);
@@ -112,8 +112,8 @@ void tp_handle(TP) {
  *
  * Example:
  * > tp_call(tp,
- * >     tp_get(tp, tp->builtins, tp_string("foo")),
- * >     tp_params_v(tp, tp_string("hello")))
+ * >     tp_get(tp, tp->builtins, tp_string_const("foo")),
+ * >     tp_params_v(tp, tp_string_const("hello")))
  * This will look for a global function named "foo", then call it with a single
  * positional parameter containing the string "hello".
  */
@@ -124,7 +124,7 @@ tp_obj tp_call(TP,tp_obj self, tp_obj params) {
 
     if (self.type == TP_DICT) {
         if (self.dict.dtype == 1) {
-            tp_obj meta; if (_tp_lookup(tp,self,tp_string("__new__"),&meta)) {
+            tp_obj meta; if (_tp_lookup(tp,self,tp_string_const("__new__"),&meta)) {
                 tpd_list_insert(tp, params.list.val, 0, self);
                 return tp_call(tp,meta,params);
             }
@@ -152,7 +152,7 @@ tp_obj tp_call(TP,tp_obj self, tp_obj params) {
         return dest;
     }
     tp_params_v(tp,1, self); tpy_print(tp);
-    tp_raise(tp_None,tp_string("(tp_call) TypeError: object is not callable"));
+    tp_raise(tp_None,tp_string_const("(tp_call) TypeError: object is not callable"));
 }
 
 
@@ -258,14 +258,14 @@ int tp_step(TP) {
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,(UVBC/4)+1);
             #endif
-            /* RA = tp_string_n((*(cur+1)).string.val,UVBC); */
+            /* RA = tp_string_nt((*(cur+1)).string.val,UVBC); */
             int a = (*(cur+1)).string.val-f->code.string.val;
             RA = tp_string_sub(tp,f->code,a,a+UVBC),
             cur += (UVBC/4)+1;
             }
             break;
-        case TP_IDICT: RA = tpy_dict_n(tp,VC/2,&RB); break;
-        case TP_ILIST: RA = tpy_list_n(tp,VC,&RB); break;
+        case TP_IDICT: RA = tp_dict_from_items(tp, VC/2, &RB); break;
+        case TP_ILIST: RA = tp_list_from_items(tp, VC, &RB); break;
         case TP_IPARAMS: RA = tp_params_n(tp,VC,&RB); break;
         case TP_ILEN: RA = tp_len(tp,RB); break;
         case TP_IJUMP: cur += SVBC; continue; break;
@@ -283,13 +283,13 @@ int tp_step(TP) {
             break;
         case TP_IGSET: tp_set(tp,f->globals,RA,RB); break;
         case TP_IDEF: {
-/*            RA = tpy_def(tp,(*(cur+1)).string.val,f->globals);*/
+/*            RA = tp_def(tp,(*(cur+1)).string.val,f->globals);*/
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,SVBC);
             #endif
             int a = (*(cur+1)).string.val-f->code.string.val;
-            RA = tpy_def(tp,
-                /*tp_string_n((*(cur+1)).string.val,(SVBC-1)*4),*/
+            RA = tp_def(tp,
+                /*tp_string_nt((*(cur+1)).string.val,(SVBC-1)*4),*/
                 tp_string_sub(tp,f->code,a,a+(SVBC-1)*4),
                 f->globals);
             cur += SVBC; continue;
@@ -299,7 +299,7 @@ int tp_step(TP) {
         case TP_IRETURN: tp_return(tp,RA); SR(0); break;
         case TP_IRAISE: _tp_raise(tp,RA); SR(0); break;
         case TP_IDEBUG:
-            tp_params_v(tp,3,tp_string("DEBUG:"),tp_number(VA),RA); tpy_print(tp);
+            tp_params_v(tp,3,tp_string_const("DEBUG:"),tp_number(VA),RA); tpy_print(tp);
             break;
         case TP_INONE: RA = tp_None; break;
         case TP_ILINE: {
@@ -308,7 +308,7 @@ int tp_step(TP) {
             #endif
             ;
             int a = (*(cur+1)).string.val-f->code.string.val;
-/*            f->line = tp_string_n((*(cur+1)).string.val,VA*4-1);*/
+/*            f->line = tp_string_nt((*(cur+1)).string.val,VA*4-1);*/
             f->line = tp_string_sub(tp,f->code,a,a+VA*4-1);
 /*             fprintf(stderr,"%7d: %s\n",UVBC,f->line.string.val);*/
             cur += VA; f->lineno = UVBC;
@@ -318,7 +318,7 @@ int tp_step(TP) {
         case TP_INAME: f->name = RA; break;
         case TP_IREGS: f->cregs = VA; break;
         default:
-            tp_raise(0,tp_string("(tp_step) RuntimeError: invalid instruction"));
+            tp_raise(0,tp_string_const("(tp_step) RuntimeError: invalid instruction"));
             break;
     }
     #ifdef TP_SANDBOX
@@ -347,8 +347,8 @@ void tp_run(TP,int cur) {
 
 tp_obj tp_ez_call(TP, const char *mod, const char *fnc, tp_obj params) {
     tp_obj tmp;
-    tmp = tp_get(tp,tp->modules,tp_string(mod));
-    tmp = tp_get(tp,tmp,tp_string(fnc));
+    tmp = tp_get(tp,tp->modules,tp_string_const(mod));
+    tmp = tp_get(tp,tmp,tp_string_const(fnc));
     return tp_call(tp,tmp,params);
 }
 
@@ -376,10 +376,10 @@ tp_obj tpy_exec(TP) {
 
 
 tp_obj tp_args(TP, int argc, char *argv[]) {
-    tp_obj self = tpy_list(tp);
+    tp_obj self = tp_list_t(tp);
     int i;
     for (i=1; i<argc; i++) {
-        tpd_list_append(tp, self.list.val, tp_string(argv[i]));
+        tpd_list_append(tp, self.list.val, tp_string_const(argv[i]));
     }
     return self;
 }
@@ -407,7 +407,7 @@ tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
 }
 
 tp_obj tp_eval_from_cstr(TP, const char *text, tp_obj globals) {
-    tp_obj code = tp_compile(tp,tp_string(text),tp_string("<eval>"));
+    tp_obj code = tp_compile(tp,tp_string_const(text),tp_string_const("<eval>"));
     tp_exec(tp,code,globals);
     return tp->last_result;
 }
@@ -416,19 +416,19 @@ tp_obj tpy_eval(TP) {
     tp_obj text = TP_STR();
     tp_obj globals = TP_TYPE(TP_DICT);
 
-    tp_obj code = tp_compile(tp, text, tp_string("<eval>"));
+    tp_obj code = tp_compile(tp, text, tp_string_const("<eval>"));
 
     tp_exec(tp,code,globals);
     return tp->last_result;
 }
 
 void tp_module_sys_init (TP, int argc, char * argv[]) {
-    tp_obj sys = tpy_dict(tp);
+    tp_obj sys = tp_dict_t(tp);
     tp_obj args = tp_args(tp,argc,argv);
-    tp_set(tp, sys, tp_string("version"), tp_string("tinypy 1.2+SVN"));
-    tp_set(tp, sys, tp_string("modules"), tp->modules);
-    tp_set(tp, sys, tp_string("argv"), args);
-    tp_set(tp, tp->modules, tp_string("sys"), sys);
+    tp_set(tp, sys, tp_string_const("version"), tp_string_const("tinypy 1.2+SVN"));
+    tp_set(tp, sys, tp_string_const("modules"), tp->modules);
+    tp_set(tp, sys, tp_string_const("argv"), args);
+    tp_set(tp, tp->modules, tp_string_const("sys"), sys);
 }
 /* Function: tp_init
  * Initializes a new virtual machine.

@@ -1,3 +1,22 @@
+tp_obj tp_list_nt(TP) {
+    tp_obj r = {TP_LIST};
+    r.list.val = tpd_list_new(tp);
+    return r;
+}
+
+tp_obj tp_list_t(TP) {
+    return tp_track(tp, tp_list_nt(tp));
+}
+
+tp_obj tp_list_from_items(TP, int n, tp_obj *argv) {
+    int i;
+    tp_obj r = tp_list_t(tp);
+    tpd_list_realloc(tp, r.list.val,n);
+    for (i=0; i<n; i++) {
+        tpd_list_append(tp, r.list.val, argv[i]);
+    }
+    return r;
+}
 /* C API for lists */
 tp_obj tp_list_copy(TP, tp_obj rr) {
     tp_check_type(tp, TP_LIST, rr);
@@ -10,7 +29,7 @@ tp_obj tp_list_copy(TP, tp_obj rr) {
     r->items = (tp_obj*)tp_malloc(tp, sizeof(tp_obj)*o->len);
     memcpy(r->items,o->items,sizeof(tp_obj)*o->len);
     val.list.val = r;
-    return val;
+    return tp_track(tp, val);
 }
 
 tp_obj tp_list_add(TP, tp_obj a, tp_obj b)
@@ -29,12 +48,6 @@ tp_obj tp_list_mul(TP, tp_obj a, int n)
     for (i = 1; i < n; i ++) {
         tpd_list_extend(tp, r.list.val, a.list.val);
     }
-    return r;
-}
-
-tp_obj tp_list_nt(TP) {
-    tp_obj r = {TP_LIST};
-    r.list.val = tpd_list_new(tp);
     return r;
 }
 

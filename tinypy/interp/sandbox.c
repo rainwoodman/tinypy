@@ -14,7 +14,7 @@ void tp_mem_update(TP) {
        (tp->mem_used > tp->mem_limit) && 
        (tp->mem_limit != TP_NO_LIMIT)) {
         tp->mem_exceeded = 1;
-        tp_raise(,tp_string("(tp_mem_update) SandboxError: memory limit exceeded"));
+        tp_raise(,tp_string_const("(tp_mem_update) SandboxError: memory limit exceeded"));
     }
 } 
 
@@ -25,7 +25,7 @@ void tp_time_update(TP) {
         tp->clocks = clock();
         tp->time_elapsed += ((double) (tp->clocks - tmp) / CLOCKS_PER_SEC) * 1000.0;
         if(tp->time_elapsed >= tp->time_limit)
-            tp_raise(,tp_string("(tp_time_update) SandboxError: time limit exceeded"));
+            tp_raise(,tp_string_const("(tp_time_update) SandboxError: time limit exceeded"));
     }
 }
 
@@ -80,11 +80,11 @@ tp_obj tp_sandbox_(TP) {
     tp_num time = TP_NUM();
     tp_num mem = TP_NUM();
     tp_sandbox(tp, time, mem);
-    tp_del(tp, tp->builtins, tp_string("sandbox"));
-    tp_del(tp, tp->builtins, tp_string("mtime"));
-    tp_del(tp, tp->builtins, tp_string("load"));
-    tp_del(tp, tp->builtins, tp_string("save"));
-    tp_del(tp, tp->builtins, tp_string("system"));
+    tp_del(tp, tp->builtins, tp_string_const("sandbox"));
+    tp_del(tp, tp->builtins, tp_string_const("mtime"));
+    tp_del(tp, tp->builtins, tp_string_const("load"));
+    tp_del(tp, tp->builtins, tp_string_const("save"));
+    tp_del(tp, tp->builtins, tp_string_const("system"));
     return tp_None;
 }
 
@@ -92,6 +92,6 @@ void tp_bounds(TP, tpd_code *cur, int n) {
     char *s = (char *)(cur + n);
     tp_obj code = tp->frames[tp->cur].code;
     if (s < code.string.val || s > (code.string.val+code.string.len)) {
-        tp_raise(,tp_string("(tp_bounds) SandboxError: bytecode bounds reached"));
+        tp_raise(,tp_string_const("(tp_bounds) SandboxError: bytecode bounds reached"));
     }
 }

@@ -233,8 +233,8 @@ tp_obj tp_has(TP, tp_obj self, tp_obj k);
 tp_obj tp_len(TP, tp_obj);
 
 void   tp_del(TP, tp_obj, tp_obj);
-tp_obj tp_str_tracked(TP, tp_obj);
-tp_obj tp_repr_tracked(TP, tp_obj);
+tp_obj tp_str(TP, tp_obj);
+tp_obj tp_repr(TP, tp_obj);
 int    tp_true(TP, tp_obj);
 int    tp_cmp(TP, tp_obj, tp_obj);
 tp_obj tp_add(TP,tp_obj a, tp_obj b) ;
@@ -260,11 +260,11 @@ void   _tp_raise(TP,tp_obj);
 }
 
 #define tp_raise_printf(r,fmt,...) { \
-    _tp_raise(tp, tp_printf_tracked(tp, fmt, __VA_ARGS__)); \
+    _tp_raise(tp, tp_printf(tp, fmt, __VA_ARGS__)); \
     return r; \
 }
 
-/* Function: tp_string
+/* Function: tp_string_nt
  * Creates a new string object from a C string.
  * 
  * Given a pointer to a C string, creates a tinypy object representing the
@@ -278,7 +278,7 @@ void   _tp_raise(TP,tp_obj);
  */
 /* FIXME: rename this tp tp_string_const; */
 tp_inline static
-tp_obj tp_string(char const *v) {
+tp_obj tp_string_const(char const *v) {
     tp_obj r;
     r.string.type = TP_STRING;
     r.string.info = NULL;
@@ -318,7 +318,7 @@ tp_inline static
 tp_obj tp_check_type(TP,int t, tp_obj v) {
     if (v.type != t) {
         tp_raise(tp_None,
-            tp_string("(tp_check_type) TypeError: unexpected type"));
+            tp_string_const("(tp_check_type) TypeError: unexpected type"));
     }
     return v;
 }
@@ -380,7 +380,7 @@ tp_inline static tp_obj tp_number(tp_num v) {
  * string reference and length are kept, but no actual substring is stored.
  */
 tp_inline static
-tp_obj tp_string_n(char const * v, int n) {
+tp_obj tp_string_nt(char const * v, int n) {
     tp_obj r;
     r.string.type = TP_STRING;
     r.string.info = NULL;
@@ -410,13 +410,16 @@ tp_obj tpy_print(TP);
 tp_obj tpy_load(TP);
 tp_obj tpy_save(TP);
 
-tp_obj tpy_list(TP);
-tp_obj tpy_dict(TP);
-tp_obj tpy_fnc(TP, tp_obj v(TP));
-tp_obj tpy_method(TP,tp_obj self,tp_obj v(TP));
-tp_obj tpy_def(TP, tp_obj code, tp_obj g);
+tp_obj tp_data_t(TP, int magic, void *v);
+tp_obj tp_list_t(TP);
+tp_obj tp_list_nt(TP);
+tp_obj tp_dict_t(TP);
+tp_obj tp_dict_nt(TP);
+tp_obj tp_function(TP, tp_obj v(TP));
+tp_obj tp_method(TP,tp_obj self,tp_obj v(TP));
+tp_obj tp_def(TP, tp_obj code, tp_obj g);
 
-tp_obj tp_printf_tracked(TP, const char * fmt, ...);
+tp_obj tp_printf(TP, const char * fmt, ...);
 
 void tp_module_sys_init(TP, int argc, char * argv[]);
 void tp_module_builtins_init(TP);

@@ -229,7 +229,7 @@ static tp_obj random_seed(TP)
 
 static tp_obj random_getstate(TP)
 {
-    tp_obj state_list = tpy_list(tp);
+    tp_obj state_list = tp_list_t(tp);
     int i;
 
     for (i = 0; i < N; i++) {

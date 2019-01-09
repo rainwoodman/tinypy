@@ -6,7 +6,7 @@ void tpd_list_realloc(TP, tpd_list *self, int len) {
 
 void tpd_list_set(TP, tpd_list *self,int k, tp_obj v, const char *error) {
     if (k >= self->len) {
-        tp_raise(,tp_string("(tpd_list_set) KeyError"));
+        tp_raise(,tp_string_const("(tpd_list_set) KeyError"));
     }
     self->items[k] = v;
     tp_grey(tp, v);
@@ -23,7 +23,7 @@ void tpd_list_free(TP, tpd_list *self) {
 
 tp_obj tpd_list_get(TP, tpd_list *self, int k, const char *error) {
     if (k >= self->len) {
-        tp_raise(tp_None, tp_string("(tpd_list_get) KeyError"));
+        tp_raise(tp_None, tp_string_const("(tpd_list_get) KeyError"));
     }
     return self->items[k];
 }
