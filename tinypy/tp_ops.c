@@ -167,9 +167,29 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
         } else if (type == TP_STRING) {
             return tp_string_sub(tp,self,a,b);
         }
+    } else if (k.type == TP_STRING) {
+        return tp_copy(tp, self);
     }
-
     tp_raise(tp_None,tp_string_const("(tp_get) TypeError: ?"));
+}
+
+/* function: tp_copy
+ * */
+tp_obj tp_copy(TP, tp_obj self) {
+    int type = self.type;
+    if (type == TP_NUMBER) {
+        return self;
+    }
+    if (type == TP_STRING) {
+        return tp_string_copy(tp, self.string.val, self.string.len);
+    }
+    if (type == TP_LIST) {
+        return tp_list_copy(tp, self);
+    }
+    if (type == TP_DICT) {
+        return tp_dict_copy(tp, self);
+    }
+    tp_raise(tp_None, tp_string_const("(tp_copy) TypeError: object does not support copy"));
 }
 
 /* Function: tp_iget

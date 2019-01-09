@@ -42,7 +42,7 @@
    #define tp_realloc(x,y) GC_REALLOC(x,y)
    #define tp_free(x)*/
 
-enum {
+enum TPTypeID {
     TP_NONE,TP_NUMBER,TP_STRING,TP_DICT,
     TP_LIST,TP_FNC,TP_DATA,
 };
@@ -72,14 +72,14 @@ typedef double tp_num;
  * data.magic - The user-provided magic number for identifying the data type.
  */
 typedef union tp_obj {
-    int type;
-    struct { int type; int *data; } gci;
-    struct { int type; tp_num val; } number;
-    struct { int type; struct tpd_string *info; char const *val; int len; } string;
-    struct { int type; struct tpd_list *val; } list;
-    struct { int type; struct tpd_dict *val; int dtype; } dict;
-    struct { int type; struct tpd_fnc *info; int ftype; void *cfnc; } fnc;
-    struct { int type; struct tpd_data *info; void *val; int magic; } data;
+    enum TPTypeID type;
+    struct { enum TPTypeID type; int *data; } gci;
+    struct { enum TPTypeID type; tp_num val; } number;
+    struct { enum TPTypeID type; struct tpd_string *info; char const *val; int len; } string;
+    struct { enum TPTypeID type; struct tpd_list *val; } list;
+    struct { enum TPTypeID type; struct tpd_dict *val; int dtype; } dict;
+    struct { enum TPTypeID type; struct tpd_fnc *info; int ftype; void *cfnc; } fnc;
+    struct { enum TPTypeID type; struct tpd_data *info; void *val; int magic; } data;
 } tp_obj;
 
 typedef struct tpd_string {

@@ -1,3 +1,4 @@
+tp_obj tp_copy(TP, tp_obj obj);
 void   tp_set(TP, tp_obj, tp_obj, tp_obj);
 int    tp_iget(TP,tp_obj *r, tp_obj self, tp_obj k);
 

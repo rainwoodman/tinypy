@@ -17,7 +17,7 @@ tp_obj tp_string_t(TP, int n) {
  * Create a new string which is a copy of some memory.
  */
 tp_obj tp_string_copy(TP, const char *s, int n) {
-    tp_obj r = tp_string_t(tp,n);
+    tp_obj r = tp_string_t(tp, n);
     memcpy(r.string.info->s,s,n);
     return r;
 }
