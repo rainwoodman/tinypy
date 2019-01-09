@@ -1,31 +1,32 @@
 #include "interp.h"
 
-#include "interp/hash.c"
+#include "tp_hash.c"
 
 #include "tpd_list.c"
 #include "tpd_dict.c"
 
-#include "interp/gc.c"
+#include "tp_gc.c"
 
 #include "tp_list.c"
 #include "tp_dict.c"
 #include "tp_string.c"
 
-#include "tpy_dict.c"
-#include "tpy_list.c"
-#include "tpy_string.c"
-
 #include "tp_func.c"
 #include "tp_data.c"
 
-#include "interp/meta.c"
+#include "tp_meta.c"
 
-#include "interp/misc.c"
+#include "tpy_string.c"
 #include "tp_repr.c"
 
-#include "interp/frame.c"
-#include "interp/import.c"
-#include "interp/ops.c"
+#include "tp_misc.c"
+#include "tp_frame.c"
+
+#include "tpy_dict.c"
+#include "tpy_list.c"
+
+#include "tp_import.c"
+#include "tp_ops.c"
 
 #ifdef TP_SANDBOX
 #include "interp/sandbox.c"
@@ -33,6 +34,6 @@
 
 tp_obj tp_None = {TP_NONE};
 
-#include "interp/vm.c"
+#include "tp_vm.c"
 
-#include "interp/builtins.c"
+#include "tpy_builtins.c"
