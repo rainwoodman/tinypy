@@ -141,8 +141,10 @@ tp_obj tp_call(TP,tp_obj self, tp_obj params) {
     }
     if (self.type == TP_FNC) {
         tp_obj dest = tp_None;
-        tp_frame(tp,self.fnc.info->globals,self.fnc.info->code,&dest);
-        if ((self.fnc.ftype&2)) {
+        tp_enter_frame(tp, self.fnc.info->globals,
+                           self.fnc.info->code,
+                          &dest);
+        if ((self.fnc.ftype & 2)) {
             tp->frames[tp->cur].regs[0] = params;
             tpd_list_insert(tp, params.list.val, 0, self.fnc.info->self);
         } else {
@@ -331,17 +333,21 @@ int tp_step(TP) {
     SR(0);
 }
 
-void _tp_run(TP,int cur) { 
-    tp->jmp += 1; if (setjmp(tp->buf)) { tp_handle(tp); }
-    while (tp->cur >= cur && tp_step(tp) != -1);
-    tp->jmp -= 1;
-}
-
 void tp_run(TP,int cur) {
     jmp_buf tmp;
-    memcpy(tmp,tp->buf,sizeof(jmp_buf));
-    _tp_run(tp,cur);
-    memcpy(tp->buf,tmp,sizeof(jmp_buf));
+    memcpy(tmp, tp->buf, sizeof(jmp_buf));
+    tp->jmp += 1;
+
+    if (setjmp(tp->buf)) {
+        tp_handle(tp);
+    }
+    /* keep runing till the frame drops back (aka function returns) */
+    while (tp->cur >= cur) {
+        if (tp_step(tp) == -1) break;
+    }
+
+    tp->jmp -= 1;
+    memcpy(tp->buf, tmp, sizeof(jmp_buf));
 }
 
 
@@ -369,8 +375,10 @@ tp_obj tpy_exec(TP) {
     tp_obj code = TP_OBJ();
     tp_obj globals = TP_OBJ();
     tp_obj r = tp_None;
-    tp_frame(tp,globals,code,&r);
-    tp_run(tp,tp->cur);
+
+    tp_enter_frame(tp, globals, code, &r);
+
+    tp_run(tp, tp->cur);
     return r;
 }
 
@@ -400,8 +408,8 @@ tp_obj tp_compile(TP, tp_obj text, tp_obj fname) {
  * Execute VM code.
  */
 tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
-    tp_obj r=tp_None;
-    tp_frame(tp,globals,code,&r);
+    tp_obj r = tp_None;
+    tp_enter_frame(tp, globals, code, &r);
     tp_run(tp,tp->cur);
     return r;
 }

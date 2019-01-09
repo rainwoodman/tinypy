@@ -1,5 +1,5 @@
 /* tp_frame_*/
-void tp_frame(TP,tp_obj globals,tp_obj code,tp_obj *ret_dest) {
+void tp_enter_frame(TP, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
     tpd_frame f;
     f.globals = globals;
     f.code = code;

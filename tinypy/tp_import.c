@@ -45,8 +45,10 @@ tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     tp_set(tp, g, tp_string_const("__name__"), name);
     tp_set(tp, g, tp_string_const("__code__"), code);
     tp_set(tp, g, tp_string_const("__dict__"), g);
-    tp_frame(tp, g, code, 0);
+
     tp_set(tp, tp->modules, name, g);
+
+    tp_enter_frame(tp, g, code, 0);
 
     if (!tp->jmp) {
         tp_run(tp, tp->cur);
