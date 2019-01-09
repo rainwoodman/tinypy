@@ -1,4 +1,5 @@
 
+/* FIXME: use StringBuilder. */
 tp_obj tpy_str_join(TP) {
     tp_obj delim = TP_OBJ();
     tp_obj val = TP_OBJ();
@@ -6,8 +7,8 @@ tp_obj tpy_str_join(TP) {
     tp_obj r;
     char *s;
     for (i=0; i<val.list.val->len; i++) {
-        if (i!=0) { l += delim.string.info->len; }
-        l += tp_str(tp, val.list.val->items[i]).string.info->len;
+        if (i!=0) { l += tp_string_len(delim); }
+        l += tp_string_len(tp_str(tp, val.list.val->items[i]));
     }
     r = tp_string_t(tp,l);
     s = r.string.info->s;
@@ -15,10 +16,10 @@ tp_obj tpy_str_join(TP) {
     for (i=0; i<val.list.val->len; i++) {
         tp_obj e;
         if (i!=0) {
-            memcpy(s+l,delim.string.info->s, delim.string.info->len); l += delim.string.info->len;
+            memcpy(s+l,delim.string.info->s, tp_string_len(delim)); l += tp_string_len(delim);
         }
         e = tp_str(tp, val.list.val->items[i]);
-        memcpy(s+l,e.string.info->s,e.string.info->len); l += e.string.info->len;
+        memcpy(s+l,e.string.info->s,tp_string_len(e)); l += tp_string_len(e);
     }
     return r;
 }
@@ -28,15 +29,15 @@ tp_obj tpy_str_split(TP) {
     tp_obj d = TP_OBJ();
     tp_obj r = tp_list_t(tp);
 
-    v = tp_string_view(tp, v, 0, v.string.info->len);
+    v = tp_string_view(tp, v, 0, tp_string_len(v));
 
     int i;
     while ((i = tp_str_index(v, d))!=-1) {
         tpd_list_append(tp, r.list.val, tp_string_view(tp, v, 0, i));
-        v.string.info->s += i + d.string.info->len;
-        v.string.info->len -= i + d.string.info->len;
+        v.string.info->s += i + tp_string_len(d);
+        v.string.info->len -= i + tp_string_len(d);
     }
-    tpd_list_append(tp, r.list.val, tp_string_view(tp, v, 0, v.string.info->len));
+    tpd_list_append(tp, r.list.val, tp_string_view(tp, v, 0, tp_string_len(v)));
     return r;
 }
 
@@ -62,7 +63,7 @@ tp_obj tpy_chr(TP) {
 }
 tp_obj tpy_ord(TP) {
     tp_obj s = TP_STR();
-    if (s.string.info->len != 1) {
+    if (tp_string_len(s) != 1) {
         tp_raise(tp_None,tp_string_atom(tp, "(tp_ord) TypeError: ord() expected a character"));
     }
     return tp_number((unsigned char)s.string.info->s[0]);
@@ -70,7 +71,7 @@ tp_obj tpy_ord(TP) {
 
 tp_obj tpy_str_strip(TP) {
     tp_obj o = TP_TYPE(TP_STRING);
-    char const *v = o.string.info->s; int l = o.string.info->len;
+    char const *v = o.string.info->s; int l = tp_string_len(o);
     int i; int a = l, b = 0;
     tp_obj r;
     char *s;
@@ -90,7 +91,7 @@ tp_obj tpy_str_replace(TP) {
     tp_obj s = TP_OBJ();
     tp_obj k = TP_OBJ();
     tp_obj v = TP_OBJ();
-    tp_obj p = tp_string_view(tp, s, 0, s.string.info->len);
+    tp_obj p = tp_string_view(tp, s, 0, tp_string_len(s));
     int i,n = 0;
     int c;
     int l;
@@ -100,23 +101,25 @@ tp_obj tpy_str_replace(TP) {
     tp_obj z;
     while ((i = tp_str_index(p,k)) != -1) {
         n += 1;
-        p.string.info->s += i + k.string.info->len;
-        p.string.info->len -= i + k.string.info->len;
+        p.string.info->s += i + tp_string_len(k);
+        p.string.info->len -= i + tp_string_len(k);
     }
 /*     fprintf(stderr,"ns: %d\n",n); */
-    l = s.string.info->len + n * (v.string.info->len-k.string.info->len);
+    l = tp_string_len(s) + n * (tp_string_len(v)-tp_string_len(k));
     rr = tp_string_t(tp, l);
     r = rr.string.info->s;
     d = r;
     z = p = s;
     while ((i = tp_str_index(p,k)) != -1) {
-        p.string.info->s += i; p.string.info->len -= i;
+        p.string.info->s += i;
+        p.string.info->len -= i;
         memcpy(d,z.string.info->s,c=(p.string.info->s-z.string.info->s)); d += c;
-        p.string.info->s += k.string.info->len; p.string.info->len -= k.string.info->len;
-        memcpy(d,v.string.info->s,v.string.info->len); d += v.string.info->len;
+        p.string.info->s += tp_string_len(k);
+        p.string.info->len -= tp_string_len(k);
+        memcpy(d,v.string.info->s,tp_string_len(v)); d += tp_string_len(v);
         z = p;
     }
-    memcpy(d,z.string.info->s,(s.string.info->s + s.string.info->len) - z.string.info->s);
+    memcpy(d,z.string.info->s,(s.string.info->s + tp_string_len(s)) - z.string.info->s);
 
     return rr;
 }

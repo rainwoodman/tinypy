@@ -4,7 +4,7 @@ void tp_save(TP, const char * fname, tp_obj v) {
     if (!f) {
         tp_raise(, tp_string_atom(tp, "(tp_save) IOError: ?"));
     }
-    fwrite(v.string.info->s, v.string.info->len, 1, f);
+    fwrite(v.string.info->s, tp_string_len(v), 1, f);
     fclose(f);
 }
 

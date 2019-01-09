@@ -14,7 +14,7 @@ int tp_hash(TP, tp_obj v) {
     switch (v.type.typeid) {
         case TP_NONE: return 0;
         case TP_NUMBER: return tpd_lua_hash(&v.number.val, sizeof(tp_num));
-        case TP_STRING: return tpd_lua_hash(v.string.info->s, v.string.info->len);
+        case TP_STRING: return tpd_lua_hash(v.string.info->s, tp_string_len(v));
         case TP_DICT: return tpd_lua_hash(&v.dict.val, sizeof(void*));
         case TP_LIST: {
             int r = v.list.val->len;

@@ -282,7 +282,7 @@ void   _tp_raise(TP,tp_obj);
  * manages storage for you.
  */
 tp_obj tp_string_atom(TP, const char * v);
-
+int tp_string_len(tp_obj s);
 /* Function: tp_cstr
  *
  * Fill a C string from a tinypy string, and return as a buffer
@@ -299,9 +299,9 @@ char * tp_cstr(TP, tp_obj v) {
         memcpy(buffer, val, strlen(val) + 1);
     } else {
         val = v.string.info->s;
-        buffer = tp_malloc(tp, v.string.info->len + 1);
-        memset(buffer, 0, v.string.info->len + 1);
-        memcpy(buffer, val, v.string.info->len);
+        buffer = tp_malloc(tp, tp_string_len(v) + 1);
+        memset(buffer, 0, tp_string_len(v) + 1);
+        memcpy(buffer, val, tp_string_len(v));
     }
     
     return buffer;

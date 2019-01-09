@@ -91,7 +91,7 @@ tp_obj tp_sandbox_(TP) {
 void tp_bounds(TP, tpd_code *cur, int n) {
     char *s = (char *)(cur + n);
     tp_obj code = tp->frames[tp->cur].code;
-    if (s < code.string.info->s || s > (code.string.info->s+code.string.info->len)) {
+    if (s < code.string.info->s || s > (code.string.info->s+tp_string_len(code))) {
         tp_raise(,tp_string_atom(tp, "(tp_bounds) SandboxError: bytecode bounds reached"));
     }
 }

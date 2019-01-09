@@ -104,16 +104,16 @@ static tp_obj regex_obj_search(TP)
 	int r = -2;					/* -2 indicate exception */
 	int range;
 
-	if (pos.number.val < 0 || pos.number.val > str.string.info->len) {
+	if (pos.number.val < 0 || pos.number.val > tp_string_len(str)) {
 		LastError = "search offset out of range";
 		goto exception;
 	}
-	range = str.string.info->len - pos.number.val;
+	range = tp_string_len(str) - pos.number.val;
 
 	re = getre(tp, self);
 	re->re_lastok = NULL;
 	r = re_search(&re->re_patbuf, (unsigned char *)str.string.info->s, 
-			str.string.info->len, pos.number.val, range, &re->re_regs);
+			tp_string_len(str), pos.number.val, range, &re->re_regs);
 
 	/* cannot match pattern */
 	if (r == -1)
@@ -161,7 +161,7 @@ static tp_obj regex_obj_match(TP)
 	re = getre(tp, self);
 	re->re_lastok = NULL;
 	r = re_match(&re->re_patbuf, (unsigned char *)str.string.info->s, 
-			str.string.info->len, pos.number.val, &re->re_regs);
+			tp_string_len(str), pos.number.val, &re->re_regs);
 
 	/* cannot match pattern */
 	if (r == -1)
@@ -540,7 +540,7 @@ static tp_obj regex_compile(TP)
 	re->re_syntax = (int)resyn.number.val;
 
 	pat = repat.string.info->s;
-	size = repat.string.info->len;
+	size = tp_string_len(repat);
 	error = re_compile_pattern((unsigned char *)pat, size, &re->re_patbuf);
 	if (error != NULL) {
 		LastError = error;

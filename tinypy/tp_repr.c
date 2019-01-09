@@ -53,13 +53,13 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
     if(mode != 0) { /* str mode */
         TP_META_BEGIN(self,"__str__");
             tp_obj obj = tp_call(tp, meta, tp_params(tp));
-            string_builder_write(tp, sb, obj.string.info->s, obj.string.info->len);
+            string_builder_write(tp, sb, obj.string.info->s, tp_string_len(obj));
             return;
         TP_META_END;
     }
     TP_META_BEGIN(self,"__repr___");
         tp_obj obj = tp_call(tp, meta, tp_params(tp));
-        string_builder_write(tp, sb, obj.string.info->s, obj.string.info->len);
+        string_builder_write(tp, sb, obj.string.info->s, tp_string_len(obj));
         return;
     TP_META_END;
 
@@ -83,11 +83,11 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
 
     if (type == TP_STRING) { 
         if(mode != 0) { /* str */
-            string_builder_write(tp, sb, self.string.info->s, self.string.info->len);
+            string_builder_write(tp, sb, self.string.info->s, tp_string_len(self));
         } else { /* repr */
             int i;
             string_builder_write(tp, sb, "'", 1);
-            for (i = 0; i < self.string.info->len; i ++) {
+            for (i = 0; i < tp_string_len(self); i ++) {
                 const char * s = self.string.info->s + i;
                 switch(s[0]) {
                     case '\n':

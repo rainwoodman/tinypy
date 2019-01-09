@@ -179,7 +179,7 @@ tp_obj dl_size(TP) {
     tp_obj signature = TP_STR();
     int i;
     int size = 0;
-    for(i = 0; i < signature.string.info->len; i++) {
+    for(i = 0; i < tp_string_len(signature); i++) {
         size += type_size(tp, signature.string.info->s[i]);
     }
     return tp_number(size);
@@ -194,12 +194,12 @@ tp_obj dl_pack(TP) {
     tp_obj values = TP_TYPE(TP_LIST);
     int i = 0;
     int size = 0;
-    for(i = 0; i < signature.string.info->len; i++) {
+    for(i = 0; i < tp_string_len(signature); i++) {
         size += type_size(tp, signature.string.info->s[i]);
     }
     void* data = malloc(size);
     int offset = 0;
-    for(i = 0; i < signature.string.info->len; i++) {
+    for(i = 0; i < tp_string_len(signature); i++) {
         void* arg = map_value(tp, signature.string.info->s[i], values.list.val->items[i]);
         memcpy(data + offset, arg, type_size(tp, signature.string.info->s[i]));
         offset += type_size(tp, signature.string.info->s[i]);
@@ -216,7 +216,7 @@ tp_obj dl_unpack(TP) {
     int offset = 0;
     tp_obj result = tp_list(tp);
 
-    for(i = 0; i < signature.string.info->len; i++) {
+    for(i = 0; i < tp_string_len(signature); i++) {
         void* value = map_value(tp, signature.string.info->s[i], tp_None);
         memcpy(value, packed.data.val + offset, type_size(tp, signature.string.info->s[i]));
         tp_params_v(tp, 2, result, unmap_value(tp, signature.string.info->s[i], value));
@@ -233,7 +233,7 @@ tp_obj dl_call(TP) {
     tp_obj signature = TP_STR();
     tp_obj arguments = TP_TYPE(TP_LIST);
 
-    int num_args = signature.string.info->len;
+    int num_args = tp_string_len(signature);
     ffi_type *args[num_args];
     void* values[num_args];
     int i;

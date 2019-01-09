@@ -114,9 +114,9 @@ tp_obj tpy_float(TP) {
     int ord = TP_DEFAULT(tp_number(0)).number.val;
     int type = v.type.typeid;
     if (type == TP_NUMBER) { return v; }
-    if (type == TP_STRING && v.string.info->len < 32) {
-        char s[32]; memset(s,0,v.string.info->len+1);
-        memcpy(s,v.string.info->s,v.string.info->len);
+    if (type == TP_STRING && tp_string_len(v) < 32) {
+        char s[32]; memset(s,0,tp_string_len(v)+1);
+        memcpy(s,v.string.info->s,tp_string_len(v));
         if (strchr(s,'.')) { return tp_number(atof(s)); }
         return(tp_number(strtol(s,0,ord)));
     }
@@ -129,7 +129,8 @@ tp_obj tpy_join(TP) {
     tp_obj r;
     char *s;
     for (i=0; i<val.list.val->len; i++) {
-        l += tp_str(tp,val.list.val->items[i]).string.info->len;
+        tp_obj tmp = tp_str(tp,val.list.val->items[i]);
+        l += tp_string_len(tmp);
     }
     r = tp_string_t(tp,l);
     s = r.string.info->s;
@@ -137,8 +138,8 @@ tp_obj tpy_join(TP) {
     for (i=0; i<val.list.val->len; i++) {
         tp_obj e;
         e = tp_str(tp,val.list.val->items[i]);
-        memcpy(s+l, e.string.info->s, e.string.info->len);
-        l += e.string.info->len;
+        memcpy(s+l, e.string.info->s, tp_string_len(e));
+        l += tp_string_len(e);
     }
     return r;
 }
@@ -152,7 +153,7 @@ tp_obj tpy_fpack(TP) {
 
 tp_obj tpy_funpack(TP) {
     tp_obj v = TP_STR();
-    if (v.string.info->len != sizeof(tp_num)) {
+    if (tp_string_len(v) != sizeof(tp_num)) {
         tp_raise(tp_None, tp_string_atom(tp, "funpack ValueError: length of string is incorrect."));
     }
     tp_num r = *((tp_num*) v.string.info->s);
