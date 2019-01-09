@@ -205,16 +205,16 @@ static tp_obj random_seed(TP)
 {
     tp_obj arg = TP_DEFAULT(tp_None);
 
-    if (arg.type == TP_NONE) {
+    if (arg.type.typeid == TP_NONE) {
         time_t now;
 
         (void)time(&now);
         init_genrand(&_gRandom, (unsigned long)now);
         _gRandom.has_seed = 1;
-    } else if (arg.type == TP_NUMBER) {
+    } else if (arg.type.typeid == TP_NUMBER) {
         init_genrand(&_gRandom, (unsigned long)arg.number.val);
         _gRandom.has_seed = 1;
-    } else if (arg.type == TP_STRING) {
+    } else if (arg.type.typeid == TP_STRING) {
         unsigned long seed;
         
         seed = (unsigned long) tp_hash(tp, arg);
@@ -392,12 +392,12 @@ static tp_obj random_seed(TP)
     int x, y, z;
     tp_obj arg = TP_DEFAULT(tp_None);
 
-    if (arg.type == TP_NONE) {
+    if (arg.type.typeid == TP_NONE) {
         time_t now;
 
         (void)time(&now);
         a = (long)now * 256;
-    } else if (arg.type == TP_NUMBER) {
+    } else if (arg.type.typeid == TP_NUMBER) {
         a = (long)arg.number.val;
     } else {
         tp_raise_printf(tp_None, "%s", "invalid argument for seed()");
@@ -533,13 +533,13 @@ static tp_obj random_seed(TP)
 {
     tp_obj arg = TP_DEFAULT(tp_None);
 
-    if (arg.type == TP_NONE) {
+    if (arg.type.typeid == TP_NONE) {
         time_t now;
 
         (void)time(&now);
         srandom((unsigned int)now);
         has_seed = 1;
-    } else if (arg.type == TP_NUMBER) {
+    } else if (arg.type.typeid == TP_NUMBER) {
         srandom((unsigned long)arg.number.val);
         has_seed = 1;
     } else {
@@ -992,14 +992,14 @@ tp_obj random_randrange(TP)
     int iwidth;
     double res;
     
-    if (stop.type == TP_NONE) {
+    if (stop.type.typeid == TP_NONE) {
         /*
                         * if only one argument, then start just means stop
                         */
         istop = istart;
         res = (rvo.number.val * istop);
         return (tp_number(res));
-    } else if (stop.type == TP_NUMBER) {
+    } else if (stop.type.typeid == TP_NUMBER) {
         istop = (int)stop.number.val;
         iwidth = istop - istart;
         if (iwidth < 0)

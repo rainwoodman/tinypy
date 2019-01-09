@@ -229,9 +229,9 @@ static tp_obj math_log(TP) {
     double num = 0.0;   /* numinator */
     double r = 0.0;     /* result */
 
-    if (b.type == TP_NONE)
+    if (b.type.typeid == TP_NONE)
         y = M_E;
-    else if (b.type == TP_NUMBER)
+    else if (b.type.typeid == TP_NUMBER)
         y = (double)b.number.val;
     else
         tp_raise_printf(tp_None, "%s(x, [base]): base invalid", __func__);

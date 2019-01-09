@@ -33,7 +33,7 @@ tp_obj tp_data_t(TP, int magic, void *v) {
     tp_obj r = {TP_DATA};
     r.data.info = (tpd_data*)tp_malloc(tp, sizeof(tpd_data));
     r.data.val = v;
-    r.data.magic = magic;
+    r.type.magic = magic;
     return tp_track(tp,r);
 }
 
@@ -42,7 +42,7 @@ tp_obj tp_data_nt(TP, int magic, void *v) {
     tp_obj r = {TP_DATA};
     r.data.info = NULL;
     r.data.val = v;
-    r.data.magic = magic;
+    r.type.magic = magic;
     return r;
 }
 

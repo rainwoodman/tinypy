@@ -28,7 +28,7 @@ tp_obj tpy_max(TP) {
 
 tp_obj tpy_copy(TP) {
     tp_obj r = TP_OBJ();
-    int type = r.type;
+    int type = r.type.typeid;
     if (type == TP_LIST) {
         return tp_list_copy(tp,r);
     } else if (type == TP_DICT) {
@@ -81,12 +81,12 @@ tp_obj tpy_system(TP) {
 tp_obj tpy_istype(TP) {
     tp_obj v = TP_OBJ();
     tp_obj t = TP_STR();
-    if (tp_cmp(tp,t,tp_string_const("string")) == 0) { return tp_number(v.type == TP_STRING); }
-    if (tp_cmp(tp,t,tp_string_const("list")) == 0) { return tp_number(v.type == TP_LIST); }
-    if (tp_cmp(tp,t,tp_string_const("dict")) == 0) { return tp_number(v.type == TP_DICT); }
-    if (tp_cmp(tp,t,tp_string_const("number")) == 0) { return tp_number(v.type == TP_NUMBER); }
-    if (tp_cmp(tp,t,tp_string_const("fnc")) == 0) { return tp_number(v.type == TP_FNC && (v.fnc.ftype&2) == 0); }
-    if (tp_cmp(tp,t,tp_string_const("method")) == 0) { return tp_number(v.type == TP_FNC && (v.fnc.ftype&2) != 0); }
+    if (tp_cmp(tp,t,tp_string_const("string")) == 0) { return tp_number(v.type.typeid == TP_STRING); }
+    if (tp_cmp(tp,t,tp_string_const("list")) == 0) { return tp_number(v.type.typeid == TP_LIST); }
+    if (tp_cmp(tp,t,tp_string_const("dict")) == 0) { return tp_number(v.type.typeid == TP_DICT); }
+    if (tp_cmp(tp,t,tp_string_const("number")) == 0) { return tp_number(v.type.typeid == TP_NUMBER); }
+    if (tp_cmp(tp,t,tp_string_const("func")) == 0) { return tp_number(v.type.typeid == TP_FNC && (v.type.magic&2) == 0); }
+    if (tp_cmp(tp,t,tp_string_const("method")) == 0) { return tp_number(v.type.typeid == TP_FNC && (v.type.magic&2) != 0); }
     tp_raise(tp_None,tp_string_const("(is_type) TypeError: ?"));
 }
 
@@ -95,11 +95,11 @@ tp_obj tpy_isinstance(TP) {
     tp_obj t = TP_OBJ();
     
     tp_obj * pv = &v;
-    if(t.type != TP_DICT) {
+    if(t.type.typeid != TP_DICT) {
         tp_raise(tp_None, tp_string_const("isinstance TypeError: class argument must be a dictionary."));
     }
 
-    while(pv->type == TP_DICT) {
+    while(pv->type.typeid == TP_DICT) {
         if (pv->dict.val->meta.dict.val == t.dict.val) {
             return tp_number(1);
         }
@@ -112,7 +112,7 @@ tp_obj tpy_isinstance(TP) {
 tp_obj tpy_float(TP) {
     tp_obj v = TP_OBJ();
     int ord = TP_DEFAULT(tp_number(0)).number.val;
-    int type = v.type;
+    int type = v.type.typeid;
     if (type == TP_NUMBER) { return v; }
     if (type == TP_STRING && v.string.len < 32) {
         char s[32]; memset(s,0,v.string.len+1);
@@ -237,7 +237,7 @@ tp_obj tpy_getmeta(TP) {
  */
 tp_obj tp_object(TP) {
     tp_obj self = tp_dict_t(tp);
-    self.dict.dtype = 2;
+    self.type.magic = 2;
     return self;
 }
 
@@ -255,7 +255,7 @@ tp_obj tpy_object_call(TP) {
     tp_obj self;
     if (tp->params.list.val->len) {
         self = TP_TYPE(TP_DICT);
-        self.dict.dtype = 2;
+        self.type.magic = 2;
     } else {
         self = tp_object(tp);
     }
@@ -272,7 +272,7 @@ tp_obj tpy_object_call(TP) {
  */
 tp_obj tpy_getraw(TP) {
     tp_obj self = TP_TYPE(TP_DICT);
-    self.dict.dtype = 0;
+    self.type.magic = 0;
     return self;
 }
 

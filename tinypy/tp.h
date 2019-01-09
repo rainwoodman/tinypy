@@ -47,6 +47,11 @@ enum TPTypeID {
     TP_LIST,TP_FNC,TP_DATA,
 };
 
+typedef struct TPTypeInfo {
+    unsigned int typeid : 32; /* TPTypeID */
+    unsigned int magic: 32;
+} TPTypeInfo;
+
 typedef double tp_num;
 
 /* Type: tp_obj
@@ -66,20 +71,20 @@ typedef double tp_num;
  * string.len - Length in bytes of the string data.
  * dict - TP_DICT
  * list - TP_LIST
- * fnc - TP_FNC
+ * func - TP_FNC
  * data - TP_DATA
  * data.val - The user-provided data pointer.
- * data.magic - The user-provided magic number for identifying the data type.
+ * type.magic - The user-provided magic number for identifying the data type.
  */
 typedef union tp_obj {
-    enum TPTypeID type;
-    struct { enum TPTypeID type; int *data; } gci;
-    struct { enum TPTypeID type; tp_num val; } number;
-    struct { enum TPTypeID type; struct tpd_string *info; char const *val; int len; } string;
-    struct { enum TPTypeID type; struct tpd_list *val; } list;
-    struct { enum TPTypeID type; struct tpd_dict *val; int dtype; } dict;
-    struct { enum TPTypeID type; struct tpd_func *info; int ftype; void *cfnc; } fnc;
-    struct { enum TPTypeID type; struct tpd_data *info; void *val; int magic; } data;
+    TPTypeInfo type;
+    struct { TPTypeInfo type; int *data; } gci;
+    struct { TPTypeInfo type; tp_num val; } number;
+    struct { TPTypeInfo type; struct tpd_string *info; char const *val; int len; } string;
+    struct { TPTypeInfo type; struct tpd_list *val; } list;
+    struct { TPTypeInfo type; struct tpd_dict *val; } dict;
+    struct { TPTypeInfo type; struct tpd_func *info; void *cfnc; } func;
+    struct { TPTypeInfo type; struct tpd_data *info; void *val; } data;
 } tp_obj;
 
 typedef struct tpd_string {
@@ -262,7 +267,7 @@ void   _tp_raise(TP,tp_obj);
 tp_inline static
 tp_obj tp_string_const(char const *v) {
     tp_obj r;
-    r.string.type = TP_STRING;
+    r.string.type.typeid = TP_STRING;
     r.string.info = NULL;
     r.string.val = v;
     r.string.len = strlen(v);
@@ -281,7 +286,7 @@ tp_inline static
 char * tp_cstr(TP, tp_obj v) {
     char * buffer;
     char const * val;
-    if(v.type != TP_STRING) {
+    if(v.type.typeid != TP_STRING) {
         val = "NOT A STRING";
         buffer = tp_malloc(tp, strlen(val) + 1);
         memcpy(buffer, val, strlen(val) + 1);
@@ -298,7 +303,7 @@ char * tp_cstr(TP, tp_obj v) {
 
 tp_inline static
 tp_obj tp_check_type(TP,int t, tp_obj v) {
-    if (v.type != t) {
+    if (v.type.typeid != t) {
         tp_raise(tp_None,
             tp_string_const("(tp_check_type) TypeError: unexpected type"));
     }
@@ -359,7 +364,7 @@ tp_inline static tp_obj tp_number(tp_num v) {
 tp_inline static
 tp_obj tp_string_nt(char const * v, int n) {
     tp_obj r;
-    r.string.type = TP_STRING;
+    r.string.type.typeid = TP_STRING;
     r.string.info = NULL;
     r.string.val = v;
     r.string.len = n;
@@ -372,7 +377,7 @@ tp_obj tp_params_v(TP, int n, ...);
 
 tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code);
 tp_obj tp_import_from_buffer(TP, const char * fname, const char * name, void *codes, int len);
-tp_obj tp_ez_call(TP, const char *mod, const char *fnc, tp_obj params);
+tp_obj tp_ez_call(TP, const char *mod, const char *func, tp_obj params);
 tp_obj tp_eval_from_cstr(TP, const char *text, tp_obj globals);
 tp_obj tp_exec(TP, tp_obj code, tp_obj globals);
 tp_obj tp_compile(TP, tp_obj text, tp_obj fname);

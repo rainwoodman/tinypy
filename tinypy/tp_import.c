@@ -31,11 +31,11 @@ tp_obj tp_load(TP, const char * fname) {
 tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     tp_obj g;
 
-    if (!((fname.type != TP_NONE && tp_str_index(fname,tp_string_const(".tpc"))!=-1) || code.type != TP_NONE)) {
+    if (!((fname.type.typeid != TP_NONE && tp_str_index(fname,tp_string_const(".tpc"))!=-1) || code.type.typeid != TP_NONE)) {
         return tp_ez_call(tp,"tinypy.compiler.py2bc","import_fname",tp_params_v(tp,2,fname,name));
     }
 
-    if (code.type == TP_NONE) {
+    if (code.type.typeid == TP_NONE) {
         char * fname1 = tp_cstr(tp, fname);
         code = tp_load(tp, fname1);
         tp_free(tp, fname1);

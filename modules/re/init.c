@@ -49,7 +49,7 @@ static regexobject * getre(TP, tp_obj rmobj)
 	regexobject *re = NULL;
 
 	/* validate magic */
-	if (reobj_data.data.magic != sizeof(regexobject)) {
+	if (reobj_data.type.magic != sizeof(regexobject)) {
 		LastError = "broken regex object";
 		return (NULL);
 	}

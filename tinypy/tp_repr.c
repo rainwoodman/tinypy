@@ -71,7 +71,7 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         return;
     TP_META_END;
 
-    int type = self.type;
+    int type = self.type.typeid;
     if(type == TP_DICT) {
         tp_obj data = tp_data_nt(tp, 0, self.dict.val);
         /* FIXME: use tp_data_cmp */
@@ -159,7 +159,7 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         string_builder_write(tp, sb, buf, -1);
     } else if (type == TP_FNC) {
         char buf[128];
-        snprintf(buf, 120, "<func 0x%x>", self.fnc.info);
+        snprintf(buf, 120, "<func 0x%x>", self.func.info);
         string_builder_write(tp, sb, buf, -1);
     } else {
         string_builder_write(tp, sb, "<?>", -1);

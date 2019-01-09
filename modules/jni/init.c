@@ -61,27 +61,27 @@ tp_obj jni_unmap_array(TP, const char* type, jvalue value) {
 jvalue jni_map_value(TP, const char* type, tp_obj value) {
     jvalue result;
     switch(*type) {
-        case 'Z': if(value.type == TP_NUMBER) { result.z = (int) value.number.val; return result; } break;
-        case 'B': if(value.type == TP_NUMBER) { result.b = (unsigned char) value.number.val; return result; } break;
-        case 'C': if(value.type == TP_NUMBER) { result.c = (char) value.number.val; return result; } break;
-        case 'S': if(value.type == TP_NUMBER) { result.s = (short) value.number.val; return result; } break;
-        case 'I': if(value.type == TP_NUMBER) { result.i = (int) value.number.val; return result; } break;
-        case 'J': if(value.type == TP_NUMBER) { result.j = (long int) value.number.val; return result; } break;
-        case 'F': if(value.type == TP_NUMBER) { result.f = (float) value.number.val; return result; } break;
-        case 'D': if(value.type == TP_NUMBER) { result.d = (double) value.number.val; return result; } break;
-        case 'L': if(value.type == TP_NONE) {
+        case 'Z': if(value.type.typeid == TP_NUMBER) { result.z = (int) value.number.val; return result; } break;
+        case 'B': if(value.type.typeid == TP_NUMBER) { result.b = (unsigned char) value.number.val; return result; } break;
+        case 'C': if(value.type.typeid == TP_NUMBER) { result.c = (char) value.number.val; return result; } break;
+        case 'S': if(value.type.typeid == TP_NUMBER) { result.s = (short) value.number.val; return result; } break;
+        case 'I': if(value.type.typeid == TP_NUMBER) { result.i = (int) value.number.val; return result; } break;
+        case 'J': if(value.type.typeid == TP_NUMBER) { result.j = (long int) value.number.val; return result; } break;
+        case 'F': if(value.type.typeid == TP_NUMBER) { result.f = (float) value.number.val; return result; } break;
+        case 'D': if(value.type.typeid == TP_NUMBER) { result.d = (double) value.number.val; return result; } break;
+        case 'L': if(value.type.typeid == TP_NONE) {
                       result.l = NULL;
-                  } else if(!strncmp(type, "Ljava/lang/String;", 18) && value.type == TP_STRING) {
+                  } else if(!strncmp(type, "Ljava/lang/String;", 18) && value.type.typeid == TP_STRING) {
                       result.l = (*env)->NewStringUTF(env, value.string.val); 
                       return result;
-                  } else if(value.type == TP_DATA) {
+                  } else if(value.type.typeid == TP_DATA) {
                       result.l = value.data.val; 
                       return result;
                   } 
                   break;
-                  if(value.type == TP_NONE) {
+                  if(value.type.typeid == TP_NONE) {
                       result.l = NULL;
-                  } else if(value.type == TP_LIST) {
+                  } else if(value.type.typeid == TP_LIST) {
                       return jni_map_array(tp, type + 1, value);
                   }
                   break;

@@ -67,7 +67,7 @@ void _tp_raise(TP,tp_obj e) {
         longjmp(tp->nextexpr,1);
 #endif
     }
-    if (e.type != TP_NONE) { tp->ex = e; }
+    if (e.type.typeid != TP_NONE) { tp->ex = e; }
     tp_grey(tp,e);
     longjmp(tp->buf,1);
 }

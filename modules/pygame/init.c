@@ -14,13 +14,13 @@ Uint32 pygame_list_to_color(TP,tp_obj clr,SDL_Surface *s) {
 #define PYGAME_TYPE_SURF 0x1001
 
 void pygame_surf_free(TP,tp_obj d) {
-  if (d.data.magic != PYGAME_TYPE_SURF) { tp_raise(,tp_printf(tp, "%s","not a surface")); }
+  if (d.type.magic != PYGAME_TYPE_SURF) { tp_raise(,tp_printf(tp, "%s","not a surface")); }
     SDL_FreeSurface((SDL_Surface*)d.data.val);
 }
 
 SDL_Surface *pygame_obj_to_surf(TP,tp_obj self) {
     tp_obj d = tp_get(tp,self,tp_string_const("__surf"));
-    if (d.data.magic != PYGAME_TYPE_SURF) { tp_raise(0,tp_printf(tp, "%s","not a surface")); }
+    if (d.type.magic != PYGAME_TYPE_SURF) { tp_raise(0,tp_printf(tp, "%s","not a surface")); }
     return (SDL_Surface*)d.data.val;
 }
 
@@ -90,8 +90,8 @@ tp_obj pygame_event_get(TP) {
     tp_obj r = tp_list(tp);
     while (SDL_PollEvent(&e)) {
         tp_obj d = tp_dict(tp);
-        tp_set(tp,d,tp_string_const("type"),tp_number(e.type));
-        switch (e.type) {
+        tp_set(tp,d,tp_string_const("type"),tp_number(e.type.typeid));
+        switch (e.type.typeid) {
             case SDL_KEYDOWN:
             case SDL_KEYUP:
                 tp_set(tp,d,tp_string_const("key"),tp_number(e.key.keysym.sym));

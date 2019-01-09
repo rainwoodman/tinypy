@@ -6,9 +6,9 @@
    void tp_delete(TP,tp_obj v) { }*/
 
 void tp_grey(TP,tp_obj v) {
-    if (v.type < TP_STRING || (!v.gci.data) || *v.gci.data) { return; }
+    if (v.type.typeid < TP_STRING || (!v.gci.data) || *v.gci.data) { return; }
     *v.gci.data = 1;
-    if (v.type == TP_STRING || v.type == TP_DATA) {
+    if (v.type.typeid == TP_STRING || v.type.typeid == TP_DATA) {
         /* terminal types, no need to follow */
         tpd_list_appendx(tp, tp->black, v);
         return;
@@ -18,7 +18,7 @@ void tp_grey(TP,tp_obj v) {
 }
 
 void tp_follow(TP,tp_obj v) {
-    int type = v.type;
+    int type = v.type.typeid;
     if (type == TP_LIST) {
         int n;
         for (n=0; n<v.list.val->len; n++) {
@@ -35,9 +35,9 @@ void tp_follow(TP,tp_obj v) {
         tp_grey(tp,v.dict.val->meta); 
     }
     if (type == TP_FNC) {
-        tp_grey(tp,v.fnc.info->self);
-        tp_grey(tp,v.fnc.info->globals);
-        tp_grey(tp,v.fnc.info->code);
+        tp_grey(tp,v.func.info->self);
+        tp_grey(tp,v.func.info->globals);
+        tp_grey(tp,v.func.info->code);
     }
 }
 
@@ -69,7 +69,7 @@ void tp_gc_deinit(TP) {
 }
 
 void tp_delete(TP, tp_obj v) {
-    int type = v.type;
+    int type = v.type.typeid;
     if (type == TP_LIST) {
         tpd_list_free(tp, v.list.val);
         return;
@@ -86,7 +86,7 @@ void tp_delete(TP, tp_obj v) {
         tp_free(tp, v.data.info);
         return;
     } else if (type == TP_FNC) {
-        tp_free(tp, v.fnc.info);
+        tp_free(tp, v.func.info);
         return;
     }
     tp_raise(, tp_string_const("(tp_delete) TypeError: ?"));

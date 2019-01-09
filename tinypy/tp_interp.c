@@ -3,10 +3,10 @@ tp_obj tp_main(TP,char *fname, void *code, int len) {
     return tp_import_from_buffer(tp,fname, "__main__", code, len);
 }
 
-tp_obj tp_ez_call(TP, const char *mod, const char *fnc, tp_obj params) {
+tp_obj tp_ez_call(TP, const char *mod, const char *func, tp_obj params) {
     tp_obj tmp;
     tmp = tp_get(tp,tp->modules,tp_string_const(mod));
-    tmp = tp_get(tp,tmp,tp_string_const(fnc));
+    tmp = tp_get(tp,tmp,tp_string_const(func));
     return tp_call(tp,tmp,params);
 }
 

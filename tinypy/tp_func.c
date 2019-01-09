@@ -1,14 +1,14 @@
 
-tp_obj tpd_call(TP, tp_obj fnc(TP)) {
-    return fnc(tp);
+tp_obj tpd_call(TP, tp_obj func(TP)) {
+    return func(tp);
 }
 
-tp_obj tp_tcall(TP, tp_obj fnc) {
-    if (fnc.fnc.ftype & 2) {
+tp_obj tp_tcall(TP, tp_obj func) {
+    if (func.type.magic & 2) {
         /* METHOD */
-        tpd_list_insert(tp, tp->params.list.val, 0, fnc.fnc.info->self);
+        tpd_list_insert(tp, tp->params.list.val, 0, func.func.info->self);
     }
-    return tpd_call(tp,(tp_obj (*)(tp_vm *))fnc.fnc.cfnc);
+    return tpd_call(tp,(tp_obj (*)(tp_vm *))func.func.cfnc);
 }
 
 tp_obj tp_func_nt(TP, int t, void *v, tp_obj c,tp_obj s, tp_obj g) {
@@ -17,9 +17,9 @@ tp_obj tp_func_nt(TP, int t, void *v, tp_obj c,tp_obj s, tp_obj g) {
     info->code = c;
     info->self = s;
     info->globals = g;
-    r.fnc.ftype = t;
-    r.fnc.info = info;
-    r.fnc.cfnc = v;
+    r.type.magic = t;
+    r.func.info = info;
+    r.func.cfnc = v;
     return r;
 }
 
@@ -29,11 +29,11 @@ tp_obj tp_func_t(TP, int t, void *v, tp_obj c, tp_obj s, tp_obj g) {
 
 tp_obj tp_bind(TP, tp_obj function, tp_obj self) {
     return tp_func_t(tp,
-                function.fnc.ftype|2,
-                function.fnc.cfnc,
-                function.fnc.info->code,
+                function.type.magic|2,
+                function.func.cfnc,
+                function.func.info->code,
                 self,
-                function.fnc.info->globals);
+                function.func.info->globals);
 }
 
 tp_obj tp_def(TP, tp_obj code, tp_obj g) {

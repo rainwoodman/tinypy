@@ -18,7 +18,7 @@ Tinypy_ConvertObj(tp_obj obj)
     if(!(TinypyError = PyObject_GetAttrString(TinypyModule, "error"))) {
         return NULL;
     }
-    if(obj.type == TP_NUMBER) {
+    if(obj.type.typeid == TP_NUMBER) {
         tp_num v = obj.number.val;
         if ((fabs(v)-fabs((long)v)) < 0.000001) {
             return Py_BuildValue("i", (int) v);
@@ -27,10 +27,10 @@ Tinypy_ConvertObj(tp_obj obj)
             return Py_BuildValue("d", v);
         }
     }
-    else if(obj.type == TP_STRING) {
+    else if(obj.type.typeid == TP_STRING) {
         return Py_BuildValue("s#", obj.string.val, obj.string.len);
     }
-    else if(obj.type == TP_NONE) {
+    else if(obj.type.typeid == TP_NONE) {
         Py_INCREF(Py_None);
         return Py_None;
     }

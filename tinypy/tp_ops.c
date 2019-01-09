@@ -7,7 +7,7 @@
  * is returned.
  */
 int tp_true(TP,tp_obj v) {
-    switch(v.type) {
+    switch(v.type.typeid) {
         case TP_NUMBER: return v.number.val != 0;
         case TP_NONE: return 0;
         case TP_STRING: return v.string.len != 0;
@@ -24,13 +24,13 @@ int tp_true(TP,tp_obj v) {
  * Returns tp_True if self[k] exists, tp_False otherwise.
  */
 tp_obj tp_has(TP,tp_obj self, tp_obj k) {
-    int type = self.type;
+    int type = self.type.typeid;
     if (type == TP_DICT) {
         if (tpd_dict_hashfind(tp, self.dict.val, tp_hash(tp, k), k) != -1) {
             return tp_True;
         }
         return tp_False;
-    } else if (type == TP_STRING && k.type == TP_STRING) {
+    } else if (type == TP_STRING && k.type.typeid == TP_STRING) {
         return tp_number(tp_str_index(self,k)!=-1);
     } else if (type == TP_LIST) {
         return tp_number(tpd_list_find(tp, self.list.val, k, tp_cmp)!=-1);
@@ -46,7 +46,7 @@ tp_obj tp_has(TP,tp_obj self, tp_obj k) {
  * Note that unlike with Python, you cannot use this to remove list items.
  */
 void tp_del(TP, tp_obj self, tp_obj k) {
-    int type = self.type;
+    int type = self.type.typeid;
     if (type == TP_DICT) {
         tp_dict_del(tp, self, k);
         return;
@@ -78,9 +78,9 @@ void tp_del(TP, tp_obj self, tp_obj k) {
  * The first (k = 0) or next (k = 1 .. len(self)-1) item in the iteration.
  */
 tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
-    int type = self.type;
+    int type = self.type.typeid;
     if (type == TP_LIST || type == TP_STRING) { return tp_get(tp,self,k); }
-    if (type == TP_DICT && k.type == TP_NUMBER) {
+    if (type == TP_DICT && k.type.typeid == TP_NUMBER) {
         return self.dict.val->items[tpd_dict_next(tp,self.dict.val)].key;
     }
     tp_raise(tp_None,tp_string_const("(tp_iter) TypeError: iteration over non-sequence"));
@@ -97,21 +97,21 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
  * element in the list and subsequently remove it from the list.
  */
 tp_obj tp_get(TP, tp_obj self, tp_obj k) {
-    int type = self.type;
+    int type = self.type.typeid;
     tp_obj r;
     if (type == TP_DICT) {
         TP_META_BEGIN(self,"__get__");
             return tp_call(tp,meta,tp_params_v(tp,1,k));
         TP_META_END;
-        if (self.dict.dtype && _tp_lookup(tp,self,k,&r)) { return r; }
+        if (self.type.magic && _tp_lookup(tp,self,k,&r)) { return r; }
         return tp_dict_get(tp, self, k);
     } else if (type == TP_LIST) {
-        if (k.type == TP_NUMBER) {
+        if (k.type.typeid == TP_NUMBER) {
             int l = tp_len(tp,self).number.val;
             int n = k.number.val;
             n = (n<0?l+n:n);
             return tpd_list_get(tp, self.list.val, n, "tp_get");
-        } else if (k.type == TP_STRING) {
+        } else if (k.type.typeid == TP_STRING) {
             /* FIXME: move these to the prototype object of list, after
              * adding meta to all objects */
             if (tp_cmp(tp,tp_string_const("append"),k) == 0) {
@@ -125,16 +125,16 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
             } else if (tp_cmp(tp,tp_string_const("extend"),k) == 0) {
                 return tp_method(tp, self,tpy_list_extend);
             }
-        } else if (k.type == TP_NONE) {
+        } else if (k.type.typeid == TP_NONE) {
             return tpd_list_pop(tp, self.list.val, 0, "tp_get");
         }
     } else if (type == TP_STRING) {
-        if (k.type == TP_NUMBER) {
+        if (k.type.typeid == TP_NUMBER) {
             int l = self.string.len;
             int n = k.number.val;
             n = (n<0?l+n:n);
             if (n >= 0 && n < l) { return tp_string_nt(tp->chars[(unsigned char)self.string.val[n]],1); }
-        } else if (k.type == TP_STRING) {
+        } else if (k.type.typeid == TP_STRING) {
             if (tp_cmp(tp,tp_string_const("join"),k) == 0) {
                 return tp_method(tp,self,tpy_str_join);
             } else if (tp_cmp(tp,tp_string_const("split"),k) == 0) {
@@ -149,17 +149,17 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
         }
     }
 
-    if (k.type == TP_LIST) {
+    if (k.type.typeid == TP_LIST) {
         int a,b,l;
         tp_obj tmp;
         l = tp_len(tp,self).number.val;
         tmp = tp_get(tp,k,tp_number(0));
-        if (tmp.type == TP_NUMBER) { a = tmp.number.val; }
-        else if(tmp.type == TP_NONE) { a = 0; }
+        if (tmp.type.typeid == TP_NUMBER) { a = tmp.number.val; }
+        else if(tmp.type.typeid == TP_NONE) { a = 0; }
         else { tp_raise(tp_None,tp_string_const("(tp_get) TypeError: indices must be numbers")); }
         tmp = tp_get(tp,k,tp_number(1));
-        if (tmp.type == TP_NUMBER) { b = tmp.number.val; }
-        else if(tmp.type == TP_NONE) { b = l; }
+        if (tmp.type.typeid == TP_NUMBER) { b = tmp.number.val; }
+        else if(tmp.type.typeid == TP_NONE) { b = l; }
         else { tp_raise(tp_None,tp_string_const("(tp_get) TypeError: indices must be numbers")); }
         a = _tp_max(0,(a<0?l+a:a)); b = _tp_min(l,(b<0?l+b:b));
         if (type == TP_LIST) {
@@ -167,7 +167,7 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
         } else if (type == TP_STRING) {
             return tp_string_sub(tp,self,a,b);
         }
-    } else if (k.type == TP_STRING) {
+    } else if (k.type.typeid == TP_STRING) {
         return tp_copy(tp, self);
     }
     tp_raise(tp_None,tp_string_const("(tp_get) TypeError: ?"));
@@ -176,7 +176,7 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
 /* function: tp_copy
  * */
 tp_obj tp_copy(TP, tp_obj self) {
-    int type = self.type;
+    int type = self.type.typeid;
     if (type == TP_NUMBER) {
         return self;
     }
@@ -200,14 +200,14 @@ tp_obj tp_copy(TP, tp_obj self) {
  * over the reference parameter r.
  */
 int tp_iget(TP,tp_obj *r, tp_obj self, tp_obj k) {
-    if (self.type == TP_DICT) {
+    if (self.type.typeid == TP_DICT) {
         int n = tpd_dict_hashfind(tp, self.dict.val, tp_hash(tp, k), k);
         if (n == -1) { return 0; }
         *r = self.dict.val->items[n].val;
         tp_grey(tp,*r);
         return 1;
     }
-    if (self.type == TP_LIST && !self.list.val->len) { return 0; }
+    if (self.type.typeid == TP_LIST && !self.list.val->len) { return 0; }
     *r = tp_get(tp,self,k); tp_grey(tp,*r);
     return 1;
 }
@@ -219,7 +219,7 @@ int tp_iget(TP,tp_obj *r, tp_obj self, tp_obj k) {
  * in actual tinypy code.
  */
 void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
-    int type = self.type;
+    int type = self.type.typeid;
 
     if (type == TP_DICT) {
         TP_META_BEGIN(self,"__set__");
@@ -229,13 +229,13 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
         tp_dict_set(tp, self, k, v);
         return;
     } else if (type == TP_LIST) {
-        if (k.type == TP_NUMBER) {
+        if (k.type.typeid == TP_NUMBER) {
             tpd_list_set(tp, self.list.val, k.number.val, v, "tp_set");
             return;
-        } else if (k.type == TP_NONE) {
+        } else if (k.type.typeid == TP_NONE) {
             tpd_list_append(tp, self.list.val, v);
             return;
-        } else if (k.type == TP_STRING) {
+        } else if (k.type.typeid == TP_STRING) {
             /* WTF is this syntax? a['*'] = b will extend a by b ??
              * FIXME: remove this support. Use a + b */
             if (tp_cmp(tp, tp_string_const("*"), k) == 0) {
@@ -248,28 +248,28 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
 }
 
 tp_obj tp_add(TP, tp_obj a, tp_obj b) {
-    if (a.type == TP_NUMBER && a.type == b.type) {
+    if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
         return tp_number(a.number.val+b.number.val);
-    } else if (a.type == TP_STRING && a.type == b.type) {
+    } else if (a.type.typeid == TP_STRING && a.type.typeid == b.type.typeid) {
         return tp_string_add(tp, a, b);
-    } else if (a.type == TP_LIST && a.type == b.type) {
+    } else if (a.type.typeid == TP_LIST && a.type.typeid == b.type.typeid) {
         return tp_list_add(tp, a, b);
     }
     tp_raise(tp_None,tp_string_const("(tp_add) TypeError: ?"));
 }
 
 tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
-    if (a.type == TP_NUMBER && a.type == b.type) {
+    if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
         return tp_number(a.number.val*b.number.val);
     }
-    if(a.type == TP_NUMBER) {
+    if(a.type.typeid == TP_NUMBER) {
         tp_obj c = a; a = b; b = c;
     }
-    if(a.type == TP_STRING && b.type == TP_NUMBER) {
+    if(a.type.typeid == TP_STRING && b.type.typeid == TP_NUMBER) {
         int n = b.number.val;
         return tp_string_mul(tp, a, n);
     }
-    if(a.type == TP_LIST && b.type == TP_NUMBER) {
+    if(a.type.typeid == TP_LIST && b.type.typeid == TP_NUMBER) {
         int n = b.number.val;
         return tp_list_mul(tp, a, n);
     }
@@ -282,7 +282,7 @@ tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
  * Returns the number of items in a list or dict, or the length of a string.
  */
 tp_obj tp_len(TP,tp_obj self) {
-    int type = self.type;
+    int type = self.type.typeid;
     if (type == TP_STRING) {
         return tp_number(self.string.len);
     } else if (type == TP_DICT) {
@@ -295,23 +295,23 @@ tp_obj tp_len(TP,tp_obj self) {
 }
 
 int tp_cmp(TP, tp_obj a, tp_obj b) {
-    if (a.type != b.type) { return a.type-b.type; }
-    switch(a.type) {
+    if (a.type.typeid != b.type.typeid) { return a.type.typeid-b.type.typeid; }
+    switch(a.type.typeid) {
         case TP_NONE: return 0;
         case TP_NUMBER: return _tp_sign(a.number.val-b.number.val);
         case TP_STRING: return tp_string_cmp(&a, &b);
         case TP_LIST: return tp_list_cmp(tp, a, b);
         case TP_DICT: return a.dict.val - b.dict.val;
-        case TP_FNC: return a.fnc.info - b.fnc.info;
+        case TP_FNC: return a.func.info - b.func.info;
         case TP_DATA: return (char*)a.data.val - (char*)b.data.val;
     }
     tp_raise(0,tp_string_const("(tp_cmp) TypeError: ?"));
 }
 
 tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
-    switch(a.type) {
+    switch(a.type.typeid) {
         case TP_NUMBER:
-            if(b.type == TP_NUMBER)
+            if(b.type.typeid == TP_NUMBER)
                 return tp_number(((long)a.number.val) % ((long)b.number.val));
             break;
         case TP_STRING:
@@ -323,7 +323,7 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
 
 #define TP_OP(name,expr) \
     tp_obj name(TP,tp_obj _a,tp_obj _b) { \
-    if (_a.type == TP_NUMBER && _a.type == _b.type) { \
+    if (_a.type.typeid == TP_NUMBER && _a.type.typeid == _b.type.typeid) { \
         tp_num a = _a.number.val; tp_num b = _b.number.val; \
         return tp_number(expr); \
     } \
@@ -340,7 +340,7 @@ TP_OP(tp_div,a/b);
 TP_OP(tp_pow,pow(a,b));
 
 tp_obj tp_bitwise_not(TP, tp_obj a) {
-    if (a.type == TP_NUMBER) {
+    if (a.type.typeid == TP_NUMBER) {
         return tp_number(~(long)a.number.val);
     }
     tp_raise(tp_None,tp_string_const("(tp_bitwise_not) TypeError: unsupported operand type"));
@@ -368,22 +368,22 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
     just for giggles we will. */
     tp->params = params;
 
-    if (self.type == TP_DICT) {
-        if (self.dict.dtype == 1) {
+    if (self.type.typeid == TP_DICT) {
+        if (self.type.magic == 1) {
             tp_obj meta;
             if (_tp_lookup(tp, self, tp_string_const("__new__"), &meta)) {
                 tpd_list_insert(tp, params.list.val, 0, self);
                 return tp_call(tp, meta, params);
             }
-        } else if (self.dict.dtype == 2) {
+        } else if (self.type.magic == 2) {
             TP_META_BEGIN(self,"__call__");
                 return tp_call(tp, meta, params);
             TP_META_END;
         }
     }
 
-    if (self.type == TP_FNC) {
-        if(!(self.fnc.ftype & 1)) {
+    if (self.type.typeid == TP_FNC) {
+        if(!(self.type.magic & 1)) {
             /* external C function */
             tp_obj r = tp_tcall(tp, self);
             tp_grey(tp, r);
@@ -391,13 +391,13 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
         } else {
             /* compiled Python function */
             tp_obj dest = tp_None;
-            tp_enter_frame(tp, self.fnc.info->globals,
-                               self.fnc.info->code,
+            tp_enter_frame(tp, self.func.info->globals,
+                               self.func.info->code,
                               &dest);
-            if ((self.fnc.ftype & 2)) {
+            if ((self.type.magic & 2)) {
                 /* method */
                 tp->frames[tp->cur].regs[0] = params;
-                tpd_list_insert(tp, params.list.val, 0, self.fnc.info->self);
+                tpd_list_insert(tp, params.list.val, 0, self.func.info->self);
             } else {
                 /* function */
                 tp->frames[tp->cur].regs[0] = params;
