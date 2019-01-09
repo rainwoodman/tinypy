@@ -98,7 +98,7 @@ typedef union tp_obj {
     struct { TPTypeInfo type; tp_num val; } number;
     struct { TPTypeInfo type; struct tpd_list *val; } list;
     struct { TPTypeInfo type; struct tpd_dict *val; } dict;
-    struct { TPTypeInfo type; struct tpd_string *val; } string;
+    struct { TPTypeInfo type; struct tpd_string *info; } string;
     struct { TPTypeInfo type; struct tpd_func *info; void *cfnc; } func;
     struct { TPTypeInfo type; struct tpd_data *info; void *val; } data;
 } tp_obj;
@@ -298,10 +298,10 @@ char * tp_cstr(TP, tp_obj v) {
         buffer = tp_malloc(tp, strlen(val) + 1);
         memcpy(buffer, val, strlen(val) + 1);
     } else {
-        val = v.string.val->s;
-        buffer = tp_malloc(tp, v.string.val->len + 1);
-        memset(buffer, 0, v.string.val->len + 1);
-        memcpy(buffer, val, v.string.val->len);
+        val = v.string.info->s;
+        buffer = tp_malloc(tp, v.string.info->len + 1);
+        memset(buffer, 0, v.string.info->len + 1);
+        memcpy(buffer, val, v.string.info->len);
     }
     
     return buffer;

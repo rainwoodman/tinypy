@@ -10,7 +10,7 @@ int tp_true(TP,tp_obj v) {
     switch(v.type.typeid) {
         case TP_NUMBER: return v.number.val != 0;
         case TP_NONE: return 0;
-        case TP_STRING: return v.string.val->len != 0;
+        case TP_STRING: return v.string.info->len != 0;
         case TP_LIST: return v.list.val->len != 0;
         case TP_DICT: return v.dict.val->len != 0;
     }
@@ -130,10 +130,10 @@ tp_obj tp_get(TP, tp_obj self, tp_obj k) {
         }
     } else if (type == TP_STRING) {
         if (k.type.typeid == TP_NUMBER) {
-            int l = self.string.val->len;
+            int l = self.string.info->len;
             int n = k.number.val;
             n = (n<0?l+n:n);
-            if (n >= 0 && n < l) { return tp_string_from_const(tp, tp->chars[(unsigned char)self.string.val->s[n]],1); }
+            if (n >= 0 && n < l) { return tp_string_from_const(tp, tp->chars[(unsigned char)self.string.info->s[n]],1); }
         } else if (k.type.typeid == TP_STRING) {
             if (tp_cmp(tp,tp_string_atom(tp, "join"),k) == 0) {
                 return tp_method(tp,self,tpy_str_join);
@@ -181,7 +181,7 @@ tp_obj tp_copy(TP, tp_obj self) {
         return self;
     }
     if (type == TP_STRING) {
-        return tp_string_from_buffer(tp, self.string.val->s, self.string.val->len);
+        return tp_string_from_buffer(tp, self.string.info->s, self.string.info->len);
     }
     if (type == TP_LIST) {
         return tp_list_copy(tp, self);
@@ -284,7 +284,7 @@ tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
 tp_obj tp_len(TP,tp_obj self) {
     int type = self.type.typeid;
     if (type == TP_STRING) {
-        return tp_number(self.string.val->len);
+        return tp_number(self.string.info->len);
     } else if (type == TP_DICT) {
         return tp_number(self.dict.val->len);
     } else if (type == TP_LIST) {

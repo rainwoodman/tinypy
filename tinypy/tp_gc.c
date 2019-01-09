@@ -20,7 +20,7 @@ void tp_grey(TP, tp_obj v) {
 void tp_follow(TP,tp_obj v) {
     int type = v.type.typeid;
     if (type == TP_STRING && v.type.magic == TP_STRING_VIEW) {
-        tp_grey(tp, v.string.val->base); 
+        tp_grey(tp, v.string.info->base); 
     }
     if (type == TP_LIST) {
         int n;
@@ -81,9 +81,9 @@ void tp_delete(TP, tp_obj v) {
         return;
     } else if (type == TP_STRING) {
         if(v.type.magic == TP_STRING_NONE) {
-            tp_free(tp, v.string.val->s); 
+            tp_free(tp, v.string.info->s); 
         }
-        tp_free(tp, v.string.val);
+        tp_free(tp, v.string.info);
         return;
     } else if (type == TP_DATA) {
         if (v.data.info->free) {

@@ -105,7 +105,7 @@ void* map_value(TP, char type, tp_obj value) {
         case FLOAT_T: _map_value(float, value.number.val);
         case DOUBLE_T: _map_value(double, value.number.val);
         case LDOUBLE_T: _map_value(long double, value.number.val);
-        case STRING_T: _map_value(char*, value.string.val->s);
+        case STRING_T: _map_value(char*, value.string.info->s);
         case POINTER_T: _map_value(void*, value.data.val);
         default: tp_raise(&ffi_type_void, tp_printf(tp, "invalid type \"%c\""));
     }
@@ -147,7 +147,7 @@ tp_obj unmap_value(TP, char type, void* value) {
 tp_obj dl_dlopen(TP) {
     tp_obj name = TP_STR();
     tp_obj handle = tpy_data(tp, 0, NULL);
-    handle.data.val = dlopen(name.string.val->s, RTLD_LAZY);
+    handle.data.val = dlopen(name.string.info->s, RTLD_LAZY);
     if (handle.data.val == NULL) {
         tp_raise(tp_None, tp_printf(tp, "%s", dlerror()));
     }
@@ -166,9 +166,9 @@ tp_obj dl_dlsym(TP) {
     tp_obj handle = TP_TYPE(TP_DATA);
     tp_obj name = TP_STR();
     tp_obj result = tpy_data(tp, 0, NULL);
-    void* sym = dlsym(handle.data.val, name.string.val->s);
+    void* sym = dlsym(handle.data.val, name.string.info->s);
     result.data.val = sym;
-    /*fprintf(stderr, "%s => %p\n", name.string.val->s, sym);*/
+    /*fprintf(stderr, "%s => %p\n", name.string.info->s, sym);*/
     if(result.data.val == NULL) {
         tp_raise(tp_None, tp_printf(tp, "%s", dlerror()));
     }
@@ -179,8 +179,8 @@ tp_obj dl_size(TP) {
     tp_obj signature = TP_STR();
     int i;
     int size = 0;
-    for(i = 0; i < signature.string.val->len; i++) {
-        size += type_size(tp, signature.string.val->s[i]);
+    for(i = 0; i < signature.string.info->len; i++) {
+        size += type_size(tp, signature.string.info->s[i]);
     }
     return tp_number(size);
 }
@@ -194,15 +194,15 @@ tp_obj dl_pack(TP) {
     tp_obj values = TP_TYPE(TP_LIST);
     int i = 0;
     int size = 0;
-    for(i = 0; i < signature.string.val->len; i++) {
-        size += type_size(tp, signature.string.val->s[i]);
+    for(i = 0; i < signature.string.info->len; i++) {
+        size += type_size(tp, signature.string.info->s[i]);
     }
     void* data = malloc(size);
     int offset = 0;
-    for(i = 0; i < signature.string.val->len; i++) {
-        void* arg = map_value(tp, signature.string.val->s[i], values.list.val->items[i]);
-        memcpy(data + offset, arg, type_size(tp, signature.string.val->s[i]));
-        offset += type_size(tp, signature.string.val->s[i]);
+    for(i = 0; i < signature.string.info->len; i++) {
+        void* arg = map_value(tp, signature.string.info->s[i], values.list.val->items[i]);
+        memcpy(data + offset, arg, type_size(tp, signature.string.info->s[i]));
+        offset += type_size(tp, signature.string.info->s[i]);
     }
     tp_obj result = tpy_data(tp, 0, data);
     result.data.info->free = dl_free_data;
@@ -216,12 +216,12 @@ tp_obj dl_unpack(TP) {
     int offset = 0;
     tp_obj result = tp_list(tp);
 
-    for(i = 0; i < signature.string.val->len; i++) {
-        void* value = map_value(tp, signature.string.val->s[i], tp_None);
-        memcpy(value, packed.data.val + offset, type_size(tp, signature.string.val->s[i]));
-        tp_params_v(tp, 2, result, unmap_value(tp, signature.string.val->s[i], value));
+    for(i = 0; i < signature.string.info->len; i++) {
+        void* value = map_value(tp, signature.string.info->s[i], tp_None);
+        memcpy(value, packed.data.val + offset, type_size(tp, signature.string.info->s[i]));
+        tp_params_v(tp, 2, result, unmap_value(tp, signature.string.info->s[i], value));
         tp_append(tp);
-        offset += type_size(tp, signature.string.val->s[i]);
+        offset += type_size(tp, signature.string.info->s[i]);
     }
     return result;
 }
@@ -233,27 +233,27 @@ tp_obj dl_call(TP) {
     tp_obj signature = TP_STR();
     tp_obj arguments = TP_TYPE(TP_LIST);
 
-    int num_args = signature.string.val->len;
+    int num_args = signature.string.info->len;
     ffi_type *args[num_args];
     void* values[num_args];
     int i;
     ffi_cif cif;
 
     for(i = 0; i < num_args; i++) {
-        args[i] = map_type(tp, signature.string.val->s[i]);
-        values[i] = map_value(tp, signature.string.val->s[i], arguments.list.val->items[i]);
-        /*printf("%d: %c => %p %p %d\n", i, signature.string.val->s[i], *(void**)values[i], arguments.list.val->items[i].data.val, (int)arguments.list.val->items[i].number.val);*/
+        args[i] = map_type(tp, signature.string.info->s[i]);
+        values[i] = map_value(tp, signature.string.info->s[i], arguments.list.val->items[i]);
+        /*printf("%d: %c => %p %p %d\n", i, signature.string.info->s[i], *(void**)values[i], arguments.list.val->items[i].data.val, (int)arguments.list.val->items[i].number.val);*/
     }
 
-    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, num_args, map_type(tp, return_type.string.val->s[0]), args) == FFI_OK) {
+    if (ffi_prep_cif(&cif, FFI_DEFAULT_ABI, num_args, map_type(tp, return_type.string.info->s[0]), args) == FFI_OK) {
         void* result = NULL;
-        if(return_type.string.val->s[0] != VOID_T) result = map_value(tp, return_type.string.val->s[0], tp_None);
+        if(return_type.string.info->s[0] != VOID_T) result = map_value(tp, return_type.string.info->s[0], tp_None);
         /*if(result != NULL) printf("result>%f\n", *(double*) result);*/
         ffi_call(&cif, (void (*)(void))method.data.val, result, values);
         /*printf("result<%f\n", *(double*) result);*/
         for(i = 0; i < num_args; i++) free(values[i]);
         if(result != NULL) {
-            return unmap_value(tp, return_type.string.val->s[0], result);
+            return unmap_value(tp, return_type.string.info->s[0], result);
         }
         return tp_None;
     }

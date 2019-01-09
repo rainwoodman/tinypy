@@ -178,7 +178,7 @@ int tp_step(TP) {
     #endif
     tpd_code e = *cur;
     /*
-     fprintf(stderr,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur,cur - (tpd_code*)f->code.string.val->s,tp_strings[e.i],VA,VB,VC);
+     fprintf(stderr,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur,cur - (tpd_code*)f->code.string.info->s,tp_strings[e.i],VA,VB,VC);
        int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(regs[i])); }
     */
     switch (e.i) {
@@ -224,15 +224,15 @@ int tp_step(TP) {
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,sizeof(tp_num)/4);
             #endif
-            RA = tp_number(*(tp_num*)((*++cur).string.val));
+            RA = tp_number(*(tp_num*)((*++cur).string.val ));
             cur += sizeof(tp_num)/4;
             continue;
         case TP_ISTRING: {
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,(UVBC/4)+1);
             #endif
-            /* RA = tp_string_from_const((*(cur+1)).string.val->s,UVBC); */
-            int a = (*(cur+1)).string.val - f->code.string.val->s;
+            /* RA = tp_string_from_const((*(cur+1)).string.info->s,UVBC); */
+            int a = (*(cur+1)).string.val - f->code.string.info->s;
             RA = tp_string_view(tp, f->code, a, a+UVBC);
             cur += (UVBC/4)+1;
             }
@@ -256,14 +256,14 @@ int tp_step(TP) {
             break;
         case TP_IGSET: tp_set(tp,f->globals,RA,RB); break;
         case TP_IDEF: {
-/*            RA = tp_def(tp,(*(cur+1)).string.val->s,f->globals);*/
+/*            RA = tp_def(tp,(*(cur+1)).string.info->s,f->globals);*/
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,SVBC);
             #endif
-            int a = (*(cur+1)).string.val - f->code.string.val->s;
-            if(f->code.string.val->s[a] == ';') abort();
+            int a = (*(cur+1)).string.val - f->code.string.info->s;
+            if(f->code.string.info->s[a] == ';') abort();
             RA = tp_def(tp,
-                /*tp_string_from_const((*(cur+1)).string.val->s,(SVBC-1)*4),*/
+                /*tp_string_from_const((*(cur+1)).string.info->s,(SVBC-1)*4),*/
                 tp_string_view(tp, f->code, a, a + (SVBC-1)*4),
                 f->globals);
             cur += SVBC; continue;
@@ -283,11 +283,11 @@ int tp_step(TP) {
             tp_bounds(tp,cur,VA);
             #endif
             ;
-            int a = (*(cur+1)).string.val - f->code.string.val->s;
-/*            f->line = tp_string_from_const((*(cur+1)).string.val->s,VA*4-1);*/
-            if(f->code.string.val->s[a] == ';') abort();
+            int a = (*(cur+1)).string.val - f->code.string.info->s;
+/*            f->line = tp_string_from_const((*(cur+1)).string.info->s,VA*4-1);*/
+            if(f->code.string.info->s[a] == ';') abort();
             f->line = tp_string_view(tp, f->code, a, a+VA*4-1);
-/*             fprintf(stderr,"%7d: %s\n",UVBC,f->line.string.val->s);*/
+/*             fprintf(stderr,"%7d: %s\n",UVBC,f->line.string.info->s);*/
             cur += VA; f->lineno = UVBC;
             }
             break;

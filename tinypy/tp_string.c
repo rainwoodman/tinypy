@@ -9,9 +9,9 @@ tp_obj tp_string_t(TP, int n) {
     tp_obj r;
     r.string.type.typeid = TP_STRING;
     r.string.type.magic = TP_STRING_NONE;
-    r.string.val = (tpd_string*)tp_malloc(tp, sizeof(tpd_string));
-    r.string.val->len = n;
-    r.string.val->s = tp_malloc(tp, n);
+    r.string.info = (tpd_string*)tp_malloc(tp, sizeof(tpd_string));
+    r.string.info->len = n;
+    r.string.info->s = tp_malloc(tp, n);
     return tp_track(tp, r);
 }
 
@@ -27,10 +27,10 @@ tp_obj tp_string_from_const(TP, const char *s, int n) {
     if(n < 0) n = strlen(s);
     r.string.type.typeid = TP_STRING;
     r.string.type.magic = TP_STRING_ATOM;
-    r.string.val = (tpd_string*) tp_malloc(tp, sizeof(tpd_string));
-    r.string.val->base = tp_None;
-    r.string.val->s = (char*) s;
-    r.string.val->len = n;
+    r.string.info = (tpd_string*) tp_malloc(tp, sizeof(tpd_string));
+    r.string.info->base = tp_None;
+    r.string.info->s = (char*) s;
+    r.string.info->len = n;
     return tp_track(tp, r);
 }
 /*
@@ -39,7 +39,7 @@ tp_obj tp_string_from_const(TP, const char *s, int n) {
 tp_obj tp_string_from_buffer(TP, const char *s, int n) {
     if(n < 0) n = strlen(s);
     tp_obj r = tp_string_t(tp, n);
-    memcpy(r.string.val->s, s, n);
+    memcpy(r.string.info->s, s, n);
     return r;
 }
 
@@ -49,10 +49,10 @@ tp_obj tp_string_from_buffer(TP, const char *s, int n) {
  * memory object to the original string.
  */
 tp_obj tp_string_view(TP, tp_obj s, int a, int b) {
-    int l = s.string.val->len;
+    int l = s.string.info->len;
     a = _tp_max(0,(a<0?l+a:a)); b = _tp_min(l,(b<0?l+b:b));
-    tp_obj r = tp_string_from_const(tp, s.string.val->s + a, b - a);
-    r.string.val->base = s;
+    tp_obj r = tp_string_from_const(tp, s.string.info->s + a, b - a);
+    r.string.info->base = s;
     r.type.magic = TP_STRING_VIEW;
     return r;
 }
@@ -65,7 +65,7 @@ tp_obj tp_printf(TP, char const *fmt,...) {
     va_start(arg, fmt);
     l = vsnprintf(NULL, 0, fmt,arg);
     r = tp_string_t(tp, l + 1);
-    s = r.string.val->s;
+    s = r.string.info->s;
     va_end(arg);
     va_start(arg, fmt);
     vsnprintf(s, l + 1, fmt, arg);
@@ -75,8 +75,8 @@ tp_obj tp_printf(TP, char const *fmt,...) {
 
 int tp_str_index (tp_obj s, tp_obj k) {
     int i=0;
-    while ((s.string.val->len - i) >= k.string.val->len) {
-        if (memcmp(s.string.val->s+i,k.string.val->s,k.string.val->len) == 0) {
+    while ((s.string.info->len - i) >= k.string.info->len) {
+        if (memcmp(s.string.info->s+i,k.string.info->s,k.string.info->len) == 0) {
             return i;
         }
         i += 1;
@@ -87,36 +87,36 @@ int tp_str_index (tp_obj s, tp_obj k) {
 
 int tp_string_cmp(tp_obj * a, tp_obj * b)
 {
-    int l = _tp_min(a->string.val->len, b->string.val->len);
-    int v = memcmp(a->string.val->s, b->string.val->s, l);
+    int l = _tp_min(a->string.info->len, b->string.info->len);
+    int v = memcmp(a->string.info->s, b->string.info->s, l);
     if (v == 0) {
-        v = a->string.val->len - b->string.val->len;
+        v = a->string.info->len - b->string.info->len;
     }
     return v;
 }
 
 tp_obj tp_string_add(TP, tp_obj a, tp_obj b)
 {
-    int al = a.string.val->len, bl = b.string.val->len;
+    int al = a.string.info->len, bl = b.string.info->len;
     tp_obj r = tp_string_t(tp, al+bl);
-    char *s = r.string.val->s;
-    memcpy(s,a.string.val->s,al);
-    memcpy(s+al,b.string.val->s,bl);
+    char *s = r.string.info->s;
+    memcpy(s,a.string.info->s,al);
+    memcpy(s+al,b.string.info->s,bl);
     return r;
 }
 
 tp_obj tp_string_mul(TP, tp_obj a, int n)
 {
-    int al = a.string.val->len;
+    int al = a.string.info->len;
     if(n <= 0) {
         tp_obj r = tp_string_t(tp, 0);
         return r;
     }
     tp_obj r = tp_string_t(tp, al*n);
-    char *s = r.string.val->s;
+    char *s = r.string.info->s;
     int i;
     for (i=0; i<n; i++) {
-        memcpy(s+al*i, a.string.val->s, al);
+        memcpy(s+al*i, a.string.info->s, al);
     }
     return r;
 }

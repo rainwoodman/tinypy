@@ -4,6 +4,6 @@
 
 void tp_echo(TP, tp_obj e) {
     e = tp_str(tp, e);
-    tp->echo(e.string.val->s, e.string.val->len);
+    tp->echo(e.string.info->s, e.string.info->len);
 }
 

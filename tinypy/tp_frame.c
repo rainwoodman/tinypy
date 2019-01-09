@@ -4,7 +4,7 @@ tpd_frame tp_frame_nt(TP, tp_obj globals, tp_obj code, tp_obj * ret_dest)
     tpd_frame f;
     f.globals = globals;
     f.code = code;
-    f.cur = (tpd_code*)f.code.string.val->s;
+    f.cur = (tpd_code*)f.code.string.info->s;
     f.jmp = 0;
 /*     fprintf(stderr,"tp->cur: %d\n",tp->cur);*/
     f.regs = (tp->cur <= 0?tp->regs:tp->frames[tp->cur].regs+tp->frames[tp->cur].cregs);

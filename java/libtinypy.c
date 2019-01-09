@@ -55,7 +55,7 @@ jstring Java_TinyPy_run(JNIEnv* _env, jobject thiz, jstring filename_) {
         const char* filename = (*env)->GetStringUTFChars(env, filename_, NULL);
         tp_obj result = run_file(interpreter->tp, filename, interpreter->globals);
         result = tp_str(interpreter->tp, result);
-        return (*env)->NewStringUTF(env, result.string.val->s);
+        return (*env)->NewStringUTF(env, result.string.info->s);
     }
     return NULL;
 }
@@ -66,7 +66,7 @@ jstring Java_TinyPy_eval(JNIEnv* _env, jobject thiz, jstring code_) {
         const char* code = (*env)->GetStringUTFChars(env, code_, NULL);
         tp_obj result = eval(interpreter->tp, code, interpreter->globals);
         result = tp_str(interpreter->tp, result);
-        return (*env)->NewStringUTF(env, result.string.val->s);
+        return (*env)->NewStringUTF(env, result.string.info->s);
     }
     return NULL;
 }
@@ -78,7 +78,7 @@ jstring Java_TinyPy_getString(JNIEnv* _env, jobject thiz, jstring name_) {
         const char* name = (*env)->GetStringUTFChars(env, name_, 0);
         if(tp_has(tp, interpreter->globals, tp_string_atom(tp, name)).number.val) {
             tp_obj result = tp_get(tp, interpreter->globals, tp_string_atom(tp, name));
-            return (*env)->NewStringUTF(env, result.string.val->s);
+            return (*env)->NewStringUTF(env, result.string.info->s);
         } else {
             fprintf(stderr, "WARNING: variable \"%s\" not found in tinypy globals\n", name);
             return NULL;

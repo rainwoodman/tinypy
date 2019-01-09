@@ -25,7 +25,7 @@ jvalue jNULL = {.l=NULL};
 
 tp_obj jni_find_class(TP) {
     tp_obj class_name = TP_STR();
-    jclass cls = (*env)->FindClass(env, class_name.string.val->s);
+    jclass cls = (*env)->FindClass(env, class_name.string.info->s);
     return tpy_data(tp, 0, cls);
 }
 
@@ -34,14 +34,14 @@ tp_obj jni_get_method_id(TP) {
     tp_obj name = TP_STR();
     tp_obj signature = TP_STR();
 
-    jmethodID id = (*env)->GetMethodID(env, cls.data.val, name.string.val->s, signature.string.val->s);
+    jmethodID id = (*env)->GetMethodID(env, cls.data.val, name.string.info->s, signature.string.info->s);
     if(id == NULL) return tp_None;
 
     jni_method_t* method = malloc(sizeof(jni_method_t));
     method->cls = cls.data.val;
     method->id = id; //(*env)->NewGlobalRef(env, id);
-    method->name = strdup(name.string.val->s);
-    method->signature = strdup(signature.string.val->s);
+    method->name = strdup(name.string.info->s);
+    method->signature = strdup(signature.string.info->s);
     //(*env)->DeleteLocalRef(env, id);
 
     tp_obj result = tpy_data(tp, DATA_METHOD, method);
@@ -72,7 +72,7 @@ jvalue jni_map_value(TP, const char* type, tp_obj value) {
         case 'L': if(value.type.typeid == TP_NONE) {
                       result.l = NULL;
                   } else if(!strncmp(type, "Ljava/lang/String;", 18) && value.type.typeid == TP_STRING) {
-                      result.l = (*env)->NewStringUTF(env, value.string.val->s); 
+                      result.l = (*env)->NewStringUTF(env, value.string.info->s); 
                       return result;
                   } else if(value.type.typeid == TP_DATA) {
                       result.l = value.data.val; 

@@ -104,16 +104,16 @@ static tp_obj regex_obj_search(TP)
 	int r = -2;					/* -2 indicate exception */
 	int range;
 
-	if (pos.number.val < 0 || pos.number.val > str.string.val->len) {
+	if (pos.number.val < 0 || pos.number.val > str.string.info->len) {
 		LastError = "search offset out of range";
 		goto exception;
 	}
-	range = str.string.val->len - pos.number.val;
+	range = str.string.info->len - pos.number.val;
 
 	re = getre(tp, self);
 	re->re_lastok = NULL;
-	r = re_search(&re->re_patbuf, (unsigned char *)str.string.val->s, 
-			str.string.val->len, pos.number.val, range, &re->re_regs);
+	r = re_search(&re->re_patbuf, (unsigned char *)str.string.info->s, 
+			str.string.info->len, pos.number.val, range, &re->re_regs);
 
 	/* cannot match pattern */
 	if (r == -1)
@@ -124,7 +124,7 @@ static tp_obj regex_obj_search(TP)
 		goto exception;
 
 	/* matched */
-	re->re_lastok = (unsigned char *)str.string.val->s;
+	re->re_lastok = (unsigned char *)str.string.info->s;
 
 	/* match obj */
 	maobj = match_object(tp, self);
@@ -160,8 +160,8 @@ static tp_obj regex_obj_match(TP)
 
 	re = getre(tp, self);
 	re->re_lastok = NULL;
-	r = re_match(&re->re_patbuf, (unsigned char *)str.string.val->s, 
-			str.string.val->len, pos.number.val, &re->re_regs);
+	r = re_match(&re->re_patbuf, (unsigned char *)str.string.info->s, 
+			str.string.info->len, pos.number.val, &re->re_regs);
 
 	/* cannot match pattern */
 	if (r == -1)
@@ -172,7 +172,7 @@ static tp_obj regex_obj_match(TP)
 		goto exception;
 
 	/* matched */
-	re->re_lastok = (unsigned char *)str.string.val->s;
+	re->re_lastok = (unsigned char *)str.string.info->s;
 
 	/* match obj */
 	maobj = match_object(tp, self);
@@ -211,7 +211,7 @@ static tp_obj regex_obj_split(TP)
 	assert(maxsplit.number.val > 0);
 
 	srchloc = 0;
-	slen = strlen((char *)restr.string.val->s);
+	slen = strlen((char *)restr.string.info->s);
 
 	do {
 		/* generate a temp match object */
@@ -248,7 +248,7 @@ static tp_obj regex_obj_split(TP)
 	/* collect remaining string, if necessary */
 	if (srchloc < slen) {
 		grpstr = tp_string_from_buffer(tp, 
-				(const char *)restr.string.val->s + srchloc, slen - srchloc);
+				(const char *)restr.string.info->s + srchloc, slen - srchloc);
 		if (tp_true(tp, grpstr))
 			tp_set(tp, result, tp_None, grpstr);
 	}
@@ -275,7 +275,7 @@ static tp_obj regex_obj_findall(TP)
 	int srchloc;				/* search location */
 
 	srchloc = (int)pos.number.val;
-	slen	= strlen((char *)restr.string.val->s);
+	slen	= strlen((char *)restr.string.info->s);
 	if (srchloc < 0 || srchloc >= slen)
 		tp_raise(tp_None, tp_string_atom(tp, "starting position out of range"));
 
@@ -539,8 +539,8 @@ static tp_obj regex_compile(TP)
 	re->re_errno = 0;
 	re->re_syntax = (int)resyn.number.val;
 
-	pat = repat.string.val->s;
-	size = repat.string.val->len;
+	pat = repat.string.info->s;
+	size = repat.string.info->len;
 	error = re_compile_pattern((unsigned char *)pat, size, &re->re_patbuf);
 	if (error != NULL) {
 		LastError = error;
