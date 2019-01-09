@@ -1,26 +1,22 @@
-tp_obj tpy_save(TP) {
-    char * fname = tp_cstr(tp, TP_STR());
-    tp_obj v = TP_OBJ();
+void tp_save(TP, const char * fname, tp_obj v) {
     FILE *f;
     f = fopen(fname,"wb");
-    tp_free(tp, fname);
-    if (!f) { tp_raise(tp_None, tp_string_const("(tp_save) IOError: ?")); }
-    fwrite(v.string.val,v.string.len,1,f);
+    if (!f) {
+        tp_raise(, tp_string_const("(tp_save) IOError: ?"));
+    }
+    fwrite(v.string.val, v.string.len, 1, f);
     fclose(f);
-    return tp_None;
 }
 
-tp_obj tpy_load(TP) {
+tp_obj tp_load(TP, const char * fname) {
     FILE *f;
     long l;
     tp_obj r;
     char *s;
-    char * fname = tp_cstr(tp, TP_STR());
     struct stat stbuf;
     stat(fname, &stbuf);
     l = stbuf.st_size;
     f = fopen(fname,"rb");
-    tp_free(tp, fname);
     if (!f) {
         tp_raise(tp_None,tp_string_const("(tp_load) IOError: ?"));
     }
@@ -40,18 +36,21 @@ tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     }
 
     if (code.type == TP_NONE) {
-        tp_params_v(tp,1,fname);
-        code = tpy_load(tp);
+        char * fname1 = tp_cstr(tp, fname);
+        code = tp_load(tp, fname1);
+        tp_free(tp, fname1);
     }
 
     g = tp_dict_t(tp);
-    tp_set(tp,g,tp_string_const("__name__"),name);
-    tp_set(tp,g,tp_string_const("__code__"),code);
-    tp_set(tp,g,tp_string_const("__dict__"),g);
-    tp_frame(tp,g,code,0);
-    tp_set(tp,tp->modules,name,g);
+    tp_set(tp, g, tp_string_const("__name__"), name);
+    tp_set(tp, g, tp_string_const("__code__"), code);
+    tp_set(tp, g, tp_string_const("__dict__"), g);
+    tp_frame(tp, g, code, 0);
+    tp_set(tp, tp->modules, name, g);
 
-    if (!tp->jmp) { tp_run(tp, tp->cur); }
+    if (!tp->jmp) {
+        tp_run(tp, tp->cur);
+    }
 
     return g;
 }

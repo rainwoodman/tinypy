@@ -316,6 +316,22 @@ tp_obj tpy_import(TP) {
     return tp_None;
 }
 
+tp_obj tpy_load(TP) {
+    char * fname = tp_cstr(tp, TP_STR());
+    tp_obj r = tp_load(tp, fname);
+    tp_free(tp, fname);
+    return r;
+}
+
+tp_obj tpy_save(TP) {
+    char * fname = tp_cstr(tp, TP_STR());
+    tp_obj v = TP_OBJ();
+    tp_save(tp, fname, v);
+    tp_free(tp, fname);
+    return tp_None;
+}
+
+
 
 void tp_module_builtins_init(TP) {
     tp_obj builtins = tp_dict_t(tp);
