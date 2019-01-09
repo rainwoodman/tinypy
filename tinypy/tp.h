@@ -66,7 +66,7 @@ enum TPFuncMagic {
 enum TPStringMagic {
     TP_STRING_NONE = 0,
     TP_STRING_ATOM = 1,
-    TP_STRING_VIEW = 0,
+    TP_STRING_VIEW = 2,
 };
 typedef double tp_num;
 

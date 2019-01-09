@@ -19,8 +19,8 @@ void tp_grey(TP, tp_obj v) {
 
 void tp_follow(TP,tp_obj v) {
     int type = v.type.typeid;
-    if (type == TP_STRING) {
-        tp_grey(tp,v.string.val->base); 
+    if (type == TP_STRING && v.type.magic == TP_STRING_VIEW) {
+        tp_grey(tp, v.string.val->base); 
     }
     if (type == TP_LIST) {
         int n;
