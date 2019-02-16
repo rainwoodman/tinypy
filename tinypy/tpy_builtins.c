@@ -123,27 +123,6 @@ tp_obj tpy_float(TP) {
     tp_raise(tp_None,tp_string_atom(tp, "(tpy_float) TypeError: ?"));
 }
 
-tp_obj tpy_join(TP) {
-    tp_obj val = TP_OBJ();
-    int l=0,i;
-    tp_obj r;
-    char *s;
-    for (i=0; i<val.list.val->len; i++) {
-        tp_obj tmp = tp_str(tp,val.list.val->items[i]);
-        l += tp_string_len(tmp);
-    }
-    r = tp_string_t(tp,l);
-    s = r.string.info->s;
-    l = 0;
-    for (i=0; i<val.list.val->len; i++) {
-        tp_obj e;
-        e = tp_str(tp,val.list.val->items[i]);
-        memcpy(s+l, e.string.info->s, tp_string_len(e));
-        l += tp_string_len(e);
-    }
-    return r;
-}
-
 tp_obj tpy_fpack(TP) {
     tp_num v = TP_NUM();
     tp_obj r = tp_string_t(tp,sizeof(tp_num));
@@ -394,7 +373,8 @@ void tp_module_builtins_init(TP) {
     {"mtime",tpy_mtime}, {"number",tpy_float}, {"round",tpy_round},
     {"ord",tpy_ord}, {"merge",tpy_dict_merge}, {"getraw",tpy_getraw},
     {"setmeta",tpy_setmeta}, {"getmeta",tpy_getmeta},
-    {"bool", tpy_bool}, {"join", tpy_join}, {"repr", tpy_repr},
+    {"bool", tpy_bool},
+    {"repr", tpy_repr},
     #ifdef TP_SANDBOX
     {"sandbox",tpy_sandbox_},
     #endif

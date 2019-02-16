@@ -61,3 +61,5 @@ if not "tinypy" in sys.version:
         f.close()
 else:
     from __builtins__ import *
+    def join(v):
+        return ''.join(v)
