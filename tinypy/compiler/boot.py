@@ -14,7 +14,7 @@ if not "tinypy" in sys.version:
         return out
 
     def merge(a,b):
-        if isinstance(a,dict):
+        if isinstance(a, dict):
             for k in b: a[k] = b[k]
         else:
             for k in b: setattr(a,k,b[k])
@@ -39,10 +39,6 @@ if not "tinypy" in sys.version:
         import struct
         return struct.unpack('d', v)[0]
 
-    def system(cmd):
-        import os
-        return os.system(cmd)
-
     def load(fname):
         f = open(fname,'rb')
         r = f.read()
@@ -63,3 +59,6 @@ else:
     from __builtins__ import *
     def join(v):
         return ''.join(v)
+
+    def merge(a, b):
+        a.update(b)

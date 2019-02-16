@@ -367,10 +367,15 @@ def do_from(t):
     items = t.items[1]
 
     if items.val == '*':
-        free_tmp(do(Token(t.pos,'call',None,[
-            Token(t.pos,'name','merge'),
-            Token(t.pos,'name','__dict__'),
-            Token(t.pos,'reg',v)]))) #REG
+        free_tmp(do(Token(t.pos, 'call', None, [
+                Token(t.pos, 'mget', None,[
+                    Token(t.pos, 'name', '__dict__'),
+                    Token(t.pos, 'string', 'update'),]
+                ),
+                Token(t.pos, 'reg', v) #REG
+                ]
+            )))
+                
     else:
         if items.type == 'name':
             items.type = 'string'

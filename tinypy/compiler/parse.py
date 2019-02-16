@@ -442,9 +442,9 @@ def gmap(t,v):
     return dmap[v]
 
 def do(t):
-    if t.type == 'symbol': r = gmap(t,t.val)
-    else: r = gmap(t,t.type)
-    merge(t,r)
+    if t.type == 'symbol': r = gmap(t, t.val)
+    else: r = gmap(t, t.type)
+    merge(t, r)
     return t
 def do_module():
     tok = P.token
