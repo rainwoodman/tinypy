@@ -99,11 +99,11 @@ tp_obj tpy_isinstance(TP) {
         tp_raise(tp_None, tp_string_atom(tp, "isinstance TypeError: class argument must be a dictionary."));
     }
 
-    while(pv->type.typeid == TP_DICT) {
-        if (pv->dict.val->meta.dict.val == t.dict.val) {
+    while(pv->type.typeid >= TP_HAS_META) {
+        if (pv->obj.info->meta.dict.val == t.dict.val) {
             return tp_number(1);
         }
-        pv = &(pv->dict.val->meta);
+        pv = &(pv->obj.info->meta);
     }
     return tp_number(0);
 }
@@ -219,15 +219,23 @@ tp_obj tpy_mtime(TP) {
  * None
  */
 tp_obj tpy_setmeta(TP) {
-    tp_obj self = TP_TYPE(TP_DICT);
+    tp_obj self = TP_OBJ();
+    if(self.type.typeid < TP_HAS_META) {
+        tp_raise(tp_None,
+            tp_string_atom(tp, "(tp_check_type) TypeError: type does not support meta."));
+    }
     tp_obj meta = TP_TYPE(TP_DICT);
-    self.dict.val->meta = meta;
+    self.obj.info->meta = meta;
     return tp_None;
 }
 
 tp_obj tpy_getmeta(TP) {
-    tp_obj self = TP_TYPE(TP_DICT);
-    return self.dict.val->meta;
+    tp_obj self = TP_OBJ();
+    if(self.type.typeid < TP_HAS_META) {
+        tp_raise(tp_None,
+            tp_string_atom(tp, "(tp_check_type) TypeError: type does not support meta."));
+    }
+    return self.obj.info->meta;
 }
 
 /* Function: tp_object
@@ -246,7 +254,7 @@ tp_obj tp_object(TP) {
 tp_obj tpy_object_new(TP) {
     tp_obj klass = TP_TYPE(TP_DICT);
     tp_obj self = tp_object(tp);
-    self.dict.val->meta = klass;
+    self.obj.info->meta = klass;
     TP_META_BEGIN(self,"__init__");
         tp_call(tp,meta,tp->params);
     TP_META_END;
@@ -289,7 +297,7 @@ tp_obj tpy_getraw(TP) {
  */
 tp_obj tp_class(TP) {
     tp_obj klass = tp_dict_t(tp);
-    klass.dict.val->meta = tp_get(tp, tp->builtins, tp_string_atom(tp, "object")); 
+    klass.obj.info->meta = tp_get(tp, tp->builtins, tp_string_atom(tp, "object")); 
     return klass;
 }
 

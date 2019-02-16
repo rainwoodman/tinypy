@@ -99,56 +99,67 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
 tp_obj tp_get(TP, tp_obj self, tp_obj k) {
     int type = self.type.typeid;
     tp_obj r;
-    if (type == TP_DICT) {
-        TP_META_BEGIN(self,"__get__");
-            return tp_call(tp,meta,tp_params_v(tp,1,k));
-        TP_META_END;
-        if (self.type.magic != TP_DICT_RAW && _tp_lookup(tp,self,k,&r)) { return r; }
-        return tp_dict_get(tp, self, k);
-    } else if (type == TP_LIST) {
-        if (k.type.typeid == TP_NUMBER) {
-            int l = tp_len(tp,self).number.val;
-            int n = k.number.val;
-            n = (n<0?l+n:n);
-            return tpd_list_get(tp, self.list.val, n, "tp_get");
-        } else if (k.type.typeid == TP_STRING) {
-            /* FIXME: move these to the prototype object of list, after
-             * adding meta to all objects */
-            if (tp_cmp(tp,tp_string_atom(tp, "append"),k) == 0) {
-                return tp_method(tp, self, tpy_list_append);
-            } else if (tp_cmp(tp,tp_string_atom(tp, "pop"),k) == 0) {
-                return tp_method(tp, self,tpy_list_pop);
-            } else if (tp_cmp(tp,tp_string_atom(tp, "index"),k) == 0) {
-                return tp_method(tp, self,tpy_list_index);
-            } else if (tp_cmp(tp,tp_string_atom(tp, "sort"),k) == 0) {
-                return tp_method(tp, self,tpy_list_sort);
-            } else if (tp_cmp(tp,tp_string_atom(tp, "extend"),k) == 0) {
-                return tp_method(tp, self,tpy_list_extend);
+    if (type >= TP_HAS_META) {
+        if (type == TP_DICT) {
+            TP_META_BEGIN(self,"__get__");
+                return tp_call(tp, meta, tp_params_v(tp,1,k));
+            TP_META_END;
+            if (self.type.magic != TP_DICT_RAW && _tp_lookup(tp,self,k,&r)) { return r; }
+            return tp_dict_get(tp, self, k);
+        } else if (type == TP_LIST) {
+            if (k.type.typeid == TP_NUMBER) {
+                int l = tp_len(tp,self).number.val;
+                int n = k.number.val;
+                n = (n<0?l+n:n);
+                return tpd_list_get(tp, self.list.val, n, "tp_get");
+            } else if (k.type.typeid == TP_STRING) {
+                /* FIXME: move these to the prototype object of list, after
+                 * adding meta to all objects */
+                if (tp_cmp(tp,tp_string_atom(tp, "append"),k) == 0) {
+                    return tp_method(tp, self, tpy_list_append);
+                } else if (tp_cmp(tp,tp_string_atom(tp, "pop"),k) == 0) {
+                    return tp_method(tp, self,tpy_list_pop);
+                } else if (tp_cmp(tp,tp_string_atom(tp, "index"),k) == 0) {
+                    return tp_method(tp, self,tpy_list_index);
+                } else if (tp_cmp(tp,tp_string_atom(tp, "sort"),k) == 0) {
+                    return tp_method(tp, self,tpy_list_sort);
+                } else if (tp_cmp(tp,tp_string_atom(tp, "extend"),k) == 0) {
+                    return tp_method(tp, self,tpy_list_extend);
+                }
+
+                if (_tp_lookup(tp,self,k,&r)) { return r; }
+
+            } else if (k.type.typeid == TP_NONE) {
+                return tpd_list_pop(tp, self.list.val, 0, "tp_get");
             }
-        } else if (k.type.typeid == TP_NONE) {
-            return tpd_list_pop(tp, self.list.val, 0, "tp_get");
-        }
-    } else if (type == TP_STRING) {
-        if (k.type.typeid == TP_NUMBER) {
-            int l = tp_string_len(self);
-            int n = k.number.val;
-            n = (n<0?l+n:n);
-            if (n >= 0 && n < l) { return tp_string_from_const(tp, tp->chars[(unsigned char)self.string.info->s[n]],1); }
-        } else if (k.type.typeid == TP_STRING) {
-            if (tp_cmp(tp,tp_string_atom(tp, "join"),k) == 0) {
-                return tp_method(tp,self,tpy_str_join);
-            } else if (tp_cmp(tp,tp_string_atom(tp, "split"),k) == 0) {
-                return tp_method(tp,self,tpy_str_split);
-            } else if (tp_cmp(tp,tp_string_atom(tp, "index"),k) == 0) {
-                return tp_method(tp,self,tpy_str_index);
-            } else if (tp_cmp(tp,tp_string_atom(tp, "strip"),k) == 0) {
-                return tp_method(tp,self,tpy_str_strip);
-            } else if (tp_cmp(tp,tp_string_atom(tp, "replace"),k) == 0) {
-                return tp_method(tp,self,tpy_str_replace);
+        } else if (type == TP_STRING) {
+            if (k.type.typeid == TP_NUMBER) {
+                int l = tp_string_len(self);
+                int n = k.number.val;
+                n = (n<0?l+n:n);
+                if (n >= 0 && n < l) { return tp_string_from_const(tp, tp->chars[(unsigned char)self.string.info->s[n]],1); }
+            } else if (k.type.typeid == TP_STRING) {
+                //if (_tp_lookup(tp,self,k,&r)) { return r; }
+                if (tp_cmp(tp,tp_string_atom(tp, "join"),k) == 0) {
+                    return tp_method(tp,self,tpy_str_join);
+                } else if (tp_cmp(tp,tp_string_atom(tp, "split"),k) == 0) {
+                    return tp_method(tp,self,tpy_str_split);
+                } else if (tp_cmp(tp,tp_string_atom(tp, "index"),k) == 0) {
+                    return tp_method(tp,self,tpy_str_index);
+                } else if (tp_cmp(tp,tp_string_atom(tp, "strip"),k) == 0) {
+                    return tp_method(tp,self,tpy_str_strip);
+                } else if (tp_cmp(tp,tp_string_atom(tp, "replace"),k) == 0) {
+                    return tp_method(tp,self,tpy_str_replace);
+                }
+/*
+                TP_META_BEGIN(self,"__get__");
+                    return tp_call(tp, meta, tp_params_v(tp,1,k));
+                TP_META_END;
+*/
             }
         }
     }
-
+    /* deal with list / string keys on any unknown types */
     if (k.type.typeid == TP_LIST) {
         int a,b,l;
         tp_obj tmp;

@@ -29,15 +29,25 @@ tp_vm * tp_create_vm(void) {
     /* gc initialized, can use tpy_ functions. */
     tp->_regs = tp_list_t(tp);
     for (i=0; i<TP_REGS; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
-    tp->builtins = tp_dict_t(tp);
-    tp->modules = tp_dict_t(tp);
+    tp->builtins = tp_rawdict_t(tp);
+    tp->modules = tp_rawdict_t(tp);
+    tp->_list_meta = tp_rawdict_t(tp);
+    tp->_dict_meta = tp_rawdict_t(tp);
+    tp->_string_meta = tp_rawdict_t(tp);
+
     tp->_params = tp_list_t(tp);
+
     for (i=0; i<TP_FRAMES; i++) { tp_set(tp, tp->_params, tp_None, tp_list_t(tp)); }
     tp->echo = tp_default_echo;
-    tp_set(tp,tp->root,tp_None,tp->builtins);
-    tp_set(tp,tp->root,tp_None,tp->modules);
-    tp_set(tp,tp->root,tp_None,tp->_regs);
-    tp_set(tp,tp->root,tp_None,tp->_params);
+
+    tp_set(tp, tp->root, tp_None, tp->builtins);
+    tp_set(tp, tp->root, tp_None, tp->modules);
+    tp_set(tp, tp->root, tp_None, tp->_regs);
+    tp_set(tp, tp->root, tp_None, tp->_params);
+
+    tp_set(tp, tp->root, tp_None, tp->_list_meta);
+    tp_set(tp, tp->root, tp_None, tp->_dict_meta);
+    tp_set(tp, tp->root, tp_None, tp->_string_meta);
     
     
     tp->regs = tp->_regs.list.val->items;

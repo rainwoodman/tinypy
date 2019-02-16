@@ -2,6 +2,7 @@ tp_obj tp_dict_nt(TP) {
     tp_obj r = {TP_DICT};
     r.dict.val = tpd_dict_new(tp);
     r.type.magic = TP_DICT_CLASS;
+    r.obj.info->meta = tp->_dict_meta;
     return r;
 }
 
@@ -19,6 +20,14 @@ tp_obj tp_dict_nt(TP) {
 tp_obj tp_dict_t(TP) {
     return tp_track(tp, tp_dict_nt(tp));
 }
+
+tp_obj tp_rawdict_t(TP) {
+    tp_obj r = {TP_DICT};
+    r.dict.val = tpd_dict_new(tp);
+    r.type.magic = TP_DICT_RAW;
+    return r;
+}
+
 
 tp_obj tp_dict_from_items (TP, int n, tp_obj * argv) {
     tp_obj r = tp_dict_t(tp);

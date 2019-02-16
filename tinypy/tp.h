@@ -104,11 +104,13 @@ typedef union tp_obj {
     TPTypeInfo type;
     struct { TPTypeInfo type; int * gci; } gc;
     struct { TPTypeInfo type; tp_num val; } number;
+    struct { TPTypeInfo type; struct tpd_func *info; void *cfnc; } func;
+    struct { TPTypeInfo type; struct tpd_data *info; void *val; } data;
+
+    struct { TPTypeInfo type; struct tpd_obj *info; } obj;
     struct { TPTypeInfo type; struct tpd_list *val; } list;
     struct { TPTypeInfo type; struct tpd_dict *val; } dict;
     struct { TPTypeInfo type; struct tpd_string *info; } string;
-    struct { TPTypeInfo type; struct tpd_func *info; void *cfnc; } func;
-    struct { TPTypeInfo type; struct tpd_data *info; void *val; } data;
 } tp_obj;
 
 typedef struct tpd_obj {
@@ -207,6 +209,9 @@ typedef struct tpd_frame {
 typedef struct tp_vm {
     tp_obj builtins;
     tp_obj modules;
+    tp_obj _list_meta;
+    tp_obj _dict_meta;
+    tp_obj _string_meta;
     tpd_frame frames[TP_FRAMES];
     tp_obj _params;
     tp_obj params;
@@ -275,6 +280,7 @@ void   tp_grey(TP,tp_obj);
  */
 void   _tp_raise(TP,tp_obj);
 #define tp_raise(r, obj) { \
+    abort(); \
     _tp_raise(tp, obj); \
     return r; \
 }
