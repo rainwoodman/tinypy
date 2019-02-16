@@ -7,6 +7,7 @@
 
 void tp_grey(TP, tp_obj v) {
     if (v.type.typeid < TP_GC_TRACKED || (!v.gc.gci) || *v.gc.gci) { return; }
+    if (v.type.typeid == TP_STRING && v.type.magic == TP_STRING_ATOM) { return; }
     *v.gc.gci = 1;
     if (v.type.typeid == TP_DATA) {
         /* terminal types, no need to follow */

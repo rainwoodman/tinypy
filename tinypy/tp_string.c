@@ -18,7 +18,14 @@ tp_obj tp_string_t(TP, int n) {
 
 tp_obj tp_string_atom(TP, const char * v) {
     /* FIXME: use a hash table for the atoms to avoid the leak */
-    return tp_string_from_const(tp, v, -1);
+    static tpd_string info = {0};
+    tp_obj r;
+    r.type.typeid = TP_STRING;
+    r.type.magic = TP_STRING_ATOM;
+    r.string.info = &info;
+    r.string.info->meta = tp->_string_meta;
+    r.string.val = v;
+    return r;
 }
 
 /*
@@ -27,7 +34,7 @@ tp_obj tp_string_from_const(TP, const char *s, int n) {
     tp_obj r;
     if(n < 0) n = strlen(s);
     r.type.typeid = TP_STRING;
-    r.type.magic = TP_STRING_ATOM;
+    r.type.magic = TP_STRING_EXTERN;
     r.string.info = (tpd_string*) tp_malloc(tp, sizeof(tpd_string));
     r.string.info->base = tp_None;
     r.string.info->s = (char*) s;
@@ -46,11 +53,16 @@ tp_obj tp_string_from_buffer(TP, const char *s, int n) {
 }
 
 char * tp_string_getptr(tp_obj s) {
+    if(s.type.magic == TP_STRING_ATOM) {
+        return (char*) s.string.val;
+    }
     return s.string.info->s;
 }
 
 int tp_string_len(tp_obj s) {
-    /* will skip info for atoms */
+    if(s.type.magic == TP_STRING_ATOM) {
+        return strlen(s.string.val);
+    }
     return s.string.info->len;
 }
 

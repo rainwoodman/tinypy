@@ -74,7 +74,8 @@ enum TPFuncMagic {
 enum TPStringMagic {
     TP_STRING_NONE = 0,
     TP_STRING_ATOM = 1,
-    TP_STRING_VIEW = 2,
+    TP_STRING_EXTERN = 2,
+    TP_STRING_VIEW = 3,
 };
 typedef double tp_num;
 
@@ -110,7 +111,7 @@ typedef union tp_obj {
     struct { TPTypeInfo type; struct tpd_obj *info; } obj;
     struct { TPTypeInfo type; struct tpd_list *val; } list;
     struct { TPTypeInfo type; struct tpd_dict *val; } dict;
-    struct { TPTypeInfo type; struct tpd_string *info; char * val;} string;
+    struct { TPTypeInfo type; struct tpd_string *info; const char * val;} string;
 } tp_obj;
 
 typedef struct tpd_obj {
@@ -312,23 +313,7 @@ char * tp_string_getptr(tp_obj s);
  * that needs to be freed by tp_free
  *
  */
-tp_inline static
-char * tp_cstr(TP, tp_obj v) {
-    char * buffer;
-    char const * val;
-    if(v.type.typeid != TP_STRING) {
-        val = "NOT A STRING";
-        buffer = tp_malloc(tp, strlen(val) + 1);
-        memcpy(buffer, val, strlen(val) + 1);
-    } else {
-        val = v.string.info->s;
-        buffer = tp_malloc(tp, tp_string_len(v) + 1);
-        memset(buffer, 0, tp_string_len(v) + 1);
-        memcpy(buffer, val, tp_string_len(v));
-    }
-    
-    return buffer;
-}
+char * tp_cstr(TP, tp_obj v);
 
 
 tp_inline static
