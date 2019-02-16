@@ -2,6 +2,7 @@ tp_obj tp_copy(TP, tp_obj obj);
 void   tp_set(TP, tp_obj, tp_obj, tp_obj);
 int    tp_iget(TP,tp_obj *r, tp_obj self, tp_obj k);
 
+tp_obj tp_mget(TP, tp_obj, tp_obj);
 tp_obj tp_get(TP, tp_obj, tp_obj);
 tp_obj tp_has(TP, tp_obj self, tp_obj k);
 tp_obj tp_len(TP, tp_obj);

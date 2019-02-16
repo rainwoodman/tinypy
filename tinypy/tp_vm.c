@@ -149,7 +149,7 @@ void tp_return(TP, tp_obj v) {
 }
 
 enum {
-    TP_IEOF,TP_IADD,TP_ISUB,TP_IMUL,TP_IDIV,TP_IPOW,TP_IBITAND,TP_IBITOR,TP_ICMP,TP_IGET,TP_ISET,
+    TP_IEOF,TP_IADD,TP_ISUB,TP_IMUL,TP_IDIV,TP_IPOW,TP_IBITAND,TP_IBITOR,TP_ICMP,TP_IMGET,TP_IGET,TP_ISET,
     TP_INUMBER,TP_ISTRING,TP_IGGET,TP_IGSET,TP_IMOVE,TP_IDEF,TP_IPASS,TP_IJUMP,TP_ICALL,
     TP_IRETURN,TP_IIF,TP_IDEBUG,TP_IEQ,TP_ILE,TP_ILT,TP_IDICT,TP_ILIST,TP_INONE,TP_ILEN,
     TP_ILINE,TP_IPARAMS,TP_IIGET,TP_IFILE,TP_INAME,TP_INE,TP_IHAS,TP_IRAISE,TP_ISETJMP,
@@ -215,6 +215,7 @@ int tp_step(TP) {
         case TP_IIF: if (tp_true(tp,RA)) { cur += 1; } break;
         case TP_IIFN: if (!tp_true(tp,RA)) { cur += 1; } break;
         case TP_IGET: RA = tp_get(tp,RB,RC); GA; break;
+        case TP_IMGET: RA = tp_mget(tp,RB,RC); GA; break;
         case TP_IITER:
             if (RC.number.val < tp_len(tp,RB).number.val) {
                 RA = tp_iter(tp,RB,RC); GA;

@@ -44,8 +44,7 @@ int _tp_lookup(TP, tp_obj self, tp_obj k, tp_obj *meta) {
     if ((self.type.typeid == TP_DICT && self.type.magic == TP_DICT_OBJECT) || \
         (self.type.typeid == TP_STRING || self.type.typeid == TP_LIST ) \
         ) { \
-        tp_obj meta; if (_tp_lookup(tp,self,tp_string_atom(tp, name),&meta)) {
-
+        tp_obj meta; if (_tp_lookup(tp, self, tp_string_atom(tp, name),&meta)) {
 #define TP_META_END \
         } \
     }
