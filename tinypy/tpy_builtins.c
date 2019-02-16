@@ -408,8 +408,21 @@ void tp_module_builtins_init(TP) {
     tp_set(tp, o, tp_string_atom(tp, "__call__"), tp_function(tp, tpy_object_call));
     tp_set(tp, o, tp_string_atom(tp, "__new__"),  tp_function(tp, tpy_object_new));
     tp_set(tp, builtins, tp_string_atom(tp, "object"), o);
-
+    
     tp_set(tp, tp->modules, tp_string_atom(tp, "tinypy.language.builtins"), builtins);
+
+    tp_set(tp, tp->_list_meta, tp_string_atom(tp, "append"), tp_function(tp, tpy_list_append));
+    tp_set(tp, tp->_list_meta, tp_string_atom(tp, "pop"), tp_function(tp, tpy_list_pop));
+    tp_set(tp, tp->_list_meta, tp_string_atom(tp, "index"), tp_function(tp, tpy_list_index));
+    tp_set(tp, tp->_list_meta, tp_string_atom(tp, "sort"), tp_function(tp, tpy_list_sort));
+    tp_set(tp, tp->_list_meta, tp_string_atom(tp, "extend"), tp_function(tp, tpy_list_extend));
+
+    tp_set(tp, tp->_string_meta, tp_string_atom(tp, "join"), tp_function(tp, tpy_str_join));
+    tp_set(tp, tp->_string_meta, tp_string_atom(tp, "split"), tp_function(tp, tpy_str_split));
+    tp_set(tp, tp->_string_meta, tp_string_atom(tp, "index"), tp_function(tp, tpy_str_index));
+    tp_set(tp, tp->_string_meta, tp_string_atom(tp, "strip"), tp_function(tp, tpy_str_strip));
+    tp_set(tp, tp->_string_meta, tp_string_atom(tp, "replace"), tp_function(tp, tpy_str_replace));
+
     tp->builtins = builtins;
 }
 
