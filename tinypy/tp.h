@@ -43,8 +43,16 @@
    #define tp_free(x)*/
 
 enum TPTypeID {
-    TP_NONE,TP_NUMBER,TP_STRING,TP_DICT,
-    TP_LIST,TP_FUNC,TP_DATA,
+    TP_NONE = 0,
+    TP_NUMBER = 1,
+    TP_GC_TRACKED = 10,
+    TP_FUNC = 10,
+    TP_DATA = 11,
+
+    TP_HAS_META = 100,
+    TP_STRING = 100,
+    TP_DICT = 101,
+    TP_LIST = 102,
 };
 
 typedef struct TPTypeInfo {
@@ -94,7 +102,7 @@ typedef double tp_num;
  */
 typedef union tp_obj {
     TPTypeInfo type;
-    struct { TPTypeInfo type; int *data; } gci;
+    struct { TPTypeInfo type; int * gci; } gc;
     struct { TPTypeInfo type; tp_num val; } number;
     struct { TPTypeInfo type; struct tpd_list *val; } list;
     struct { TPTypeInfo type; struct tpd_dict *val; } dict;
@@ -103,8 +111,14 @@ typedef union tp_obj {
     struct { TPTypeInfo type; struct tpd_data *info; void *val; } data;
 } tp_obj;
 
+typedef struct tpd_obj {
+    int gci;
+    tp_obj meta;
+} tpd_obj;
+
 typedef struct tpd_string {
     int gci;
+    tp_obj meta;
     tp_obj base;
     char * s;
     int len;
@@ -112,6 +126,7 @@ typedef struct tpd_string {
 
 typedef struct tpd_list {
     int gci;
+    tp_obj meta;
     tp_obj *items;
     int len;
     int alloc;
@@ -126,13 +141,13 @@ typedef struct tpd_item {
 
 typedef struct tpd_dict {
     int gci;
+    tp_obj meta;
     tpd_item *items;
     int len;
     int alloc;
     int cur;
     int mask;
     int used;
-    tp_obj meta;
 } tpd_dict;
 
 typedef struct tpd_func {

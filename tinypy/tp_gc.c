@@ -6,8 +6,8 @@
    void tp_delete(TP,tp_obj v) { }*/
 
 void tp_grey(TP, tp_obj v) {
-    if (v.type.typeid < TP_STRING || (!v.gci.data) || *v.gci.data) { return; }
-    *v.gci.data = 1;
+    if (v.type.typeid < TP_GC_TRACKED || (!v.gc.gci) || *v.gc.gci) { return; }
+    *v.gc.gci = 1;
     if (v.type.typeid == TP_DATA) {
         /* terminal types, no need to follow */
         tpd_list_appendx(tp, tp->black, v);
@@ -48,7 +48,7 @@ void tp_reset(TP) {
     int n;
     tpd_list *tmp;
     for (n=0; n<tp->black->len; n++) {
-        *tp->black->items[n].gci.data = 0;
+        *tp->black->items[n].gc.gci = 0;
     }
     tmp = tp->white;
     tp->white = tp->black;
@@ -102,7 +102,7 @@ void tp_collect(TP) {
     int n;
     for (n=0; n<tp->white->len; n++) {
         tp_obj r = tp->white->items[n];
-        if (*r.gci.data) { continue; }
+        if (*r.gc.gci) { continue; }
         tp_delete(tp,r);
     }
     tp->white->len = 0;
