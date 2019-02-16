@@ -281,7 +281,6 @@ void   tp_grey(TP,tp_obj);
  */
 void   _tp_raise(TP,tp_obj);
 #define tp_raise(r, obj) { \
-    abort(); \
     _tp_raise(tp, obj); \
     return r; \
 }

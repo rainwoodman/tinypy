@@ -98,10 +98,12 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
 static tp_obj
 _tp_get(TP, tp_obj self, tp_obj k, int mget);
 
+/* look up using []; prefer members; and fall back to meta dict */
 tp_obj tp_get(TP, tp_obj self, tp_obj k) {
     return _tp_get(tp, self, k, 0);
 }
 
+/* look up using .; prefer meta dict and attrs */
 tp_obj tp_mget(TP, tp_obj self, tp_obj k) {
     return _tp_get(tp, self, k, 1);
 }
@@ -126,9 +128,6 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
                 return tp_call(tp, meta, tp_params_v(tp,1,k));
             TP_META_END;
             if (self.type.magic != TP_DICT_RAW && _tp_lookup(tp, self, k, &r)) {
-                if(k.type.typeid == TP_STRING && 0 == tp_string_cmp(k, tp_string_atom(tp, "update"))) {
-                    printf("looking for update\n");
-                }
                 return r;
             }
             return tp_dict_get(tp, self, k);

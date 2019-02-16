@@ -1,5 +1,6 @@
-from tinypy.language.builtins import *
 import sys
+import os
+from tinypy.language.builtins import *
 
 class Exception:
     def __init__(self, message):
@@ -13,7 +14,7 @@ class ImportError(Exception):
 def dict(**kwargs):
     r = {}
     if istype(kwargs, 'dict'):
-        merge(r, kwargs)
+        r.update(kwargs)
     else:
         for item in kwargs:
             k, v = item
@@ -37,7 +38,7 @@ def format(a, b):
             r.append(str(b[name]))
             i = j
         i = i + 1
-    return join(r) 
+    return ''.join(r) 
 
 def compile(s, fname):
     # must be here because at import time of builtin,
@@ -56,14 +57,14 @@ def __import__(name):
     tpc = name+".tpc"
     if exists(py):
         if not exists(tpc) or mtime(py) > mtime(tpc):
-            s = load(py)
+            s = os.load(py)
             code = compile(s,py)
             save(tpc,code)
 
     if not exists(tpc):
         raise ImportError("Cannot import the compiled script from " +  tpc)
 
-    code = load(tpc)
+    code = os.load(tpc)
     g = {'__name__':name,'__code__':code}
     g['__dict__'] = g
     sys.modules[name] = g
@@ -74,7 +75,7 @@ def import_fname(fname,name):
     g = {}
     g['__name__'] = name
     sys.modules[name] = g
-    s = load(fname)
+    s = os.load(fname)
     code = compile(s,fname)
     g['__code__'] = code
     exec(code, g)

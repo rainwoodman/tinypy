@@ -66,11 +66,12 @@ void tp_enter_frame(TP, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
     tp->frames[tp->cur] = f;
 }
 
-void _tp_raise(TP,tp_obj e) {
+void _tp_raise(TP, tp_obj e) {
     /*char *x = 0; x[0]=0;*/
     if (!tp || !tp->jmp) {
 #ifndef CPYTHON_MOD
         tp->echo("\nException:\n", -1); tp_echo(tp,e); tp->echo("\n", -1);
+        abort(); \
         exit(-1);
 #else
         tp->ex = e;

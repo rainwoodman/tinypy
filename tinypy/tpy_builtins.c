@@ -66,18 +66,6 @@ tp_obj tpy_range(TP) {
     return r;
 }
 
-/* Function: tp_system
- *
- * The system builtin. A grave security flaw. If your version of tinypy
- * enables this, you better remove it before deploying your app :P
- */
-tp_obj tpy_system(TP) {
-    char * s = tp_cstr(tp, TP_STR());
-    int r = system(s);
-    tp_free(tp, s);
-    return tp_number(r);
-}
-
 tp_obj tpy_istype(TP) {
     tp_obj v = TP_OBJ();
     tp_obj t = TP_STR();
@@ -152,27 +140,6 @@ tp_num _roundf(tp_num v) {
 }
 tp_obj tpy_round(TP) {
     return tp_number(_roundf(tpy_float(tp).number.val));
-}
-
-tp_obj tpy_exists(TP) {
-    char * fname = tp_cstr(tp, TP_STR());
-    struct stat stbuf;
-    tp_obj r = tp_number(!stat(fname, &stbuf));
-    tp_free(tp, fname);
-    return r;
-}
-tp_obj tpy_mtime(TP) {
-    char * fname = tp_cstr(tp, TP_STR());
-    struct stat stbuf;
-    tp_obj r;
-    if (!stat(fname, &stbuf)) {
-        tp_free(tp, fname);
-        r = tp_number(stbuf.st_mtime);
-        return r;
-    } else {
-        tp_free(tp, fname);
-        tp_raise(tp_None, tp_string_atom(tp, "(tp_mtime) IOError: ?"));
-    }
 }
 
 /* Function: tp_setmeta
@@ -303,21 +270,6 @@ tp_obj tpy_import(TP) {
     return tp_None;
 }
 
-tp_obj tpy_load(TP) {
-    char * fname = tp_cstr(tp, TP_STR());
-    tp_obj r = tp_load(tp, fname);
-    tp_free(tp, fname);
-    return r;
-}
-
-tp_obj tpy_save(TP) {
-    char * fname = tp_cstr(tp, TP_STR());
-    tp_obj v = TP_OBJ();
-    tp_save(tp, fname, v);
-    tp_free(tp, fname);
-    return tp_None;
-}
-
 tp_obj tpy_exec(TP) {
     tp_obj code = TP_OBJ();
     tp_obj globals = TP_OBJ();
@@ -363,15 +315,15 @@ void tp_module_builtins_init(TP) {
     {"print",tpy_print}, {"range",tpy_range}, {"min",tpy_min},
     {"max",tpy_max}, {"bind", tpy_bind}, {"copy",tpy_copy},
     {"__import__",tpy_import}, {"len",tpy_len}, {"assert", tpy_assert},
-    {"str", tpy_str}, {"float",tpy_float}, {"system",tpy_system},
+    {"str", tpy_str}, {"float",tpy_float}, 
     {"istype",tpy_istype}, {"isinstance",tpy_isinstance}, 
-    {"chr",tpy_chr}, {"save",tpy_save},
-    {"load",tpy_load}, {"read",tpy_load},
+    {"chr",tpy_chr}, 
     {"fpack",tpy_fpack}, {"funpack", tpy_funpack},
     {"abs",tpy_abs},
-    {"int",tpy_int}, {"eval",tpy_eval}, {"exec",tpy_exec}, {"exists",tpy_exists},
-    {"mtime",tpy_mtime}, {"number",tpy_float}, {"round",tpy_round},
-    {"ord",tpy_ord}, {"merge",tpy_dict_merge}, {"getraw",tpy_getraw},
+    {"int",tpy_int}, {"eval",tpy_eval}, {"exec",tpy_exec},
+
+    {"number",tpy_float}, {"round",tpy_round},
+    {"ord",tpy_ord}, {"getraw",tpy_getraw},
     {"setmeta",tpy_setmeta}, {"getmeta",tpy_getmeta},
     {"bool", tpy_bool},
     {"repr", tpy_repr},
