@@ -11,15 +11,15 @@ tp_obj tpy_str_join(TP) {
         l += tp_string_len(tp_str(tp, val.list.val->items[i]));
     }
     r = tp_string_t(tp,l);
-    s = r.string.info->s;
+    s = tp_string_getptr(r);
     l = 0;
     for (i=0; i<val.list.val->len; i++) {
         tp_obj e;
         if (i!=0) {
-            memcpy(s+l,delim.string.info->s, tp_string_len(delim)); l += tp_string_len(delim);
+            memcpy(s+l, tp_string_getptr(delim), tp_string_len(delim)); l += tp_string_len(delim);
         }
         e = tp_str(tp, val.list.val->items[i]);
-        memcpy(s+l,e.string.info->s,tp_string_len(e)); l += tp_string_len(e);
+        memcpy(s+l, tp_string_getptr(e), tp_string_len(e)); l += tp_string_len(e);
     }
     return r;
 }
@@ -66,12 +66,12 @@ tp_obj tpy_ord(TP) {
     if (tp_string_len(s) != 1) {
         tp_raise(tp_None,tp_string_atom(tp, "(tp_ord) TypeError: ord() expected a character"));
     }
-    return tp_number((unsigned char)s.string.info->s[0]);
+    return tp_number((unsigned char)tp_string_getptr(s)[0]);
 }
 
 tp_obj tpy_str_strip(TP) {
     tp_obj o = TP_TYPE(TP_STRING);
-    char const *v = o.string.info->s; int l = tp_string_len(o);
+    char const *v = tp_string_getptr(o); int l = tp_string_len(o);
     int i; int a = l, b = 0;
     tp_obj r;
     char *s;
@@ -82,7 +82,7 @@ tp_obj tpy_str_strip(TP) {
     }
     if ((b-a) < 0) { return tp_string_atom(tp, ""); }
     r = tp_string_t(tp,b-a);
-    s = r.string.info->s;
+    s = tp_string_getptr(r);
     memcpy(s,v+a,b-a);
     return r;
 }
@@ -107,19 +107,19 @@ tp_obj tpy_str_replace(TP) {
 /*     fprintf(stderr,"ns: %d\n",n); */
     l = tp_string_len(s) + n * (tp_string_len(v)-tp_string_len(k));
     rr = tp_string_t(tp, l);
-    r = rr.string.info->s;
+    r = tp_string_getptr(rr);
     d = r;
     z = p = s;
     while ((i = tp_str_index(p,k)) != -1) {
         p.string.info->s += i;
         p.string.info->len -= i;
-        memcpy(d,z.string.info->s,c=(p.string.info->s-z.string.info->s)); d += c;
+        memcpy(d,tp_string_getptr(z), c=(tp_string_getptr(p) - tp_string_getptr(z))); d += c;
         p.string.info->s += tp_string_len(k);
         p.string.info->len -= tp_string_len(k);
-        memcpy(d,v.string.info->s,tp_string_len(v)); d += tp_string_len(v);
+        memcpy(d,tp_string_getptr(v), tp_string_len(v)); d += tp_string_len(v);
         z = p;
     }
-    memcpy(d,z.string.info->s,(s.string.info->s + tp_string_len(s)) - z.string.info->s);
+    memcpy(d, tp_string_getptr(z), (tp_string_getptr(s) + tp_string_len(s)) - tp_string_getptr(z));
 
     return rr;
 }

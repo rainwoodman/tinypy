@@ -4,7 +4,7 @@ void tp_save(TP, const char * fname, tp_obj v) {
     if (!f) {
         tp_raise(, tp_string_atom(tp, "(tp_save) IOError: ?"));
     }
-    fwrite(v.string.info->s, tp_string_len(v), 1, f);
+    fwrite(tp_string_getptr(v), tp_string_len(v), 1, f);
     fclose(f);
 }
 
@@ -21,7 +21,7 @@ tp_obj tp_load(TP, const char * fname) {
         tp_raise(tp_None,tp_string_atom(tp, "(tp_load) IOError: ?"));
     }
     r = tp_string_t(tp,l);
-    s = r.string.info->s;
+    s = tp_string_getptr(r);
     fread(s,1,l,f);
 /*    if (rr !=l) { printf("hmmn: %d %d\n",rr,(int)l); }*/
     fclose(f);

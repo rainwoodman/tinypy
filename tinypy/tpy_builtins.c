@@ -116,7 +116,7 @@ tp_obj tpy_float(TP) {
     if (type == TP_NUMBER) { return v; }
     if (type == TP_STRING && tp_string_len(v) < 32) {
         char s[32]; memset(s,0,tp_string_len(v)+1);
-        memcpy(s,v.string.info->s,tp_string_len(v));
+        memcpy(s, tp_string_getptr(v), tp_string_len(v));
         if (strchr(s,'.')) { return tp_number(atof(s)); }
         return(tp_number(strtol(s,0,ord)));
     }
@@ -126,7 +126,7 @@ tp_obj tpy_float(TP) {
 tp_obj tpy_fpack(TP) {
     tp_num v = TP_NUM();
     tp_obj r = tp_string_t(tp,sizeof(tp_num));
-    *(tp_num*)r.string.info->s = v;
+    *(tp_num*) tp_string_getptr(r) = v;
     return r;
 }
 
@@ -135,7 +135,7 @@ tp_obj tpy_funpack(TP) {
     if (tp_string_len(v) != sizeof(tp_num)) {
         tp_raise(tp_None, tp_string_atom(tp, "funpack ValueError: length of string is incorrect."));
     }
-    tp_num r = *((tp_num*) v.string.info->s);
+    tp_num r = *((tp_num*) tp_string_getptr(v));
     return tp_number(r);
 }
 

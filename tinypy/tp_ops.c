@@ -148,7 +148,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
                 int l = tp_string_len(self);
                 int n = k.number.val;
                 n = (n<0?l+n:n);
-                if (n >= 0 && n < l) { return tp_string_from_const(tp, tp->chars[(unsigned char)self.string.info->s[n]],1); }
+                if (n >= 0 && n < l) { return tp_string_from_const(tp, tp->chars[(unsigned char) tp_string_getptr(self)[n]], 1); }
             } else if (k.type.typeid == TP_STRING) {
                 if (_tp_lookup(tp, self, k, &r)) { return r;}
             }
@@ -187,7 +187,7 @@ tp_obj tp_copy(TP, tp_obj self) {
         return self;
     }
     if (type == TP_STRING) {
-        return tp_string_from_buffer(tp, self.string.info->s, tp_string_len(self));
+        return tp_string_from_buffer(tp, tp_string_getptr(self), tp_string_len(self));
     }
     if (type == TP_LIST) {
         return tp_list_copy(tp, self);

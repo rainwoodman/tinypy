@@ -110,7 +110,7 @@ typedef union tp_obj {
     struct { TPTypeInfo type; struct tpd_obj *info; } obj;
     struct { TPTypeInfo type; struct tpd_list *val; } list;
     struct { TPTypeInfo type; struct tpd_dict *val; } dict;
-    struct { TPTypeInfo type; struct tpd_string *info; } string;
+    struct { TPTypeInfo type; struct tpd_string *info; char * val;} string;
 } tp_obj;
 
 typedef struct tpd_obj {
@@ -304,6 +304,8 @@ void   _tp_raise(TP,tp_obj);
  */
 tp_obj tp_string_atom(TP, const char * v);
 int tp_string_len(tp_obj s);
+char * tp_string_getptr(tp_obj s);
+
 /* Function: tp_cstr
  *
  * Fill a C string from a tinypy string, and return as a buffer
