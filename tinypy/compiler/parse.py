@@ -260,7 +260,7 @@ def from_nud(t):
     # relative import
     s = ''
     while True:
-        if check(P.token, 'get'):
+        if check(P.token, 'mget'):
             s = s + '.'
             advance()
         elif check(P.token, 'name'):
@@ -280,7 +280,7 @@ def import_nud(t):
     items = t.items = []
     s = ''
     while True:
-        if check(P.token, 'get'):
+        if check(P.token, 'mget'):
             s = s + '.'
             advance()
         elif check(P.token, 'name'):
@@ -399,7 +399,7 @@ base_dmap = {
     '[':{'lbp':70,'nud':list_nud,
         'bp':80,'led':get_led,},
     '{':{'lbp':0,'nud':dict_nud,},
-    '.':{'lbp':80,'bp':80,'led':dot_led,'type':'get',},
+    '.':{'lbp':80,'bp':80,'led':dot_led,'type':'mget',},
     'break':{'lbp':0,'nud':itself,'type':'break'},
     'pass':{'lbp':0,'nud':itself,'type':'pass'},
     'continue':{'lbp':0,'nud':itself,'type':'continue'},

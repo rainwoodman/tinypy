@@ -635,6 +635,10 @@ def do_get(t,r=None):
     items = t.items
     return infix(GET,items[0],items[1],r)
 
+def do_mget(t,r=None):
+    items = t.items
+    return infix(MGET,items[0],items[1],r)
+
 def do_break(t): jump(D.tstack[-1],'break')
 def do_continue(t): jump(D.tstack[-1],'continue')
 def do_pass(t): code(PASS)
@@ -658,7 +662,7 @@ fmap = {
 rmap = {
     'list':do_list, 'tuple':do_list, 'dict':do_dict, 'slice':do_list,
     'comp':do_comp, 'name':do_name,'symbol':do_symbol,'number':do_number,
-    'string':do_string,'get':do_get, 'call':do_call, 'reg':do_reg,
+    'string':do_string,'get':do_get, 'mget':do_mget, 'call':do_call, 'reg':do_reg,
 }
 
 def do(t,r=None):
