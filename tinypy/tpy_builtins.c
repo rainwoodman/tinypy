@@ -262,11 +262,11 @@ tp_obj tpy_bool(TP) {
 /* FIXME: add support to import members of a module into a namespace */
 tp_obj tpy_import(TP) {
     tp_obj mod = TP_OBJ();
+
     if (tp_has(tp,tp->modules,mod).number.val) {
         return tp_get(tp,tp->modules,mod);
     }
     
-    /* r = _tp_import(tp,tp_add(tp,mod,tp_string_atom(tp, ".tpc")),mod,tp_None); */
     return tp_None;
 }
 
@@ -275,10 +275,7 @@ tp_obj tpy_exec(TP) {
     tp_obj globals = TP_OBJ();
     tp_obj r = tp_None;
 
-    tp_enter_frame(tp, globals, code, &r);
-    tp_run_frame(tp);
-
-    return r;
+    return tp_exec(tp, code, globals);
 }
 
 tp_obj tpy_eval(TP) {
@@ -323,14 +320,9 @@ tp_obj tpy_compile(TP) {
 tp_obj tpy_module(TP) {
     tp_obj name = TP_OBJ();
     tp_obj code = TP_OBJ();
-    tp_obj module = tp_dict_t(tp);
-    
-    tp_set(tp, module, tp_string_atom(tp, "__name__"), name);
-    tp_set(tp, module, tp_string_atom(tp, "__code__"), code);
-    tp_set(tp, tp->modules, name, module);
-    tp_exec(tp, code, module);
-    printf("here\n");
-    return module;
+    tp_obj fname = TP_OBJ();
+
+    return tp_import(tp, name, code, fname);
 }
 
 void tp_module_builtins_init(TP) {

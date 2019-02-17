@@ -322,7 +322,9 @@ int tp_step(TP) {
 tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
     tp_obj r = tp_None;
     tp_enter_frame(tp, globals, code, &r);
-    tp_run_frame(tp);
+    if (!tp->jmp) {
+        tp_run_frame(tp);
+    }
     return r;
 }
 

@@ -383,7 +383,7 @@ tp_obj tp_params(TP);
 tp_obj tp_params_n(TP, int n, tp_obj argv[]);
 tp_obj tp_params_v(TP, int n, ...);
 
-tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code);
+tp_obj tp_import(TP, tp_obj name, tp_obj code, tp_obj fname);
 tp_obj tp_import_from_buffer(TP, const char * fname, const char * name, void *codes, int len);
 tp_obj tp_ez_call(TP, const char *mod, const char *func, tp_obj params);
 tp_obj tp_eval_from_cstr(TP, const char *text, tp_obj globals);
