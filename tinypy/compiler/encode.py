@@ -351,47 +351,45 @@ def do_import(t):
     mod.type = 'string'
     v = do_call(Token(t.pos,'call',None,[
         Token(t.pos,'name','__import__'),
-        mod]))
+        mod,
+        Token(t.pos, 'symbol', 'None')]
+        ))
 
     name.type = 'name'
     do_set_ctx(name,Token(t.pos,'reg',v))
 
 def do_from(t):
     mod = t.items[0]
+    items = t.items[1]
     mod.type = 'string'
+
+    if items.type == 'args':
+        # it really shouldn't be args -- need to fix the parser.
+        if items.val == '*':
+            items.type = 'string'
+    elif items.type == 'name':
+        items.type = 'string'
+        items = Token(items.pos, 'tuple', None, [items])
+    elif items.type ==  'tuple':
+        for item in items.items:
+            item.type = 'string'
+    else: 
+        tokenize.u_error('SyntaxError', D.code, t.pos)
+
     v = do(Token(t.pos,'call',None,[
         Token(t.pos,'name','__import__'),
-        mod]))
+        mod,
+        items,
+        ]))
 
     un_tmp(v)
-    items = t.items[1]
 
-    if items.val == '*':
-        # FIXME: move this logic into __import__
-        free_tmp(do(Token(t.pos, 'call', None, [
-                Token(t.pos, 'name', '__merge__'),
-                Token(t.pos, 'name', '__dict__'),
-                Token(t.pos, 'reg', v) #REG
-                ]
-            )))
-                
-    else:
-        if items.type == 'name':
-            items.type = 'string'
-            items = [items]
-        elif items.type == 'tuple':
-            items = items.items
-        else:
-            tokenize.u_error('SyntaxError', D.code, t.pos)
-    
-        r = []
-        for item in items:
-            item.type = 'string'
-            free_tmp(do_set_ctx(
-                Token(t.pos, 'name', item.val),
-                Token(t.pos, 'get', None,[ Token(t.pos,'reg',v),item])
-                )
-            ) #REG
+    free_tmp(do(Token(t.pos, 'call', None, [
+            Token(t.pos, 'name', '__merge__'),
+            Token(t.pos, 'name', '__dict__'),
+            Token(t.pos, 'reg', v) #REG
+            ]
+        )))
 
     free_reg(v)
  

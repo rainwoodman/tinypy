@@ -1,6 +1,7 @@
 /* File: Builtins
  * Builtin tinypy functions.
  */
+tp_obj tpy_print(TP);
 
 tp_obj tpy_bind(TP) {
     tp_obj r = TP_TYPE(TP_FUNC);
@@ -255,18 +256,78 @@ tp_obj tpy_bool(TP) {
     return (tp_number(tp_true(tp, v)));
 }
 
-/* the temporary import function used before the
+/* import a module or members of a module
  * compiler is initialized; 
  * it only loads existing modules from the module, and returns None
- * on failure. */
-/* FIXME: add support to import members of a module into a namespace */
+ * on failure. 
+ * 
+ * Python : 
+ *
+ * __import__(modname, members)
+ *
+ * Parameters
+ * ----------
+ * modname : string; name of the module
+ * members : None, list or '*'. names to import.
+ *
+ * Returns
+ * -------
+ *  module, if members is None
+ *  dict constructed from names on the list and members of the module.
+ *
+ *  If members is '*', the list includes every member that does not start with '_'.
+ *
+ * */
 tp_obj tpy_import(TP) {
-    tp_obj mod = TP_OBJ();
+    tp_obj modname = TP_OBJ();
+    tp_obj member = TP_OBJ();
 
-    if (tp_has(tp,tp->modules,mod).number.val) {
-        return tp_get(tp,tp->modules,mod);
+    if (!tp_has(tp, tp->modules, modname).number.val) {
+        tp_raise(tp_None, tp_string_atom(tp, "(tpy_import) cannot import module"));
     }
-    tp_raise(tp_None, tp_string_atom(tp, "(tpy_import) cannot import module"));
+
+    tp_obj mod = tp_get(tp, tp->modules, modname);
+    if (member.type.typeid == TP_NONE) {
+        /* the entire module */
+        return mod;
+    }
+
+    /* import members as a dict */
+    tp_obj ret = tp_dict_t(tp);
+
+    if (member.type.typeid == TP_STRING) {
+
+        /* from ... import * */
+        if(0 == tp_string_cmp(member, tp_string_atom(tp, "*"))) {
+            int i;
+            for(i = 0; i < mod.dict.val->len; i ++) {
+                tpd_item item = mod.dict.val->items[
+                    tpd_dict_next(tp, mod.dict.val)
+                    ];
+                tp_obj k = item.key;
+                tp_obj v = item.val;
+                if (k.type.typeid != TP_STRING) continue;
+                if (tp_string_len(k) == 0) continue;
+                char * p = tp_string_getptr(k);
+                if (p[0] == '_') continue;
+                tp_dict_set(tp, ret, k, v);
+            }
+            return ret;
+        }
+    }
+
+    /* from ... import a, b, c */
+    if (member.type.typeid == TP_LIST) {
+        int i;
+        for (i = 0; i < member.list.val->len; i ++) {
+            tp_obj k = member.list.val->items[i];
+            tp_obj v = tp_mget(tp, mod, k);
+            tp_dict_set(tp, ret, k, v);
+        }
+        return ret;
+    }
+
+    tp_raise(tp_None, tp_string_atom(tp, "(tpy_import) cannot import the given member "));
     return tp_None;
 }
 
