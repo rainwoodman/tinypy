@@ -15,7 +15,7 @@ tp_obj tp_ez_call(TP, const char *mod, const char *func, tp_obj params) {
  *
  */
 tp_obj tp_compile(TP, tp_obj text, tp_obj fname) {
-    return tp_ez_call(tp, "tinypy.compiler.py2bc", "_compile", tp_params_v(tp, 2, text, fname));
+    return tp_ez_call(tp, "tinypy.compiler.py2bc", "compile", tp_params_v(tp, 2, text, fname));
 }
 
 tp_obj tp_args(TP, int argc, char *argv[]) {

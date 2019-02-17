@@ -5,7 +5,6 @@
 #include "compiler/parse.c"
 #include "compiler/tokenize.c"
 #include "compiler/py2bc.c"
-#include "compiler/run.c"
 
 void tp_module_compiler_init(TP) {
     tp_import_from_buffer(tp, 0, "tinypy.compiler.boot", _tp_boot_tpc,  sizeof(_tp_boot_tpc));
@@ -13,5 +12,4 @@ void tp_module_compiler_init(TP) {
     tp_import_from_buffer(tp, 0, "tinypy.compiler.parse", _tp_parse_tpc, sizeof(_tp_parse_tpc));
     tp_import_from_buffer(tp, 0, "tinypy.compiler.encode", _tp_encode_tpc, sizeof(_tp_encode_tpc));
     tp_import_from_buffer(tp, 0, "tinypy.compiler.py2bc", _tp_py2bc_tpc, sizeof(_tp_py2bc_tpc));
-    tp_import_from_buffer(tp, 0, "tinypy.compiler.run", _tp_run_tpc, sizeof(_tp_run_tpc));
 }
