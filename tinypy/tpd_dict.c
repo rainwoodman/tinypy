@@ -30,7 +30,7 @@ void tpd_dict_hashset(TP, tpd_dict *self, int hash, tp_obj k, tp_obj v) {
 void tpd_dict_realloc(TP, tpd_dict *self, int len) {
     tpd_item *items = self->items;
     int i,alloc = self->alloc;
-    len = _tp_max(8,len);
+    len = _tp_min(8,len);
 
     self->items = (tpd_item*)tp_malloc(tp, len*sizeof(tpd_item));
     self->alloc = len; self->mask = len-1;
