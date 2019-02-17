@@ -1,6 +1,7 @@
+from tinypy.language.builtins import *
+"""
 import sys
 import os
-from tinypy.language.builtins import *
 
 class Exception:
     def __init__(self, message):
@@ -10,7 +11,8 @@ class Exception:
 
 class ImportError(Exception):
     pass    
-
+"""
+"""
 def format(a, b):
     r = []
     i = 0
@@ -29,4 +31,4 @@ def format(a, b):
             i = j
         i = i + 1
     return ''.join(r) 
-
+"""

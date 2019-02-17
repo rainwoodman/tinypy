@@ -1,6 +1,6 @@
 #include "tp.h"
 
-#include "corelib/builtins.c"
+#include "runtime/builtins.c"
 
 void tp_save(TP, const char * fname, tp_obj v) {
     FILE *f;
@@ -97,5 +97,4 @@ void tp_module_os_init (TP) {
 
 void tp_module_corelib_init(TP) {
     tp_module_os_init(tp);
-    tp->builtins = tp_import_from_buffer(tp, 0, "__builtins__", _tp_builtins_tpc,  sizeof(_tp_builtins_tpc));
 }

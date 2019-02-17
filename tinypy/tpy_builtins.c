@@ -326,7 +326,7 @@ tp_obj tpy_module(TP) {
 }
 
 tp_obj tpy_dict(TP) {
-    return TP_TYPE(TP_DICT);
+    return tp_dict_copy(tp, TP_TYPE(TP_DICT));
 }
 
 void tp_module_builtins_init(TP) {
@@ -384,6 +384,7 @@ void tp_module_builtins_init(TP) {
     tp_set(tp, builtins, tp_string_atom(tp, "object"), o);
     
     tp_set(tp, tp->modules, tp_string_atom(tp, "tinypy.language.builtins"), builtins);
+    tp_set(tp, tp->modules, tp_string_atom(tp, "__builtins__"), builtins);
 
     tp_set(tp, tp->_list_meta, tp_string_atom(tp, "append"), tp_function(tp, tpy_list_append));
     tp_set(tp, tp->_list_meta, tp_string_atom(tp, "pop"), tp_function(tp, tpy_list_pop));

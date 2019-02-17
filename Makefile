@@ -1,13 +1,13 @@
 TINYPYC=./tpc
 
-CORELIB_FILES=builtins.py
+RUNTIME_FILES=builtins.py
 COMPILER_FILES=boot.py encode.py parse.py py2bc.py tokenize.py run.py
 
 COMPILER_C_FILES=$(COMPILER_FILES:%.py=tinypy/compiler/%.c)
-CORELIB_C_FILES=$(CORELIB_FILES:%.py=tinypy/corelib/%.c)
+RUNTIME_C_FILES=$(RUNTIME_FILES:%.py=tinypy/runtime/%.c)
 
-VMLIB_FILES=tp.c dummy-compiler.c corelib.c
-TPLIB_FILES=tp.c compiler.c corelib.c
+VMLIB_FILES=tp.c dummy-compiler.c runtime.c
+TPLIB_FILES=tp.c compiler.c runtime.c
 
 MODULES=math random re
 MODULES_A_FILES=$(MODULES:%=modules/%.a)
@@ -36,7 +36,7 @@ bc: $(BC_FILES)
 
 tinypy/tp.o : tinypy/tp.c tinypy/tp*.c tinypy/tp*.h
 tinypy/compiler.o : $(COMPILER_C_FILES) tinypy/compiler.c tinypy/*.h
-tinypy/corelib.o : $(CORELIB_C_FILES) tinypy/corelib.c tinypy/*.h
+tinypy/runtime.o : $(RUNTIME_C_FILES) tinypy/runtime.c tinypy/*.h
 #
 # tpvm only takes compiled byte codes (.tpc files)
 tpvm : $(VMLIB_FILES:%.c=tinypy/%.o) tinypy/vmmain.o modules/modules.a
@@ -48,7 +48,7 @@ tpy : $(TPLIB_FILES:%.c=tinypy/%.o) tinypy/tpmain.o modules/modules.a
 
 clean:
 	rm -rf tpy tpvm
-	rm -rf $(CORELIB_C_FILES)
+	rm -rf $(RUNTIME_C_FILES)
 	rm -rf $(COMPILER_C_FILES)
 	rm -rf tinypy/*.o
 	rm -rf modules/*/*.o
