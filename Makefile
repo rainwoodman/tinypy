@@ -32,8 +32,6 @@ modules/modules.a: modules/modules.o \
 			$(MODULES_C_FILES:%.c=%.o)
 	$(AR) rcu $@ $^
 
-bc: $(BC_FILES)
-
 tinypy/tp.o : tinypy/tp.c tinypy/tp*.c tinypy/tp*.h
 tinypy/compiler.o : $(COMPILER_C_FILES) tinypy/compiler.c tinypy/*.h
 tinypy/runtime.o : $(RUNTIME_C_FILES) tinypy/runtime.c tinypy/*.h
