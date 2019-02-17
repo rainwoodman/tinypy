@@ -11,16 +11,6 @@ class Exception:
 class ImportError(Exception):
     pass    
 
-def dict(**kwargs):
-    r = {}
-    if istype(kwargs, 'dict'):
-        r.update(kwargs)
-    else:
-        for item in kwargs:
-            k, v = item
-            r[k] = item
-    return r
-
 def format(a, b):
     r = []
     i = 0

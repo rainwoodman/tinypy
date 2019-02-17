@@ -325,6 +325,10 @@ tp_obj tpy_module(TP) {
     return tp_import(tp, name, code, fname);
 }
 
+tp_obj tpy_dict(TP) {
+    return TP_TYPE(TP_DICT);
+}
+
 void tp_module_builtins_init(TP) {
     tp_obj builtins = tp_dict_t(tp);
     tp_set(tp, builtins, tp_string_atom(tp, "MODULES"), tp->modules);
@@ -351,17 +355,18 @@ void tp_module_builtins_init(TP) {
     {"fpack",tpy_fpack},
     {"funpack", tpy_funpack},
     {"abs",tpy_abs},
-    {"int",tpy_int},
     {"eval",tpy_eval},
     {"exec",tpy_exec},
     {"number",tpy_float},
+    {"int",tpy_int},
+    {"bool", tpy_bool},
+    {"dict", tpy_dict},
     {"round",tpy_round},
     {"ord",tpy_ord},
     {"getraw",tpy_getraw},
     {"setmeta",tpy_setmeta},
     {"getmeta",tpy_getmeta},
     {"module", tpy_module},
-    {"bool", tpy_bool},
     {"repr", tpy_repr},
     #ifdef TP_SANDBOX
     {"sandbox",tpy_sandbox_},
