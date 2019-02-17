@@ -1,6 +1,6 @@
 TINYPYC=./tpc
 
-RUNTIME_FILES=builtins.py
+RUNTIME_FILES=types.py
 COMPILER_FILES=boot.py encode.py parse.py py2bc.py tokenize.py run.py
 
 COMPILER_C_FILES=$(COMPILER_FILES:%.py=tinypy/compiler/%.c)
