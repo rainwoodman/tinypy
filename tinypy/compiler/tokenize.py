@@ -7,6 +7,8 @@ class Token:
             return '[' + ', '.join([i._format() for i in self.items]) + ']'
         else:
             return str(self.type) + ':' + str(self.val)
+    def __repr__(self):
+        return self._format()
 
 def u_error(ctx,s,i):
     y,x = i
