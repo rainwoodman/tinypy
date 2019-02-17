@@ -367,11 +367,10 @@ def do_from(t):
     items = t.items[1]
 
     if items.val == '*':
+        # FIXME: move this logic into __import__
         free_tmp(do(Token(t.pos, 'call', None, [
-                Token(t.pos, 'mget', None,[
-                    Token(t.pos, 'name', '__dict__'),
-                    Token(t.pos, 'string', 'update'),]
-                ),
+                Token(t.pos, 'name', '__merge__'),
+                Token(t.pos, 'name', '__dict__'),
                 Token(t.pos, 'reg', v) #REG
                 ]
             )))
@@ -420,7 +419,12 @@ def do_call(t,r=None):
             t1,t2 = do(p.items[0]),do(p.items[1])
             code(SET,e,t1,t2)
             free_tmp(t1); free_tmp(t2) #REG
-        if d: free_tmp(do(Token(t.pos,'call',None,[Token(t.pos,'name','merge'),Token(t.pos,'reg',e),d.items[0]]))) #REG
+        if d: free_tmp(do(
+            Token(t.pos,'call',None,
+                [ Token(t.pos,'name', '__merge__'),
+                  Token(t.pos,'reg',e),
+                  d.items[0]
+                ]))) #REG
     manage_seq(PARAMS,r,a)
     if c != None:
         t1,t2 = _do_string('*'),do(c.items[0])

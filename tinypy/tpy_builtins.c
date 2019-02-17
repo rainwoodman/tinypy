@@ -340,6 +340,7 @@ void tp_module_builtins_init(TP) {
     {"bind", tpy_bind},
     {"copy",tpy_copy},
     {"__import__",tpy_import},
+    {"__merge__", tpy_dict_merge},
     {"len",tpy_len},
     {"assert", tpy_assert},
     {"str", tpy_str},

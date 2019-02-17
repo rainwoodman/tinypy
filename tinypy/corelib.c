@@ -98,5 +98,4 @@ void tp_module_os_init (TP) {
 void tp_module_corelib_init(TP) {
     tp_module_os_init(tp);
     tp->builtins = tp_import_from_buffer(tp, 0, "__builtins__", _tp_builtins_tpc,  sizeof(_tp_builtins_tpc));
-
 }
