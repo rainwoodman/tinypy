@@ -266,7 +266,7 @@ tp_obj tpy_import(TP) {
     if (tp_has(tp,tp->modules,mod).number.val) {
         return tp_get(tp,tp->modules,mod);
     }
-    
+    tp_raise(tp_None, tp_string_atom(tp, "(tpy_import) cannot import module"));
     return tp_None;
 }
 
