@@ -314,6 +314,12 @@ tp_obj tpy_repr(TP) {
     return tp_repr(tp, v);
 }
 
+tp_obj tpy_compile(TP) {
+    tp_obj text = TP_OBJ();
+    tp_obj fname = TP_OBJ();
+    return tp_compile(tp, text, fname);
+}
+
 void tp_module_builtins_init(TP) {
     tp_obj builtins = tp_dict_t(tp);
     tp_set(tp, builtins, tp_string_atom(tp, "MODULES"), tp->modules);
@@ -321,19 +327,33 @@ void tp_module_builtins_init(TP) {
 
     tp_obj o;
     struct {const char *s;void *f;} b[] = {
-    {"print",tpy_print}, {"range",tpy_range}, {"min",tpy_min},
-    {"max",tpy_max}, {"bind", tpy_bind}, {"copy",tpy_copy},
-    {"__import__",tpy_import}, {"len",tpy_len}, {"assert", tpy_assert},
-    {"str", tpy_str}, {"float",tpy_float}, 
-    {"istype",tpy_istype}, {"isinstance",tpy_isinstance}, 
+    {"compile", tpy_compile},
+    {"print",tpy_print},
+    {"range",tpy_range},
+    {"min",tpy_min},
+    {"max",tpy_max},
+    {"bind", tpy_bind},
+    {"copy",tpy_copy},
+    {"__import__",tpy_import},
+    {"len",tpy_len},
+    {"assert", tpy_assert},
+    {"str", tpy_str},
+    {"float",tpy_float}, 
+    {"istype",tpy_istype},
+    {"isinstance",tpy_isinstance}, 
     {"chr",tpy_chr}, 
-    {"fpack",tpy_fpack}, {"funpack", tpy_funpack},
+    {"fpack",tpy_fpack},
+    {"funpack", tpy_funpack},
     {"abs",tpy_abs},
-    {"int",tpy_int}, {"eval",tpy_eval}, {"exec",tpy_exec},
-
-    {"number",tpy_float}, {"round",tpy_round},
-    {"ord",tpy_ord}, {"getraw",tpy_getraw},
-    {"setmeta",tpy_setmeta}, {"getmeta",tpy_getmeta},
+    {"int",tpy_int},
+    {"eval",tpy_eval},
+    {"exec",tpy_exec},
+    {"number",tpy_float},
+    {"round",tpy_round},
+    {"ord",tpy_ord},
+    {"getraw",tpy_getraw},
+    {"setmeta",tpy_setmeta},
+    {"getmeta",tpy_getmeta},
     {"bool", tpy_bool},
     {"repr", tpy_repr},
     #ifdef TP_SANDBOX
@@ -341,7 +361,8 @@ void tp_module_builtins_init(TP) {
     #endif
     {0,0},
     };
-    int i; for(i=0; b[i].s; i++) {
+    int i;
+    for(i=0; b[i].s; i++) {
         tp_set(tp, builtins, tp_string_atom(tp, b[i].s), tp_function(tp,(tp_obj (*)(tp_vm *))b[i].f));
     }
     

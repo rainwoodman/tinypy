@@ -306,6 +306,7 @@ tp_obj tp_string_atom(TP, const char * v);
 int tp_string_len(tp_obj s);
 char * tp_string_getptr(tp_obj s);
 
+tp_obj tp_string_t(TP, int n);
 /* Function: tp_cstr
  *
  * Fill a C string from a tinypy string, and return as a buffer

@@ -1,33 +1,3 @@
-void tp_save(TP, const char * fname, tp_obj v) {
-    FILE *f;
-    f = fopen(fname,"wb");
-    if (!f) {
-        tp_raise(, tp_string_atom(tp, "(tp_save) IOError: ?"));
-    }
-    fwrite(tp_string_getptr(v), tp_string_len(v), 1, f);
-    fclose(f);
-}
-
-tp_obj tp_load(TP, const char * fname) {
-    FILE *f;
-    long l;
-    tp_obj r;
-    char *s;
-    struct stat stbuf;
-    stat(fname, &stbuf);
-    l = stbuf.st_size;
-    f = fopen(fname,"rb");
-    if (!f) {
-        tp_raise(tp_None,tp_string_atom(tp, "(tp_load) IOError: ?"));
-    }
-    r = tp_string_t(tp,l);
-    s = tp_string_getptr(r);
-    fread(s,1,l,f);
-/*    if (rr !=l) { printf("hmmn: %d %d\n",rr,(int)l); }*/
-    fclose(f);
-    return r;
-}
-
 tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     tp_obj g;
 
@@ -36,9 +6,12 @@ tp_obj tp_import(TP, tp_obj fname, tp_obj name, tp_obj code) {
     }
 
     if (code.type.typeid == TP_NONE) {
+        tp_raise(tp_None, tp_string_atom(tp, "(tp_import) Must provide code string."));
+/*
         char * fname1 = tp_cstr(tp, fname);
         code = tp_load(tp, fname1);
         tp_free(tp, fname1);
+*/
     }
 
     g = tp_dict_t(tp);
