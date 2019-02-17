@@ -259,9 +259,9 @@ tp_obj tpy_bool(TP) {
  * compiler is initialized; 
  * it only loads existing modules from the module, and returns None
  * on failure. */
+/* FIXME: add support to import members of a module into a namespace */
 tp_obj tpy_import(TP) {
     tp_obj mod = TP_OBJ();
-
     if (tp_has(tp,tp->modules,mod).number.val) {
         return tp_get(tp,tp->modules,mod);
     }
@@ -287,7 +287,7 @@ tp_obj tpy_eval(TP) {
 
     tp_obj code = tp_compile(tp, text, tp_string_atom(tp, "<eval>"));
 
-    tp_exec(tp,code,globals);
+    tp_exec(tp, code, globals);
     return tp->last_result;
 }
 
@@ -318,6 +318,19 @@ tp_obj tpy_compile(TP) {
     tp_obj text = TP_OBJ();
     tp_obj fname = TP_OBJ();
     return tp_compile(tp, text, fname);
+}
+
+tp_obj tpy_module(TP) {
+    tp_obj name = TP_OBJ();
+    tp_obj code = TP_OBJ();
+    tp_obj module = tp_dict_t(tp);
+    
+    tp_set(tp, module, tp_string_atom(tp, "__name__"), name);
+    tp_set(tp, module, tp_string_atom(tp, "__code__"), code);
+    tp_set(tp, tp->modules, name, module);
+    tp_exec(tp, code, module);
+    printf("here\n");
+    return module;
 }
 
 void tp_module_builtins_init(TP) {
@@ -354,6 +367,7 @@ void tp_module_builtins_init(TP) {
     {"getraw",tpy_getraw},
     {"setmeta",tpy_setmeta},
     {"getmeta",tpy_getmeta},
+    {"module", tpy_module},
     {"bool", tpy_bool},
     {"repr", tpy_repr},
     #ifdef TP_SANDBOX

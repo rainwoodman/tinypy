@@ -40,16 +40,3 @@ def format(a, b):
         i = i + 1
     return ''.join(r) 
 
-def import_fname(fname,name):
-    g = {}
-    g['__name__'] = name
-    sys.modules[name] = g
-    s = os.load(fname)
-    code = compile(s,fname)
-    g['__code__'] = code
-    exec(code, g)
-    return g
-
-def _entry_point():
-    return import_fname(sys.argv[0], '__main__')
-            

@@ -64,7 +64,7 @@ def main(args=None):
         print('Usage tinypyc [-c] [-n variable] [-o output_file_name] src.py')
         return 
     s = read(src)
-    data = py2bc._compile(s, src)
+    data = py2bc.compile(s, src)
     if '-d' in opts:
         out = disasm.disassemble(data)
     elif '-c' in opts:
