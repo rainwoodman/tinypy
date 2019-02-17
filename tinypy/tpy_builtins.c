@@ -304,6 +304,15 @@ tp_obj tpy_print(TP) {
     return tp_None;
 }
 
+tp_obj tpy_str(TP) {
+    tp_obj v = TP_OBJ();
+    return tp_str(tp, v);
+}
+
+tp_obj tpy_repr(TP) {
+    tp_obj v = TP_OBJ();
+    return tp_repr(tp, v);
+}
 
 void tp_module_builtins_init(TP) {
     tp_obj builtins = tp_dict_t(tp);

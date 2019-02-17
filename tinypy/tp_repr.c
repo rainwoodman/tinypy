@@ -162,13 +162,3 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
     return;
 }
 
-tp_obj tpy_str(TP) {
-    tp_obj v = TP_OBJ();
-    return tp_str(tp, v);
-}
-
-tp_obj tpy_repr(TP) {
-    tp_obj v = TP_OBJ();
-    return tp_repr(tp, v);
-}
-
