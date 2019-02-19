@@ -1,3 +1,7 @@
+StringType = getmeta("")
+ListType = getmeta([])
+DictType = getmeta({})
+
 class Exception:
     def __init__(self, message):
         self.message = message
@@ -6,6 +10,11 @@ class Exception:
 
 class ImportError(Exception):
     pass    
+
+def string_startswith(self, prefix):
+    return self.find(prefix) == 0
+
+StringType['startswith'] = string_startswith
 
 """
 def format(a, b):
