@@ -1,6 +1,7 @@
 #include "tp.h"
 
 #include "runtime/types.c"
+#include "runtime/testing.c"
 
 void tp_save(TP, const char * fname, tp_obj v) {
     FILE *f;
@@ -97,6 +98,7 @@ void tp_module_os_init (TP) {
 
 void tp_module_corelib_init(TP) {
     tp_import_from_buffer(tp, 0, "tinypy.runtime.types", _tp_types_tpc,  sizeof(_tp_types_tpc));
+    tp_import_from_buffer(tp, 0, "tinypy.runtime.testing", _tp_testing_tpc,  sizeof(_tp_testing_tpc));
 
     tp_module_os_init(tp);
 }
