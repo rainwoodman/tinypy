@@ -24,7 +24,7 @@ ISYMBOLS = '`-=[];,./~!@$%^&*()+{}:<>?|'
 SYMBOLS = [
     'def','class','yield','return','pass','and','or','not','in','as', 'with', 'import',
     'is','while','break','for','continue','if','else','elif','try',
-    'except','raise','True','False','None','global','del','from',
+    'except','raise','assert','True','False','None','global','del','from',
     '-','+','*','**','/','%','<<','>>',
     '-=','+=','*=','/=','=','==','!=','<','>', '|=', '&=', '^=',
     '<=','>=','[',']','{','}','(',')','.',':',',',';','&','|','!', '^'

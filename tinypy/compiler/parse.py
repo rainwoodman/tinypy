@@ -412,6 +412,7 @@ base_dmap = {
     'class':{'lbp':0,'nud':class_nud,'type':'class',},
     'raise':{'lbp':0,'nud':prefix_nud0,'type':'raise','bp':20,},
     'return':{'lbp':0,'nud':prefix_nud0,'type':'return','bp':10,},
+    'assert':{'lbp':0,'nud':prefix_nud0,'type':'assert','bp':10,},
     'import':{'lbp':0,'nud':import_nud,'type':'import','bp':20,},
     'from':{'lbp':0,'nud':from_nud,'type':'from','bp':20,},
     'del':{'lbp':0,'nud':prefix_nuds,'type':'del','bp':10,},

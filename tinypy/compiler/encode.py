@@ -618,6 +618,21 @@ def do_return(t):
     code(RETURN,r)
     free_tmp(r)
     return
+
+def do_assert(t):
+    if t.items: r = do(t.items[0])
+    else: r = _do_none()
+
+    un_tmp(r)
+    v = do_call(Token(t.pos,'call',None,[
+        Token(t.pos,'name','__assert__'),
+        Token(t.pos, 'reg', r) #REG
+        ]
+        ))
+
+    free_tmp(v)
+    return
+
 def do_raise(t):
     if t.items: r = do(t.items[0])
     else: r = _do_none()
@@ -661,7 +676,7 @@ def do_reg(t,r=None): return t.val
 
 fmap = {
     'module':do_module,'statements':do_statements,'def':do_def,
-    'return':do_return,'while':do_while,'if':do_if,
+    'return':do_return, 'assert':do_assert, 'while':do_while,'if':do_if,
     'break':do_break,'pass':do_pass,'continue':do_continue,'for':do_for,
     'class':do_class,'raise':do_raise,'try':do_try,'import':do_import,
     'globals':do_globals,'del':do_del,'from':do_from,

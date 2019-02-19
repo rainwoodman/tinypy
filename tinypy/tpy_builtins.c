@@ -407,7 +407,7 @@ void tp_module_builtins_init(TP) {
     {"__import__",tpy_import},
     {"__merge__", tpy_dict_merge},
     {"len",tpy_len},
-    {"assert", tpy_assert},
+    {"__assert__", tpy_assert},
     {"str", tpy_str},
     {"float",tpy_float}, 
     {"istype",tpy_istype},
