@@ -346,6 +346,7 @@ tp_obj tpy_eval(TP) {
     tp_obj code = tp_compile(tp, text, tp_string_atom(tp, "<eval>"));
 
     tp_exec(tp, code, globals);
+
     return tp->last_result;
 }
 

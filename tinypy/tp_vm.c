@@ -159,13 +159,13 @@ enum {
     TP_ITOTAL
 };
 
-/* char *tp_strings[TP_ITOTAL] = {
-       "EOF","ADD","SUB","MUL","DIV","POW","BITAND","BITOR","CMP","GET","SET","NUM",
+char *tp_strings[TP_ITOTAL] = {
+       "EOF","ADD","SUB","MUL","DIV","POW","BITAND","BITOR","CMP","MGET", "GET","SET","NUM",
        "STR","GGET","GSET","MOVE","DEF","PASS","JUMP","CALL","RETURN","IF","DEBUG",
        "EQ","LE","LT","DICT","LIST","NONE","LEN","LINE","PARAMS","IGET","FILE",
        "NAME","NE","HAS","RAISE","SETJMP","MOD","LSH","RSH","ITER","DEL","REGS",
        "BITXOR", "IFN", "NOT", "BITNOT",
-   };*/
+};
 
 #define VA ((int)e.regs.a)
 #define VB ((int)e.regs.b)
@@ -188,10 +188,11 @@ int tp_step(TP) {
     tp_bounds(tp,cur,1);
     #endif
     tpd_code e = *cur;
-    /*
-     fprintf(stderr,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur,cur - (tpd_code*)f->code.string.info->s,tp_strings[e.i],VA,VB,VC);
-       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(regs[i])); }
-    */
+    
+//    fprintf(stdout,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur,cur - (tpd_code*)f->code.string.info->s,tp_strings[e.i],VA,VB,VC);
+//       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(regs[i])); }
+   
+//    tp_obj tpy_print(TP);
     switch (e.i) {
         case TP_IEOF: tp->last_result = RA; tp_return(tp,tp_None); SR(0); break;
         case TP_IADD: RA = tp_add(tp,RB,RC); break;
@@ -322,9 +323,7 @@ int tp_step(TP) {
 tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
     tp_obj r = tp_None;
     tp_enter_frame(tp, globals, code, &r);
-    if (!tp->jmp) {
-        tp_run_frame(tp);
-    }
+    tp_run_frame(tp);
     return r;
 }
 

@@ -9,6 +9,13 @@ tp_obj tp_import(TP, tp_obj name, tp_obj code, tp_obj fname) {
 
     tp_set(tp, tp->modules, name, g);
 
+    /* an older versoin of the code does not run frame of jmp == 0. Why?*/
+    /*
+     tp_enter_frame(tp, globals, code, &r);
+     if (!tp->jmp) {
+         tp_run_frame(tp);
+     } 
+     * */
     tp_exec(tp, code, g);
 
     return g;
