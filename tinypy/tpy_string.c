@@ -42,7 +42,7 @@ tp_obj tpy_str_split(TP) {
 }
 
 
-tp_obj tpy_find(TP) {
+tp_obj tpy_str_find(TP) {
     tp_obj s = TP_OBJ();
     tp_obj v = TP_OBJ();
     return tp_number(tp_str_index(s,v));
