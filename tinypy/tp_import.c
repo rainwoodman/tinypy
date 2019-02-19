@@ -28,6 +28,6 @@ tp_obj tp_import(TP, tp_obj name, tp_obj code, tp_obj fname) {
  */
 tp_obj tp_import_from_buffer(TP, const char * fname, const char * name, void *codes, int len) {
     tp_obj f = fname?tp_string_atom(tp, fname):tp_None;
-    tp_obj bc = codes?tp_string_from_const(tp, (const char*)codes, len):tp_None;
+    tp_obj bc = codes?tp_string_t_from_const(tp, (const char*)codes, len):tp_None;
     return tp_import(tp, tp_string_atom(tp, name), bc, f);
 }

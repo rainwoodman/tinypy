@@ -58,8 +58,7 @@ tp_obj tpy_str_index(TP) {
 
 tp_obj tpy_chr(TP) {
     int v = TP_NUM();
-    /* returns an untracked string, since we do not own the memory. */
-    return tp_string_from_const(tp, tp->chars[(unsigned char)v], 1);
+    return tp_string_t_from_const(tp, tp->chars[(unsigned char)v], 1);
 }
 tp_obj tpy_ord(TP) {
     tp_obj s = TP_STR();

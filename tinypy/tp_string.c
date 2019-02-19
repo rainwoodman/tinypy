@@ -29,6 +29,7 @@ tp_obj tp_string_atom(TP, const char * v) {
 }
 
 /*
+ * Return a untracked string object from external memory.
  */
 tp_obj tp_string_from_const(TP, const char *s, int n) {
     tp_obj r;
@@ -40,8 +41,14 @@ tp_obj tp_string_from_const(TP, const char *s, int n) {
     r.string.info->s = (char*) s;
     r.string.info->len = n;
     r.obj.info->meta = tp->_string_meta;
-    return tp_track(tp, r);
+    return r;
 }
+
+/* return a tracked string object from external memory */
+tp_obj tp_string_t_from_const(TP, const char *s, int n) {
+    return tp_track(tp, tp_string_from_const(tp, s, n));
+}
+
 /*
  * Create a new string which is a copy of some memory.
  */
@@ -77,7 +84,7 @@ tp_obj tp_string_view(TP, tp_obj s, int a, int b) {
     tp_obj r = tp_string_from_const(tp, tp_string_getptr(s) + a, b - a);
     r.string.info->base = s;
     r.type.magic = TP_STRING_VIEW;
-    return r;
+    return tp_track(tp, r);
 }
 
 tp_obj tp_printf(TP, char const *fmt,...) {
