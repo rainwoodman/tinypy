@@ -1,3 +1,9 @@
+/* FIXME:
+ *
+ * This file shall not raise exceptions.
+ *
+ * Only tp_xxx function can raise exceptions.
+ * */
 void tpd_list_realloc(TP, tpd_list *self, int len) {
     if (!len) { len=1; }
     self->items = (tp_obj*)tp_realloc(tp, self->items,len*sizeof(tp_obj));
@@ -23,7 +29,7 @@ void tpd_list_free(TP, tpd_list *self) {
 
 tp_obj tpd_list_get(TP, tpd_list *self, int k, const char *error) {
     if (k >= self->len) {
-        tp_raise(tp_None, tp_string_atom(tp, "(tpd_list_get) KeyError"));
+        tp_raise(tp_None, tp_printf(tp, "(tpd_list_get) KeyError : Index %d request, but length is %d", k, self->len));
     }
     return self->items[k];
 }
