@@ -3,7 +3,7 @@ class TestResult:
         self.status = status
         self.name = name
     def __str__(self):
-        return self.name + ': ....... [ ' + self.status + ' ]'
+        return '{name} ........ {status}'.format(getraw(self))
 
 
 class UnitTest:

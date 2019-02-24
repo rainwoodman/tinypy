@@ -11,28 +11,34 @@ class Exception:
 class ImportError(Exception):
     pass    
 
-def string_startswith(self, prefix):
+def startswith(self, prefix):
     return self.find(prefix) == 0
 
-StringType['startswith'] = string_startswith
+StringType['startswith'] = startswith
 
-"""
-def format(a, b):
+def format(s, d):
     r = []
     i = 0
     j = 0
-    while i < len(a):
-        if a[i] == '{':
-            r.append(a[j:i])
+    n = len(s)
+    while i < n:
+        if s[i] == '{':
+            r.append(s[j:i])
             j = i
-            while j < len(a):
-                if a[j] == '}':
+            while j < n:
+                if s[j] == '}':
+                    j = j + 1
                     break
                 j = j + 1
 
-            name = a[i+1:j]
-            r.append(str(b[name]))
+            spec = s[i+1:j-1]
+            #print('spec', spec)
+            #name, fmt = spec.split(':')
+            foo = eval(spec, d)
+            #foo = spec
+            # print('foo', foo, spec, d)
+            r.append(str(foo))
             i = j
         i = i + 1
     return ''.join(r) 
-"""
+StringType['format'] = format
