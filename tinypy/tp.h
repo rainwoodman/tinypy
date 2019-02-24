@@ -51,20 +51,16 @@ enum TPTypeID {
 
     TP_HAS_META = 100,
     TP_STRING = 100,
-    TP_DICT = 101,
-    TP_LIST = 102,
+    TP_LIST = 101,
+    TP_DICT = 102,
+    TP_OBJECT = 103,
+    TP_INTERFACE = 104,
 };
 
 typedef struct TPTypeInfo {
-    unsigned int typeid : 32; /* TPTypeID */
+    enum TPTypeID typeid : 32; /* TPTypeID */
     unsigned int magic: 32;
 } TPTypeInfo;
-
-enum TPDictMagic {
-    TP_DICT_RAW = 0,
-    TP_DICT_CLASS = 1, /* do not bind func members */
-    TP_DICT_OBJECT = 2, /* bind func members */
-};
 
 enum TPFuncMagic {
     TP_FUNC_MASK_C = 1,
@@ -111,6 +107,8 @@ typedef union tp_obj {
     struct { TPTypeInfo type; struct tpd_obj *info; } obj;
     struct { TPTypeInfo type; struct tpd_list *val; } list;
     struct { TPTypeInfo type; struct tpd_dict *val; } dict;
+    struct { TPTypeInfo type; struct tpd_dict *val; } object;
+    struct { TPTypeInfo type; struct tpd_dict *val; } interface;
     struct { TPTypeInfo type; struct tpd_string *info; const char * val;} string;
 } tp_obj;
 
@@ -394,6 +392,8 @@ tp_obj tp_data_t(TP, int magic, void *v);
 tp_obj tp_list_t(TP);
 tp_obj tp_list_nt(TP);
 tp_obj tp_dict_t(TP);
+tp_obj tp_object_t(TP);
+#define tp_object tp_object_t
 tp_obj tp_dict_nt(TP);
 tp_obj tp_function(TP, tp_obj v(TP));
 tp_obj tp_method(TP, tp_obj self,tp_obj v(TP));

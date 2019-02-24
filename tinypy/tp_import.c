@@ -1,7 +1,7 @@
 tp_obj tp_import(TP, tp_obj name, tp_obj code, tp_obj fname) {
     tp_obj g;
 
-    g = tp_dict_t(tp);
+    g = tp_interface_t(tp);
     tp_set(tp, g, tp_string_atom(tp, "__name__"), name);
     tp_set(tp, g, tp_string_atom(tp, "__file__"), fname);
     tp_set(tp, g, tp_string_atom(tp, "__code__"), code);
@@ -16,7 +16,8 @@ tp_obj tp_import(TP, tp_obj name, tp_obj code, tp_obj fname) {
          tp_run_frame(tp);
      } 
      * */
-    tp_exec(tp, code, g);
+    if (code.type.typeid != TP_NONE)
+        tp_exec(tp, code, g);
 
     return g;
 }
@@ -38,3 +39,4 @@ tp_obj tp_import_from_buffer(TP, const char * fname, const char * name, void *co
     tp_obj bc = codes?tp_string_t_from_const(tp, (const char*)codes, len):tp_None;
     return tp_import(tp, tp_string_atom(tp, name), bc, f);
 }
+

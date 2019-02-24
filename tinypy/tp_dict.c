@@ -1,11 +1,3 @@
-tp_obj tp_dict_nt(TP) {
-    tp_obj r = {TP_DICT};
-    r.dict.val = tpd_dict_new(tp);
-    r.type.magic = TP_DICT_CLASS;
-    r.obj.info->meta = tp->_dict_meta;
-    return r;
-}
-
 /* Function: tp_dict_t
  *
  * Creates a new dictionary object.
@@ -17,20 +9,51 @@ tp_obj tp_dict_nt(TP) {
  * The newly created dictionary.
  */
 
-tp_obj tp_dict_t(TP) {
-    return tp_track(tp, tp_dict_nt(tp));
-}
-
-tp_obj tp_rawdict_t(TP) {
+tp_obj tp_dict_nt(TP) {
     tp_obj r = {TP_DICT};
     r.dict.val = tpd_dict_new(tp);
-    r.type.magic = TP_DICT_RAW;
+    r.type.magic = 0;
+    r.obj.info->meta = tp->_dict_meta;
     return r;
 }
 
 
+tp_obj tp_dict_t(TP) {
+    return tp_track(tp, tp_dict_nt(tp));
+}
+
+tp_obj tp_interface_nt(TP) {
+    tp_obj r = {TP_INTERFACE};
+    r.dict.val = tpd_dict_new(tp);
+    r.obj.info->meta = tp_None;
+    return r;
+}
+
+tp_obj tp_interface_t(TP) {
+    return tp_track(tp, tp_interface_nt(tp));
+}
+
+tp_obj tp_object_nt(TP) {
+    tp_obj r = {TP_OBJECT};
+    r.dict.val = tpd_dict_new(tp);
+    r.obj.info->meta = tp_None;
+    return r;
+}
+
+tp_obj tp_object_t(TP) {
+    return tp_track(tp, tp_object_nt(tp));
+}
+
 tp_obj tp_dict_from_items (TP, int n, tp_obj * argv) {
     tp_obj r = tp_dict_t(tp);
+    int i; for (i=0; i<n; i++) {
+        tp_set(tp, r, argv[i*2], argv[i*2+1]);
+    }
+    return r;
+}
+
+tp_obj tp_interface_from_items (TP, int n, tp_obj * argv) {
+    tp_obj r = tp_interface_t(tp);
     int i; for (i=0; i<n; i++) {
         tp_set(tp, r, argv[i*2], argv[i*2+1]);
     }
@@ -69,7 +92,7 @@ void tp_dict_set(TP, tp_obj self, tp_obj k, tp_obj v) {
 }
 
 tp_obj tp_dict_copy(TP, tp_obj rr) {
-    tp_obj obj = {TP_DICT};
+    tp_obj obj = {rr.type.typeid};
     tpd_dict *o = rr.dict.val;
     tpd_dict *r = tpd_dict_new(tp);
     *r = *o;
@@ -77,7 +100,8 @@ tp_obj tp_dict_copy(TP, tp_obj rr) {
     r->items = (tpd_item*) tp_malloc(tp, sizeof(tpd_item)*o->alloc);
     memcpy(r->items, o->items, sizeof(tpd_item)*o->alloc);
     obj.dict.val = r;
-    obj.type.magic = TP_DICT_CLASS;
+    obj.type.magic = rr.type.magic;
+    obj.type.typeid = rr.type.typeid;
     return obj;
 }
 
