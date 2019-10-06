@@ -1,3 +1,10 @@
+==== Redirected ====
+
+The most recent development of tinypy is tinypy++ at https://gitlab.com/hartsantler/tpythonpp.
+
+
+==== End of Redirection ====
+
 64k tinypy
 "batteries not (yet) included"
 Copyright (c) 2008 Phil Hassey
