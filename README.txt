@@ -1,6 +1,7 @@
 ==== Redirected ====
 
-The most recent development of tinypy is tinypy++ at https://gitlab.com/hartsantler/tpythonpp.
+A more recent development of tinypy is in the form of tinypy++ (C++ based)
+at https://gitlab.com/hartsantler/tpythonpp.
 
 
 ==== End of Redirection ====
