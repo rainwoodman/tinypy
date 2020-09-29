@@ -2,10 +2,10 @@ from tinypy.compiler.boot import *
 
 def get_ops():
     """ Builds an value <-> opcode name dictionary """
-    li = ["EOF","ADD","SUB","MUL","DIV","POW","BITAND","BITOR","CMP","GET", \
+    li = ["EOF","ADD","SUB","MUL","DIV","POW","BITAND","BITOR","CMP","MGET","GET", \
           "SET","NUMBER","STRING","GGET","GSET","MOVE","DEF","PASS",  \
           "JUMP","CALL","RETURN","IF","DEBUG","EQ","LE","LT","DICT",  \
-          "LIST","NONE","LEN","LINE","PARAMS","IGET","FILE","NAME",   \
+          "LIST","NONE","LEN","LINE", "PARAMS","IGET","FILE","NAME",   \
           "NE","HAS","RAISE","SETJMP","MOD","LSH","RSH","ITER","DEL", \
           "REGS","BITXOR", "IFN", "NOT", "BITNOT"]
     dic = {}
@@ -37,7 +37,7 @@ def trim(x):
     return "".join(txt)
 
 def disassemble(bc):    
-    bc = [ord(x) for x in bc]
+    bc = [x for x in bc]
     asmc = []
     ip = 0
     names = get_ops()
@@ -64,6 +64,7 @@ def disassemble(bc):
             line += " " + str(f)
             ip += 8
         asmc.append(line)
+        print(line)
     asmc = "\n".join(asmc)
     return asmc
     
