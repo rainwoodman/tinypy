@@ -73,7 +73,7 @@ def main(args=None):
         name = opts.get('-n', '_tp_' + basename(src) + '_tpc')
         out.append("""unsigned char %s[] = {""" % name)
         for n in range(0, len(data), cols):
-            out.append(",".join(["0x%02x" % ord(v) for v in data[n:n+cols]]) + ',')
+            out.append(",".join(["0x%02x" % v for v in data[n:n+cols]]) + ',')
 
         out.append("""};""")
         out = '\n'.join(out)

@@ -41,19 +41,19 @@ if not "tinypy" in sys.version:
 
     def load(fname):
         f = open(fname,'rb')
-        r = f.read()
+        r = f.read().decode()
         f.close()
         return r
 
     def read(fname):
-        f = open(fname,'r')
-        r = f.read()
+        f = open(fname,'rb')
+        r = f.read().decode()
         f.close()
         return r
 
     def save(fname,v):
         f = open(fname,'wb')
-        f.write(v)
+        f.write(v.encode())
         f.close()
 else:
     from __builtins__ import *
