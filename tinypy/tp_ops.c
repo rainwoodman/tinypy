@@ -98,12 +98,12 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
 static tp_obj
 _tp_get(TP, tp_obj self, tp_obj k, int mget);
 
-/* lookup using []; never bind functions */
+/* look up using []; prefer members; and fall back to meta dict */
 tp_obj tp_get(TP, tp_obj self, tp_obj k) {
     return _tp_get(tp, self, k, 0);
 }
 
-/* lookup using .; always bind functions. FIXME: static and class binding */
+/* look up using .; prefer meta dict and attrs */
 tp_obj tp_mget(TP, tp_obj self, tp_obj k) {
     return _tp_get(tp, self, k, 1);
 }
@@ -115,15 +115,22 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
     tp_obj r;
     if (type >= TP_HAS_META) {
         if (type == TP_DICT) {
-            /* '.' looks for methods of a raw dict.
-             * [] looks for members */
             if (mget) {
-                if (tp_vget(tp, self, k, &r, 1)) {
-                    return r;
+                TP_META_BEGIN(self, "__getattr__");
+                    return tp_call(tp, meta, tp_params_v(tp,1,k));
+                TP_META_END;
+                if(self.type.magic != TP_DICT_RAW && _tp_lookup(tp, self.obj.info->meta, k, &r)) {
+                    return tp_bind(tp, r, self);
                 }
-            } else {
-                return tp_dict_get(tp, self, k);
             }
+
+            TP_META_BEGIN(self,"__getitem__");
+                return tp_call(tp, meta, tp_params_v(tp,1,k));
+            TP_META_END;
+            if (self.type.magic != TP_DICT_RAW && _tp_lookup(tp, self, k, &r)) {
+                return r;
+            }
+            return tp_dict_get(tp, self, k);
         } else if (type == TP_LIST) {
             if (k.type.typeid == TP_NUMBER) {
                 int l = tp_len(tp,self).number.val;
@@ -131,7 +138,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
                 n = (n<0?l+n:n);
                 return tpd_list_get(tp, self.list.val, n, "tp_get");
             } else if (k.type.typeid == TP_STRING) {
-                if (tp_vget(tp, self, k, &r, 1)) { return r;}
+                if (_tp_lookup(tp, self, k, &r)) { return r;}
             } else if (k.type.typeid == TP_NONE) {
                 return tpd_list_pop(tp, self.list.val, 0, "tp_get");
             }
@@ -142,19 +149,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
                 n = (n<0?l+n:n);
                 if (n >= 0 && n < l) { return tp_string_t_from_const(tp, tp->chars[(unsigned char) tp_string_getptr(self)[n]], 1); }
             } else if (k.type.typeid == TP_STRING) {
-                if (tp_vget(tp, self, k, &r, 1)) { return r;}
-            }
-        } else if (type == TP_OBJECT) {
-            /* not a raw dict, must be object or interface */
-            TP_META_BEGIN(self,"__getitem__");
-                return tp_call(tp, meta, tp_params_v(tp, 1, k));
-            TP_META_END;
-            if (tp_vget(tp, self, k, &r, mget)) {
-                return r;
-            }
-        } else if (type == TP_INTERFACE) {
-            if (tp_vget(tp, self, k, &r, 0)) {
-                return r;
+                if (_tp_lookup(tp, self, k, &r)) { return r;}
             }
         }
     }
@@ -196,7 +191,7 @@ tp_obj tp_copy(TP, tp_obj self) {
     if (type == TP_LIST) {
         return tp_list_copy(tp, self);
     }
-    if (type == TP_DICT || type == TP_INTERFACE || type == TP_OBJECT) {
+    if (type == TP_DICT) {
         return tp_dict_copy(tp, self);
     }
     tp_raise(tp_None, tp_string_atom(tp, "(tp_copy) TypeError: object does not support copy"));
@@ -210,7 +205,7 @@ tp_obj tp_copy(TP, tp_obj self) {
  * over the reference parameter r.
  */
 int tp_iget(TP,tp_obj *r, tp_obj self, tp_obj k) {
-    if (self.type.typeid == TP_DICT || self.type.typeid == TP_OBJECT || self.type.typeid == TP_INTERFACE) {
+    if (self.type.typeid == TP_DICT) {
         int n = tpd_dict_hashfind(tp, self.dict.val, tp_hash(tp, k), k);
         if (n == -1) { return 0; }
         *r = self.dict.val->items[n].val;
@@ -232,6 +227,10 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
     int type = self.type.typeid;
 
     if (type == TP_DICT) {
+        TP_META_BEGIN(self,"__set__");
+            tp_call(tp,meta,tp_params_v(tp,2,k,v));
+            return;
+        TP_META_END;
         tp_dict_set(tp, self, k, v);
         return;
     } else if (type == TP_LIST) {
@@ -249,16 +248,6 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
                 return;
             }
         }
-    } else if (type == TP_INTERFACE) {
-        tp_dict_set(tp, self, k, v);
-        return;
-    } else if (type == TP_OBJECT) {
-        TP_META_BEGIN(self,"__set__");
-            tp_call(tp,meta,tp_params_v(tp,2,k,v));
-            return;
-        TP_META_END;
-        tp_dict_set(tp, self, k, v);
-        return;
     }
     tp_raise(,tp_string_atom(tp, "(tp_set) TypeError: object does not support item assignment"));
 }
@@ -384,16 +373,18 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
     just for giggles we will. */
     tp->params = params;
 
-    if (self.type.typeid == TP_INTERFACE) {
-        tp_obj meta;
-        if (tp_vget(tp, self, tp_string_atom(tp, "__new__"), &meta, 1)) {
-            tpd_list_insert(tp, params.list.val, 0, self);
-            return tp_call(tp, meta, params);
+    if (self.type.typeid == TP_DICT) {
+        if (self.type.magic == TP_DICT_CLASS) {
+            tp_obj meta;
+            if (_tp_lookup(tp, self, tp_string_atom(tp, "__new__"), &meta)) {
+                tpd_list_insert(tp, params.list.val, 0, self);
+                return tp_call(tp, meta, params);
+            }
+        } else if (self.type.magic == TP_DICT_OBJECT) {
+            TP_META_BEGIN(self,"__call__");
+                return tp_call(tp, meta, params);
+            TP_META_END;
         }
-    } else if (self.type.magic == TP_OBJECT) {
-        TP_META_BEGIN(self,"__call__");
-            return tp_call(tp, meta, params);
-        TP_META_END;
     }
 
     if (self.type.typeid == TP_FUNC) {

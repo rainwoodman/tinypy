@@ -64,7 +64,7 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
     TP_META_END;
 
     int type = self.type.typeid;
-    if(type == TP_DICT || type == TP_INTERFACE || type == TP_OBJECT) {
+    if(type == TP_DICT) {
         tp_obj data = tp_data_nt(tp, 0, self.dict.val);
         /* FIXME: use tp_data_cmp */
         if(tpd_list_find(tp, visited, data, tp_cmp) >= 0) {
@@ -72,7 +72,6 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
             return;
         }
         tpd_list_append(tp, visited, data);
-        printf("pushing %d %p\n", visited->len, self.dict.val);
     } else if(type == TP_LIST) {
         tp_obj data = tp_data_nt(tp, 0, self.list.val);
         if(tpd_list_find(tp, visited, data, tp_cmp) >= 0) {
@@ -80,7 +79,6 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
             return;
         }
         tpd_list_append(tp, visited, data);
-        printf("pushing %d %p\n", visited->len, self.list.val);
     }
 
     if (type == TP_STRING) { 
@@ -120,7 +118,7 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         } else {
             snprintf(buf, 120, "%f", v);
         }
-    } else if(type == TP_DICT || type == TP_INTERFACE || type == TP_OBJECT) {
+    } else if(type == TP_DICT) {
         string_builder_write(tp, sb, "{", -1);
         int i, n = 0;
         for(i = 0; i < self.dict.val->alloc; i++) {
@@ -158,8 +156,7 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
     } else {
         string_builder_write(tp, sb, "<?>", -1);
     }
-    if(type == TP_DICT || type == TP_LIST || type == TP_INTERFACE || type == TP_OBJECT) {
-        printf("poping, %d %p %p\n", visited->len, self.dict.val, self.list.val);
+    if(type == TP_DICT || type == TP_LIST) {
         tpd_list_pop(tp, visited, visited->len - 1, "visited list is empty");
     }
     return;

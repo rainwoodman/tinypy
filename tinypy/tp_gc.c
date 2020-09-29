@@ -80,7 +80,7 @@ void tp_delete(TP, tp_obj v) {
     if (type == TP_LIST) {
         tpd_list_free(tp, v.list.val);
         return;
-    } else if (type == TP_DICT || type == TP_INTERFACE || type == TP_OBJECT) {
+    } else if (type == TP_DICT) {
         tpd_dict_free(tp, v.dict.val);
         return;
     } else if (type == TP_STRING) {

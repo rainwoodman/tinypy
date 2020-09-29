@@ -171,7 +171,7 @@ tp_obj tpy_setmeta(TP) {
         tp_raise(tp_None,
             tp_string_atom(tp, "(tp_check_type) TypeError: type does not support meta."));
     }
-    tp_obj meta = TP_TYPE(TP_INTERFACE);
+    tp_obj meta = TP_TYPE(TP_DICT);
     self.obj.info->meta = meta;
     return tp_None;
 }
@@ -192,12 +192,18 @@ tp_obj tpy_getmeta(TP) {
  * The newly created object. The object initially has no parent class, use
  * <tp_setmeta> to set a class. Also see <tp_object_new>.
  */
+tp_obj tp_object(TP) {
+    tp_obj self = tp_dict_t(tp);
+    self.type.magic = TP_DICT_OBJECT;
+    return self;
+}
+
 tp_obj tpy_object_new(TP) {
-    tp_obj klass = TP_TYPE(TP_INTERFACE);
-    tp_obj self = tp_object_t(tp);
+    tp_obj klass = TP_TYPE(TP_DICT);
+    tp_obj self = tp_object(tp);
     self.obj.info->meta = klass;
     TP_META_BEGIN(self,"__init__");
-        tp_call(tp, meta, tp->params);
+        tp_call(tp,meta,tp->params);
     TP_META_END;
     return self;
 }
@@ -205,9 +211,10 @@ tp_obj tpy_object_new(TP) {
 tp_obj tpy_object_call(TP) {
     tp_obj self;
     if (tp->params.list.val->len) {
-        self = TP_TYPE(TP_OBJECT);
+        self = TP_TYPE(TP_DICT);
+        self.type.magic = TP_DICT_OBJECT;
     } else {
-        self = tp_object_t(tp);
+        self = tp_object(tp);
     }
     return self;
 }
@@ -221,15 +228,8 @@ tp_obj tpy_object_call(TP) {
  * dict.
  */
 tp_obj tpy_getraw(TP) {
-    tp_obj self = TP_OBJ();
-    if (
-        self.type.typeid != TP_DICT &&
-        self.type.typeid != TP_INTERFACE &&
-        self.type.typeid != TP_OBJECT
-        ) {
-        tp_raise(tp_None, tp_string_atom(tp, "Cannot cast the object to a dict"));
-    }
-    self.type.typeid = TP_DICT;
+    tp_obj self = TP_TYPE(TP_DICT);
+    self.type.magic = TP_DICT_RAW;
     return self;
 }
 
@@ -243,7 +243,7 @@ tp_obj tpy_getraw(TP) {
  * A new, empty class (derived from tinypy's builtin "object" class).
  */
 tp_obj tp_class(TP) {
-    tp_obj klass = tp_interface_t(tp);
+    tp_obj klass = tp_dict_t(tp);
     klass.obj.info->meta = tp_get(tp, tp->builtins, tp_string_atom(tp, "object")); 
     return klass;
 }
@@ -392,11 +392,9 @@ tp_obj tpy_dict(TP) {
 }
 
 void tp_module_builtins_init(TP) {
-    tp_obj builtins = tp->builtins;
-
-    /* set an alias for the builtin module; Notice that this module is already imported by the vm. */
-    tp_set(tp, tp->modules, tp_string_atom(tp, "tinypy.language.builtins"), builtins);
-
+    tp_obj builtins = tp_dict_t(tp);
+    tp_set(tp, builtins, tp_string_atom(tp, "MODULES"), tp->modules);
+    tp_set(tp, builtins, tp_string_atom(tp, "__dict__"), tp->builtins);
 
     tp_obj o;
     struct {const char *s;void *f;} b[] = {
@@ -442,11 +440,14 @@ void tp_module_builtins_init(TP) {
         tp_set(tp, builtins, tp_string_atom(tp, b[i].s), tp_function(tp,(tp_obj (*)(tp_vm *))b[i].f));
     }
     
-    o = tp_interface_t(tp);
+    o = tp_object(tp);
     tp_set(tp, o, tp_string_atom(tp, "__call__"), tp_function(tp, tpy_object_call));
     tp_set(tp, o, tp_string_atom(tp, "__new__"),  tp_function(tp, tpy_object_new));
     tp_set(tp, builtins, tp_string_atom(tp, "object"), o);
     
+    tp_set(tp, tp->modules, tp_string_atom(tp, "tinypy.language.builtins"), builtins);
+    tp_set(tp, tp->modules, tp_string_atom(tp, "__builtins__"), builtins);
+
     tp_set(tp, tp->_list_meta, tp_string_atom(tp, "append"), tp_function(tp, tpy_list_append));
     tp_set(tp, tp->_list_meta, tp_string_atom(tp, "pop"), tp_function(tp, tpy_list_pop));
     tp_set(tp, tp->_list_meta, tp_string_atom(tp, "index"), tp_function(tp, tpy_list_index));
@@ -462,6 +463,7 @@ void tp_module_builtins_init(TP) {
 
     tp_set(tp, tp->_dict_meta, tp_string_atom(tp, "update"), tp_function(tp, tpy_dict_merge));
 
+    tp->builtins = builtins;
 }
 
 

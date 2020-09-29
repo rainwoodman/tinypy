@@ -86,13 +86,14 @@ tp_obj tpy_system(TP) {
 }
 
 void tp_module_os_init (TP) {
-    tp_obj os = tp_import(tp, tp_string_atom(tp, "os"), tp_None, tp_string_atom(tp, "<builtin>"));
+    tp_obj os = tp_dict_t(tp);
     tp_set(tp, os, tp_string_atom(tp, "exists"), tp_function(tp, tpy_exists));
     tp_set(tp, os, tp_string_atom(tp, "read"), tp_function(tp, tpy_load));
     tp_set(tp, os, tp_string_atom(tp, "load"), tp_function(tp, tpy_load));
     tp_set(tp, os, tp_string_atom(tp, "system"), tp_function(tp, tpy_system));
     tp_set(tp, os, tp_string_atom(tp, "mtime"), tp_function(tp, tpy_mtime));
     tp_set(tp, os, tp_string_atom(tp, "save"), tp_function(tp, tpy_save));
+    tp_set(tp, tp->modules, tp_string_atom(tp, "os"), os);
 }
 
 void tp_module_corelib_init(TP) {

@@ -2,7 +2,7 @@ import tinypy.compiler.tokenize as tokenize
 from tinypy.compiler.tokenize import Token
 from tinypy.compiler.boot import *
 
-EOF,ADD,SUB,MUL,DIV,POW,BITAND,BITOR,CMP,MGET,GET,SET,NUMBER,STRING,GGET,GSET,MOVE,DEF,PASS,JUMP,CALL,RETURN,IF,DEBUG,EQ,LE,LT,IFACE,DICT,LIST,NONE,LEN,POS,PARAMS,IGET,FILE,NAME,NE,HAS,RAISE,SETJMP,MOD,LSH,RSH,ITER,DEL,REGS,BITXOR,IFN,NOT,BITNOT = 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48, 49, 50
+EOF,ADD,SUB,MUL,DIV,POW,BITAND,BITOR,CMP,MGET,GET,SET,NUMBER,STRING,GGET,GSET,MOVE,DEF,PASS,JUMP,CALL,RETURN,IF,DEBUG,EQ,LE,LT,DICT,LIST,NONE,LEN,POS,PARAMS,IGET,FILE,NAME,NE,HAS,RAISE,SETJMP,MOD,LSH,RSH,ITER,DEL,REGS,BITXOR,IFN,NOT,BITNOT = 0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48, 49
 
 class DState:
     def __init__(self,code,fname):
@@ -514,7 +514,7 @@ def do_class(t):
         name = items[0].items[0].val
         parent = items[0].items[1]
 
-    kls = do_classdecl()
+    kls = do(Token(t.pos,'dict',0,[]))
     un_tmp(kls)
     ts = _do_string(name)
     code(GSET,ts,kls)
@@ -531,11 +531,6 @@ def do_class(t):
         else: continue
         
     free_reg(kls) #REG
-
-def do_classdecl():
-    r = get_tmp(None)
-    manage_seq(IFACE, r, [])
-    return r
 
 def do_classvar(t,r):
     var = do_string(t.items[0])

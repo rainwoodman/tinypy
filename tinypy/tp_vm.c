@@ -20,33 +20,30 @@ tp_vm * tp_create_vm(void) {
     tp->cur = 0;
     tp->jmp = 0;
     tp->ex = tp_None;
-
     tp->root = tp_list_nt(tp); /* root is not tracked by gc, as gc is not defined yet.*/
-    tp->echo = tp_default_echo;
 
     for (i=0; i<256; i++) { tp->chars[i][0]=i; }
 
     tp_gc_init(tp);
-
-    tp->_list_meta = tp_interface_t(tp);
-    tp->_dict_meta = tp_interface_t(tp);
-    tp->_string_meta = tp_interface_t(tp);
-
     
     /* gc initialized, can use tpy_ functions. */
     tp->_regs = tp_list_t(tp);
     for (i=0; i<TP_REGS; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
-    tp->modules = tp_dict_t(tp);
+    tp->builtins = tp_rawdict_t(tp);
+    tp->modules = tp_rawdict_t(tp);
+    tp->_list_meta = tp_rawdict_t(tp);
+    tp->_dict_meta = tp_rawdict_t(tp);
+    tp->_string_meta = tp_rawdict_t(tp);
+
     tp->_params = tp_list_t(tp);
 
     for (i=0; i<TP_FRAMES; i++) { tp_set(tp, tp->_params, tp_None, tp_list_t(tp)); }
+    tp->echo = tp_default_echo;
 
     tp_set(tp, tp->root, tp_None, tp->builtins);
     tp_set(tp, tp->root, tp_None, tp->modules);
     tp_set(tp, tp->root, tp_None, tp->_regs);
     tp_set(tp, tp->root, tp_None, tp->_params);
-
-    tp->builtins = tp_import(tp, tp_string_atom(tp, "__builtins__"), tp_None, tp_string_atom(tp, "<builtins>"));
 
     tp_set(tp, tp->root, tp_None, tp->_list_meta);
     tp_set(tp, tp->root, tp_None, tp->_dict_meta);
@@ -74,7 +71,7 @@ void _tp_raise(TP, tp_obj e) {
     if (!tp || !tp->jmp) {
 #ifndef CPYTHON_MOD
         tp->echo("\nException:\n", -1); tp_echo(tp,e); tp->echo("\n", -1);
-        abort();
+        abort(); \
         exit(-1);
 #else
         tp->ex = e;
@@ -83,7 +80,6 @@ void _tp_raise(TP, tp_obj e) {
     }
     if (e.type.typeid != TP_NONE) { tp->ex = e; }
     tp_grey(tp,e);
-    abort();
     longjmp(tp->buf,1);
 }
 
@@ -156,7 +152,7 @@ void tp_return(TP, tp_obj v) {
 enum {
     TP_IEOF,TP_IADD,TP_ISUB,TP_IMUL,TP_IDIV,TP_IPOW,TP_IBITAND,TP_IBITOR,TP_ICMP,TP_IMGET,TP_IGET,TP_ISET,
     TP_INUMBER,TP_ISTRING,TP_IGGET,TP_IGSET,TP_IMOVE,TP_IDEF,TP_IPASS,TP_IJUMP,TP_ICALL,
-    TP_IRETURN,TP_IIF,TP_IDEBUG,TP_IEQ,TP_ILE,TP_ILT,TP_IIFACE, TP_IDICT,TP_ILIST,TP_INONE,TP_ILEN,
+    TP_IRETURN,TP_IIF,TP_IDEBUG,TP_IEQ,TP_ILE,TP_ILT,TP_IDICT,TP_ILIST,TP_INONE,TP_ILEN,
     TP_ILINE,TP_IPARAMS,TP_IIGET,TP_IFILE,TP_INAME,TP_INE,TP_IHAS,TP_IRAISE,TP_ISETJMP,
     TP_IMOD,TP_ILSH,TP_IRSH,TP_IITER,TP_IDEL,TP_IREGS,TP_IBITXOR, TP_IIFN, 
     TP_INOT, TP_IBITNOT,
@@ -166,7 +162,7 @@ enum {
 char *tp_strings[TP_ITOTAL] = {
        "EOF","ADD","SUB","MUL","DIV","POW","BITAND","BITOR","CMP","MGET", "GET","SET","NUM",
        "STR","GGET","GSET","MOVE","DEF","PASS","JUMP","CALL","RETURN","IF","DEBUG",
-       "EQ","LE","LT","IFACE","DICT","LIST","NONE","LEN","LINE","PARAMS","IGET","FILE",
+       "EQ","LE","LT","DICT","LIST","NONE","LEN","LINE","PARAMS","IGET","FILE",
        "NAME","NE","HAS","RAISE","SETJMP","MOD","LSH","RSH","ITER","DEL","REGS",
        "BITXOR", "IFN", "NOT", "BITNOT",
 };
@@ -183,10 +179,6 @@ char *tp_strings[TP_ITOTAL] = {
 #define SR(v) f->cur = cur; return(v);
 
 
-char * TP_xSTR(TP, tp_obj obj) {
-    return tp_cstr(tp, tp_str(tp, obj));
-}
-
 int tp_step(TP) {
     tpd_frame *f = &tp->frames[tp->cur];
     tp_obj *regs = f->regs;
@@ -197,8 +189,8 @@ int tp_step(TP) {
     #endif
     tpd_code e = *cur;
     
-//     fprintf(stdout,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur,cur - (tpd_code*)f->code.string.info->s,tp_strings[e.i],VA,VB,VC);
-//     int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(tp, regs[i])); }
+//    fprintf(stdout,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur,cur - (tpd_code*)f->code.string.info->s,tp_strings[e.i],VA,VB,VC);
+//       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(regs[i])); }
    
 //    tp_obj tpy_print(TP);
     switch (e.i) {
@@ -257,7 +249,6 @@ int tp_step(TP) {
             cur += (UVBC/4)+1;
             }
             break;
-        case TP_IIFACE: RA = tp_interface_from_items(tp, VC/2, &RB); break;
         case TP_IDICT: RA = tp_dict_from_items(tp, VC/2, &RB); break;
         case TP_ILIST: RA = tp_list_from_items(tp, VC, &RB); break;
         case TP_IPARAMS: RA = tp_params_n(tp,VC,&RB); break;
