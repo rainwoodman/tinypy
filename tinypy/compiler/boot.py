@@ -5,12 +5,13 @@ if not "tinypy" in sys.version:
     ARGV = sys.argv
 
     def join(v):
-        out = ''.encode('latin1')
+        # always return bytes.
+        out = ''.encode()
         for el in v:
-            try:
-                out += el
-            except TypeError: # Python 3
-                out += el.encode('latin1')
+            if isinstance(el, str):
+                raise
+                el = el.encode()
+            out += el
         return out
 
     def merge(a,b):

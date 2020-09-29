@@ -46,21 +46,28 @@ def tokenize(s):
     global T
     s = clean(s)
     T,i,l = TData(),0,len(s)
-    try: return do_tokenize(s,i,l)
-    except: u_error('tokenize',s,T.f)
+    try:
+        return do_tokenize(s,i,l)
+    except:
+        u_error('tokenize',s,T.f)
 
 def do_tokenize(s,i,l):
     global T
+    print('T', T.y, T.yi)
     T.f = (T.y,i-T.yi+1)
+    print('token', T.f)
     while i < l:
         c = s[i]; T.f = (T.y,i-T.yi+1)
         if T.nl: T.nl = False; i = do_indent(s,i,l)
         elif c == '\n': i = do_nl(s,i,l)
         elif c in ISYMBOLS: i = do_symbol(s,i,l)
         elif c >= '0' and c <= '9': i = do_number(s,i,l)
+        elif c in 'b' and (s[i+1] =='"' or s[i+1] == "'"):
+            i += 1; T.y, T.yi = T.y+1, i
+            i = do_string(s,i,l)
+        elif c=='"' or c=="'": i = do_string(s,i,l)
         elif (c >= 'a' and c <= 'z') or \
             (c >= 'A' and c <= 'Z') or c == '_':  i = do_name(s,i,l)
-        elif c=='"' or c=="'": i = do_string(s,i,l)
         elif c=='#': i = do_comment(s,i,l)
         elif c == '\\' and s[i+1] == '\n':
             i += 2; T.y,T.yi = T.y+1,i
