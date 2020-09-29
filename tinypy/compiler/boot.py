@@ -6,8 +6,9 @@ if not "tinypy" in sys.version:
 
     def join(v):
         # always return bytes.
-        out = ''.encode()
+        out = b''
         for el in v:
+            # At this point all elements in v must be bytes.
             if isinstance(el, str):
                 raise
                 el = el.encode()
@@ -53,8 +54,8 @@ if not "tinypy" in sys.version:
         return r
 
     def save(fname,v):
-        f = open(fname,'wb')
-        f.write(v.encode())
+        f = open(fname,'w')
+        f.write(v)
         f.close()
 else:
     from __builtins__ import *
@@ -65,3 +66,10 @@ else:
 
     def merge(a, b):
         a.update(b)
+
+    # tpy strings are byte strings.
+    def bytes(s):
+        return s
+
+    def bytearray(t):
+        return join([chr(i) for i in t])

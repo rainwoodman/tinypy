@@ -47,7 +47,7 @@ def setpos(v):
     if line == D.lineno: return
     text = D.lines[line-1]
     D.lineno = line
-    val = text + "\0"*(4-len(text)%4)
+    val = text.encode() + b"\0"*(4-len(text)%4)
     code_16(POS,int(len(val)/4),line)
     write(val)
 def code(i,a=0,b=0,c=0):
@@ -64,7 +64,7 @@ def get_code16(i,a,b):
 
 def _do_string(v,r=None):
     r = get_tmp(r)
-    val = v + "\0"*(4-len(v)%4)
+    val = v.encode() + b"\0"*(4-len(v)%4)
     code_16(STRING,r,len(v))
     write(val)
     return r
@@ -133,7 +133,7 @@ def map_tags():
             out[n] = item[1]
         elif item[0] == 'code':
             i,a,b,c = item[1:]
-            out[n] = chr(i)+chr(a)+chr(b)+chr(c)
+            out[n] = bytes(bytearray((i,a,b,c)))
         else:
             raise str(('huh?',item))
         if len(out[n]) != 4:

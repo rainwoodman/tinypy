@@ -53,9 +53,7 @@ def tokenize(s):
 
 def do_tokenize(s,i,l):
     global T
-    print('T', T.y, T.yi)
     T.f = (T.y,i-T.yi+1)
-    print('token', T.f)
     while i < l:
         c = s[i]; T.f = (T.y,i-T.yi+1)
         if T.nl: T.nl = False; i = do_indent(s,i,l)

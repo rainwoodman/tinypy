@@ -454,6 +454,7 @@ void tp_module_builtins_init(TP) {
     tp_set(tp, tp->_list_meta, tp_string_atom(tp, "sort"), tp_function(tp, tpy_list_sort));
     tp_set(tp, tp->_list_meta, tp_string_atom(tp, "extend"), tp_function(tp, tpy_list_extend));
 
+    tp_set(tp, tp->_string_meta, tp_string_atom(tp, "encode"), tp_function(tp, tpy_str_encode));
     tp_set(tp, tp->_string_meta, tp_string_atom(tp, "join"), tp_function(tp, tpy_str_join));
     tp_set(tp, tp->_string_meta, tp_string_atom(tp, "split"), tp_function(tp, tpy_str_split));
     tp_set(tp, tp->_string_meta, tp_string_atom(tp, "index"), tp_function(tp, tpy_str_index));

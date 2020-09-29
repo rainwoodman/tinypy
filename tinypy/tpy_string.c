@@ -68,6 +68,12 @@ tp_obj tpy_ord(TP) {
     return tp_number((unsigned char)tp_string_getptr(s)[0]);
 }
 
+// NOTE: tpy strings are all byte strings, like py2. Thus encode is a noop.
+tp_obj tpy_str_encode(TP) {
+    tp_obj o = TP_TYPE(TP_STRING);
+    return o;
+}
+
 tp_obj tpy_str_strip(TP) {
     tp_obj o = TP_TYPE(TP_STRING);
     char const *v = tp_string_getptr(o); int l = tp_string_len(o);
