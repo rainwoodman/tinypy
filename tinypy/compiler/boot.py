@@ -58,7 +58,7 @@ if not "tinypy" in sys.version:
         f.write(v)
         f.close()
 else:
-    from __builtins__ import *
+    from tinypy.runtime.builtins import *
     from os import load, read, save
 
     def join(v):

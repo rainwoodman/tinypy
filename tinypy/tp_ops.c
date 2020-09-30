@@ -320,8 +320,9 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
                 return tp_number(((long)a.number.val) % ((long)b.number.val));
             break;
         case TP_STRING:
-            return tp_ez_call(tp, "__builtins__", "format", tp_params_v(tp, 2, a, b));
-        
+            TP_META_BEGIN(a, "format");
+            return tp_call(tp,meta,tp_params_v(tp, 1, b));
+            TP_META_END;
     }
     tp_raise(tp_None, tp_string_atom(tp, "(tp_mod) TypeError: ?"));
 }

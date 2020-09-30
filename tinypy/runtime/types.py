@@ -42,4 +42,5 @@ def format(s, d):
         i = i + 1
     r.append(s[j:i])
     return ''.join(r)
+
 StringType['format'] = format

@@ -14,6 +14,10 @@ class StringUnitTests(UnitTest):
         a = "{foo}d".format(dict(foo='abc'))
         assert a == "abcd"
 
+    def test_percent(self):
+        a = "{foo}d" % dict(foo='abc')
+        assert a == "abcd"
+
     def test_find(self):
         a = "012345"
         assert a.find("0") == 0
