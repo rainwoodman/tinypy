@@ -2,9 +2,10 @@ import sys
 from tinypy.runtime.types import Exception
 
 class TestResult:
-    def __init__(self, name, status):
+    def __init__(self, name, status, exc):
         self.status = status
         self.name = name
+        self.exc = exc
     def __str__(self):
         return '{name} ........ {status}'.format(getraw(self))
 
@@ -54,7 +55,8 @@ class UnitTest:
         self.setup(test)
         try:
             testfunc(self)
-            return TestResult(test, "OK")
-        except:
-            return TestResult(test, "FAIL")
+            return TestResult(test, "OK", None)
+        except e:
+            print(e)
+            return TestResult(test, "FAIL", e)
         self.teardown(test)

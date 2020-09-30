@@ -46,8 +46,18 @@ tp_obj tpy_len(TP) {
 
 tp_obj tpy_assert(TP) {
     int a = TP_NUM();
+    tp_obj b = TP_OBJ();
+    tp_obj c = TP_OBJ();
+    tp_obj op = TP_OBJ();
     if (a) { return tp_None; }
-    tp_raise(tp_None, tp_string_atom(tp, "(tp_assert) AssertionError"));
+    tp_obj msg = tp_string_atom(tp, "(tp_assert) AssertionError: Failure");
+    msg = tp_add(tp, msg, tp_string_atom(tp, "\nLeft Side : "));
+    msg = tp_add(tp, msg, tp_repr(tp, b));
+    msg = tp_add(tp, msg, tp_string_atom(tp, "\nOperator : "));
+    msg = tp_add(tp, msg, op);
+    msg = tp_add(tp, msg, tp_string_atom(tp, "\nRight Side : "));
+    msg = tp_add(tp, msg, tp_repr(tp, c));
+    tp_raise(tp_None, msg);
 }
 
 tp_obj tpy_range(TP) {

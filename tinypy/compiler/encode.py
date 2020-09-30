@@ -192,13 +192,23 @@ def unary(i,tb,r=None):
     code(i,r,b)
     if r != b: free_tmp(b)
     return r
+
 def infix(i,tb,tc,r=None):
     r = get_tmp(r)
     b,c = do(tb,r),do(tc)
     code(i,r,b,c)
+
     if r != b: free_tmp(b)
     free_tmp(c)
     return r
+
+def infix_traced(i,tb,tc,r=None):
+    r = get_tmp(r)
+    b,c = do(tb),do(tc)
+    code(i,r,b,c)
+
+    return r, b, c
+
 def logic_infix(op, tb, tc, _r=None):
     t = get_tag() 
     r = do(tb, _r)
@@ -216,6 +226,21 @@ def _do_none(r=None):
     r = get_tmp(r)
     code(NONE,r)
     return r
+
+def do_cmp(t, trace, r=None):
+    items = t.items
+    b,c = items[0],items[1]
+    v = t.val
+    if v[0] in ('>','>='):
+        b,c,v = c,b,'<'+v[1:]
+    cd = EQ
+    if v == '<': cd = LT
+    if v == '<=': cd = LE
+    if v == '!=': cd = NE
+    if trace:
+        return infix_traced(cd,b,c,r)
+    else:
+        return infix(cd,b,c,r)
 
 def do_symbol(t,r=None):
     sets = ['=']
@@ -254,15 +279,7 @@ def do_symbol(t,r=None):
     if t.val in sets:
         return do_set_ctx(items[0],items[1]);
     elif t.val in cmps:
-        b,c = items[0],items[1]
-        v = t.val
-        if v[0] in ('>','>='):
-            b,c,v = c,b,'<'+v[1:]
-        cd = EQ
-        if v == '<': cd = LT
-        if v == '<=': cd = LE
-        if v == '!=': cd = NE
-        return infix(cd,b,c,r)
+        return do_cmp(t, False, r)
     else:
         return infix(metas[t.val],items[0],items[1],r)
 
@@ -619,16 +636,33 @@ def do_return(t):
     return
 
 def do_assert(t):
-    if t.items: r = do(t.items[0])
-    else: r = _do_none()
-
+    cmps = ['<','>','<=','>=','==','!=']
+    if t.items:
+        e = t.items[0]
+        if e.type == 'symbol' and e.val in cmps:
+            r, b, c = do_cmp(e, True)
+            op = e.val
+        else:
+            r = do(e)
+            b = _do_none()
+            c = _do_none()
+            op = None
+    else:
+        r = _do_none()
+        b = _do_none()
+        c = _do_none()
+        op = None
     un_tmp(r)
+    un_tmp(b)
+    un_tmp(c)
     v = do_call(Token(t.pos,'call',None,[
         Token(t.pos,'name','__assert__'),
-        Token(t.pos, 'reg', r) #REG
+        Token(t.pos, 'reg', r), #REG
+        Token(t.pos, 'reg', b), #REG
+        Token(t.pos, 'reg', c), #REG
+        Token(t.pos, 'string', str(op)), #REG
         ]
         ))
-
     free_tmp(v)
     return
 
