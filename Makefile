@@ -47,6 +47,9 @@ tpvm : $(VMLIB_FILES:%.c=tinypy/%.o) tinypy/vmmain.o modules/modules.a
 tpy : $(TPLIB_FILES:%.c=tinypy/%.o) tinypy/tpmain.o modules/modules.a
 	$(CC) -o $@ $^ -lm
 
+test: tpy tests/*.py
+	@for i in tests/*.py; do ./tpy $$i; done
+
 clean:
 	rm -rf tpy tpvm
 	rm -rf $(RUNTIME_C_FILES)

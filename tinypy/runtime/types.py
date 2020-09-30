@@ -3,13 +3,13 @@ ListType = getmeta([])
 DictType = getmeta({})
 
 class Exception:
-    def __init__(self, message):
-        self.message = message
+    def __init__(self, *args):
+        self.args = args
     def __repr__(self):
-        return self.message
+        return str(self.args)
 
 class ImportError(Exception):
-    pass    
+    pass
 
 def startswith(self, prefix):
     return self.find(prefix) == 0
@@ -40,5 +40,6 @@ def format(s, d):
             r.append(str(foo))
             i = j
         i = i + 1
-    return ''.join(r) 
+    r.append(s[j:i])
+    return ''.join(r)
 StringType['format'] = format

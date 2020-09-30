@@ -10,6 +10,10 @@ class StringUnitTests(UnitTest):
         assert a.startswith("01")
         assert not a.startswith("1")
 
+    def test_format(self):
+        a = "{foo}d".format(dict(foo='abc'))
+        assert a == "abcd"
+
     def test_find(self):
         a = "012345"
         assert a.find("0") == 0

@@ -1,3 +1,6 @@
+import sys
+from tinypy.runtime.types import Exception
+
 class TestResult:
     def __init__(self, name, status):
         self.status = status
@@ -5,6 +8,8 @@ class TestResult:
     def __str__(self):
         return '{name} ........ {status}'.format(getraw(self))
 
+class TestError(Exception):
+    pass
 
 class UnitTest:
     def __init__(self):
@@ -28,12 +33,22 @@ class UnitTest:
         tests = self.discover("test_")
         tests.sort()
 
+        monitor("=== Testing {script} Started====".format(dict(script=sys.argv[0])))
+
+        nfail = 0
         for test in tests:
             testfunc = self[test]
             result = self.runone(test, testfunc)
-
+            if result.status != "OK":
+                nfail = nfail + 1
             if monitor is not None:
                 monitor(result)
+
+        msg = "=== Testing {script} {nfail} / {total} Failed ====".format(
+                dict(script=sys.argv[0], nfail=nfail, total=len(tests)))
+        monitor(msg)
+        if nfail > 0:
+            raise TestError(msg)
 
     def runone(self, test, testfunc):
         self.setup(test)
@@ -43,5 +58,3 @@ class UnitTest:
         except:
             return TestResult(test, "FAIL")
         self.teardown(test)
-            
-
