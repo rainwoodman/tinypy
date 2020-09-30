@@ -350,6 +350,10 @@ tp_obj tpy_eval(TP) {
     return tp->last_result;
 }
 
+tp_obj tpy_globals(TP) {
+    return tp->frames[tp->cur].globals;
+}
+
 
 tp_obj tpy_print(TP) {
     int n = 0;
@@ -419,6 +423,7 @@ void tp_module_builtins_init(TP) {
     {"abs",tpy_abs},
     {"eval",tpy_eval},
     {"exec",tpy_exec},
+    {"globals", tpy_globals},
     {"number",tpy_float},
     {"int",tpy_int},
     {"bool", tpy_bool},
