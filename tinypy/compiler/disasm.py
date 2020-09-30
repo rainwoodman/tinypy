@@ -15,7 +15,7 @@ def pad(s, n):
     return s + p
 
 def text(x, ip, bc):
-    return "".join([chr(c) for c in bc[ip:ip+x]])
+    return bytes(bytearray(bc[ip:ip+x]))
 
 def trim(x):
     txt = []
@@ -39,12 +39,12 @@ def disassemble(bc):
         ip += 4
         if names[i] == "LINE":
             n = a * 4
-            line += " \"" + text(n,ip,bc) + "\""
+            line += " " + str(text(n,ip,bc))
             line = trim(line)
             ip += n
         elif names[i] == "STRING":
             n = b * 256 + c
-            line += " \"" + text(n,ip,bc) + "\""
+            line += " " + str(text(n,ip,bc))
             line = trim(line)
             ip += (int(n / 4) + 1) * 4 
         elif names[i] == "NUMBER":   
