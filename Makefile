@@ -1,7 +1,7 @@
 TINYPYC=./tpc
 
 RUNTIME_FILES=types.py testing.py
-COMPILER_FILES=boot.py encode.py parse.py py2bc.py tokenize.py
+COMPILER_FILES=boot.py encode.py parse.py py2bc.py tokenize.py opcodes.py
 
 COMPILER_C_FILES=$(COMPILER_FILES:%.py=tinypy/compiler/%.c)
 RUNTIME_C_FILES=$(RUNTIME_FILES:%.py=tinypy/runtime/%.c)
@@ -32,7 +32,10 @@ modules/modules.a: modules/modules.o \
 			$(MODULES_C_FILES:%.c=%.o)
 	$(AR) rcu $@ $^
 
-tinypy/tp.o : tinypy/tp.c tinypy/tp*.c tinypy/tp*.h
+tinypy/tp_opcodes.h: tinypy/compiler/opcodes.py
+	$(TINYPYC) -x -o $@
+
+tinypy/tp.o : tinypy/tp.c tinypy/tp*.c tinypy/tp*.h tinypy/tp_opcodes.h
 tinypy/compiler.o : $(COMPILER_C_FILES) tinypy/compiler.c tinypy/*.h
 tinypy/runtime.o : $(RUNTIME_C_FILES) tinypy/runtime.c tinypy/*.h
 #

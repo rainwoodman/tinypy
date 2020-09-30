@@ -1,15 +1,4 @@
-def get_ops():
-    """ Builds an opcode name <-> value dictionary """
-    li = ["EOF","ADD","SUB","MUL","DIV","POW","BITAND","BITOR","CMP","MGET","GET", \
-          "SET","NUMBER","STRING","GGET","GSET","MOVE","DEF","PASS",  \
-          "JUMP","CALL","RETURN","IF","DEBUG","EQ","LE","LT","DICT",  \
-          "LIST","NONE","LEN","LINE", "PARAMS","IGET","FILE","NAME",   \
-          "NE","HAS","RAISE","SETJMP","MOD","LSH","RSH","ITER","DEL", \
-          "REGS","BITXOR", "IFN", "NOT", "BITNOT"]
-    dic = {}
-    for i in li:
-        dic[i] = li.index(i)
-    return dic
+from tinypy.compiler import opcodes
 
 def prepare(x):
     """ Prepares the line for processing by breaking it into tokens,
@@ -45,7 +34,7 @@ def assemble(asmc):
     asmc = asmc.strip()
     asmc = asmc.split('\n')
     bc = []
-    ops = get_ops()
+    ops = opcodes.names
     for line in asmc:
         current = prepare(line)
         i,a,b,c,d = current

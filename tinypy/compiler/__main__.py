@@ -1,6 +1,7 @@
 from tinypy.compiler import py2bc
 from tinypy.compiler.boot import *
 from tinypy.compiler import disasm
+from tinypy.compiler import opcodes
 
 def do_shorts(opts, optstring, shortopts, args):
     while optstring != '':
@@ -49,20 +50,34 @@ def main(args=None):
     posargs = []
     options = {} 
 
-    opts, args = getopt(args[1:], 'cn:o:d')
+    opts, args = getopt(args[1:], 'cn:o:dx')
     opts = dict(opts)
     if len(args) == 1:
         src = args[0]
-        if '-o' in opts:
-            dest = opts['-o']
-        else:
-            if '-c' in opts:
-                dest = basename(args[0], False) + '.c'
-            else:
-                dest = basename(args[0], False) + '.tpc'
+        out = do_compile(src, opts)
+    elif '-x' in opts and len(args) == 0:
+        out = do_opcodes(opts)
     else:
-        print('Usage tinypyc [-c] [-n variable] [-o output_file_name] src.py')
+        print('Usage tinypyc [-c] [-n variable] [-o output_file_name] [-d] src.py')
         return 
+
+    if '-o' in opts:
+        dest = opts['-o']
+    else:
+        if '-c' in opts:
+            dest = basename(src, False) + '.c'
+        else:
+            dest = basename(src, False) + '.tpc'
+
+    if dest == '-':
+        print(out)
+    else:
+        save(dest, out)
+
+def do_opcodes(opts):
+    return opcodes.create_ccode()
+
+def do_compile(src, opts):
     s = read(src)
     data = py2bc.compile(s, src)
     if '-d' in opts:
@@ -80,10 +95,7 @@ def main(args=None):
     else:
         out = data
 
-    if dest == '-':
-        print(out)
-    else:
-        save(dest, out)
+    return out
 
 if __name__ == '__main__':
     main()
