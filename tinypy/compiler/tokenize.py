@@ -4,7 +4,7 @@ class Token:
 
     def _format(self):
         if self.items is not None:
-            return '[' + ', '.join([i._format() for i in self.items]) + ']'
+            return str(self.type) + ':[' + ', '.join([i._format() for i in self.items]) + ']'
         else:
             return str(self.type) + ':' + str(self.val)
     def __repr__(self):
