@@ -9,7 +9,7 @@ if not "tinypy" in sys.version:
         out = b''
         for el in v:
             # At this point all elements in v must be bytes.
-            if isinstance(el, str):
+            if not isinstance(el, bytes):
                 raise
                 el = el.encode()
             out += el
@@ -22,7 +22,9 @@ if not "tinypy" in sys.version:
             for k in b: setattr(a,k,b[k])
 
     def number(v):
-        if type(v) is str and v[0:2] == '0x':
+        if not isinstance(v, bytes):
+            raise
+        if v[0:2] == b'0x':
             v = int(v[2:],16)
         return float(v)
 

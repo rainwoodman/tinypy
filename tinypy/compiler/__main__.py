@@ -88,7 +88,13 @@ def do_compile(src, opts):
         name = opts.get('-n', '_tp_' + basename(src) + '_tpc')
         out.append("""unsigned char %s[] = {""" % name)
         for n in range(0, len(data), cols):
-            out.append(",".join(["0x%02x" % v for v in data[n:n+cols]]) + ',')
+            # FIXME: Py2 and Py3 differs in bytes[i].
+            # Py2 returns bytes object. b'c', Py3 returns an int (like C)
+            # we need to properly define what tpy shall do as
+            # we say in tpy all strings are bytes.
+            words = ["0x%02x" % ord(data[i:i+1])
+                for i in range(n, min(n + cols, len(data)))]
+            out.append(",".join(words) + ",")
 
         out.append("""};""")
         out = '\n'.join(out)

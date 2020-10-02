@@ -73,7 +73,7 @@ def do_string(t,r=None):
 def _do_number(v,r=None):
     r = get_tmp(r)
     code(NUMBER,r,0,0)
-    write(fpack(number(v)))
+    write(fpack(number(v.encode())))
     return r
 def do_number(t,r=None):
     return _do_number(t.val,r)
