@@ -61,7 +61,7 @@ def do_tokenize(s,i,l):
         elif c in ISYMBOLS: i = do_symbol(s,i,l)
         elif c >= '0' and c <= '9': i = do_number(s,i,l)
         elif c in 'b' and (s[i+1] =='"' or s[i+1] == "'"):
-            i += 1; T.y, T.yi = T.y+1, i
+            i += 1
             i = do_string(s,i,l)
         elif c=='"' or c=="'": i = do_string(s,i,l)
         elif (c >= 'a' and c <= 'z') or \
@@ -73,8 +73,8 @@ def do_tokenize(s,i,l):
         else: u_error('tokenize',s,T.f)
     indent(0)
     r = T.res; T = None
-    #for t in r:
-        #print (t.pos,t.type,t.val)
+    # for t in r:
+        # print (t.pos,t.type,t.val)
     return r
 
 def do_nl(s,i,l):
