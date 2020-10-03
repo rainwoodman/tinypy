@@ -1,0 +1,16 @@
+language: generic
+
+python:
+  - "2.7"
+  - "3.8"
+
+os:
+  - linux
+  - osx
+
+
+install:
+    - make
+
+script:
+    - make test
