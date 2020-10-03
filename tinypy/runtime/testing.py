@@ -1,6 +1,13 @@
 import sys
 from tinypy.runtime.types import Exception
 
+def fgcolor(code):
+    ESC = chr(27)
+    if code:
+        return ESC + "[1;" + str(code) + "m"
+    else:
+        return ESC + "[0m"
+
 class TestResult:
     def __init__(self, name, status, exc):
         self.status = status
@@ -34,7 +41,13 @@ class UnitTest:
         tests = self.discover("test_")
         tests.sort()
 
-        monitor("=== Testing {script} Started====".format(dict(script=sys.argv[0])))
+        subst = dict(script=sys.argv[0], total=len(tests))
+
+        subst['RED'] = fgcolor(31)
+        subst['GREEN'] = fgcolor(32)
+        subst['RESET'] = fgcolor(0)
+
+        monitor("==== Testing {script} Started {total} cases ====".format(subst))
 
         nfail = 0
         for test in tests:
@@ -42,11 +55,17 @@ class UnitTest:
             result = self.runone(test, testfunc)
             if result.status != "OK":
                 nfail = nfail + 1
-            if monitor is not None:
-                monitor(result)
+            subst['name'] = test
+            subst['status'] = result.status
+            msg = "[ {status} ] {name}".format(subst)
+            monitor(msg)
 
-        msg = "=== Testing {script} {nfail} / {total} Failed ====".format(
-                dict(script=sys.argv[0], nfail=nfail, total=len(tests)))
+        subst['nfail'] = nfail
+        if nfail > 0:
+            msg = "==== Testing {script} {RED}{nfail} Failed{RESET} ====".format(subst)
+        else:
+            msg = "==== Testing {script} {GREEN}All Passed{RESET} ====".format(subst)
+
         monitor(msg)
         if nfail > 0:
             raise TestError(msg)
@@ -56,7 +75,6 @@ class UnitTest:
         try:
             testfunc(self)
             return TestResult(test, "OK", None)
-        except e:
-            print(e)
-            return TestResult(test, "FAIL", e)
+        except:
+            return TestResult(test, "FAIL")
         self.teardown(test)

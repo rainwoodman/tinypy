@@ -13,6 +13,8 @@ MODULES=math random re
 MODULES_A_FILES=$(MODULES:%=modules/%.a)
 MODULES_C_FILES=$(MODULES:%=modules/%/init.c)
 
+TESTS_PY_FILES=$(wildcard tests/*.py)
+
 %.c : %.py
 	$(TINYPYC) -co $@ $^
 
@@ -47,8 +49,8 @@ tpvm : $(VMLIB_FILES:%.c=tinypy/%.o) tinypy/vmmain.o modules/modules.a
 tpy : $(TPLIB_FILES:%.c=tinypy/%.o) tinypy/tpmain.o modules/modules.a
 	$(CC) -o $@ $^ -lm
 
-test: tpy tests/*.py
-	@for i in tests/*.py; do ./tpy $$i; done
+test: $(TESTS_PY_FILES) tpy run-tests.sh
+	bash run-tests.sh $(TESTS_PY_FILES)
 
 clean:
 	rm -rf tpy tpvm
