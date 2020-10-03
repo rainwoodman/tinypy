@@ -10,6 +10,7 @@ os:
 
 
 install:
+    - python --version
     - make
 
 script:
