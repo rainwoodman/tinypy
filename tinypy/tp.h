@@ -218,7 +218,6 @@ typedef struct tp_vm {
     tp_obj params;
     tp_obj _regs;
     tp_obj *regs;
-    tp_obj root;
     jmp_buf buf;
 #ifdef CPYTHON_MOD
     jmp_buf nextexpr;
@@ -230,6 +229,7 @@ typedef struct tp_vm {
     int cur;
     void (*echo)(const char* data, int length);
     /* gc */
+    tp_obj root;
     tpd_list *white;
     tpd_list *grey;
     tpd_list *black;

@@ -20,7 +20,6 @@ tp_vm * tp_create_vm(void) {
     tp->cur = 0;
     tp->jmp = 0;
     tp->ex = tp_None;
-    tp->root = tp_list_nt(tp); /* root is not tracked by gc, as gc is not defined yet.*/
 
     for (i=0; i<256; i++) { tp->chars[i][0]=i; }
 
@@ -28,7 +27,9 @@ tp_vm * tp_create_vm(void) {
     
     /* gc initialized, can use tpy_ functions. */
     tp->_regs = tp_list_t(tp);
-    for (i=0; i<TP_REGS; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
+    for (i=0; i < TP_REGS + 1; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
+    tp->regs = tp->_regs.list.val->items + 1;
+
     tp->builtins = tp_rawdict_t(tp);
     tp->modules = tp_rawdict_t(tp);
     tp->_list_meta = tp_rawdict_t(tp);
@@ -40,17 +41,15 @@ tp_vm * tp_create_vm(void) {
     for (i=0; i<TP_FRAMES; i++) { tp_set(tp, tp->_params, tp_None, tp_list_t(tp)); }
     tp->echo = tp_default_echo;
 
-    tp_set(tp, tp->root, tp_None, tp->builtins);
-    tp_set(tp, tp->root, tp_None, tp->modules);
-    tp_set(tp, tp->root, tp_None, tp->_regs);
-    tp_set(tp, tp->root, tp_None, tp->_params);
+    tp_gc_set_reachable(tp, tp->builtins);
+    tp_gc_set_reachable(tp, tp->modules);
+    tp_gc_set_reachable(tp, tp->_regs);
+    tp_gc_set_reachable(tp, tp->_params);
 
-    tp_set(tp, tp->root, tp_None, tp->_list_meta);
-    tp_set(tp, tp->root, tp_None, tp->_dict_meta);
-    tp_set(tp, tp->root, tp_None, tp->_string_meta);
-    
-    
-    tp->regs = tp->_regs.list.val->items;
+    tp_gc_set_reachable(tp, tp->_list_meta);
+    tp_gc_set_reachable(tp, tp->_dict_meta);
+    tp_gc_set_reachable(tp, tp->_string_meta);
+
     tp->last_result = tp_None;
     tp_full(tp);
     return tp;
@@ -59,9 +58,6 @@ tp_vm * tp_create_vm(void) {
 void tp_enter_frame(TP, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
     tpd_frame f = tp_frame_nt(tp, globals, code, ret_dest);
 
-    if (f.regs+(256+TP_REGS_EXTRA) >= tp->regs+TP_REGS || tp->cur >= TP_FRAMES-1) {
-        tp_raise(,tp_string_atom(tp, "(tp_frame) RuntimeError: stack overflow"));
-    }
     tp->cur += 1;
     tp->frames[tp->cur] = f;
 }
