@@ -32,13 +32,12 @@ def format(s, d):
                 j = j + 1
 
             spec = s[i+1:j-1]
-            #print('spec', spec)
             #name, fmt = spec.split(':')
             foo = eval(spec, d)
             #foo = spec
             # print('foo', foo, spec, d)
             r.append(str(foo))
-            i = j
+            i = j - 1
         i = i + 1
     r.append(s[j:i])
     return ''.join(r)

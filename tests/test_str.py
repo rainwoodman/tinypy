@@ -11,8 +11,8 @@ class StringUnitTests(UnitTest):
         assert not a.startswith("1")
 
     def test_format(self):
-        a = "{foo}d".format(dict(foo='abc'))
-        assert a == "abcd"
+        a = "{foo}{bar}d".format(dict(foo='abc', bar='123'))
+        assert a == "abc123d"
 
     def test_percent(self):
         a = "{foo}d" % dict(foo='abc')
