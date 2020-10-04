@@ -9,12 +9,10 @@ def fgcolor(code):
         return ESC + "[0m"
 
 class TestResult:
-    def __init__(self, name, status, exc):
-        self.status = status
+    def __init__(self, name, passed, exc):
+        self.passed = passed
         self.name = name
         self.exc = exc
-    def __str__(self):
-        return '{name} ........ {status}'.format(getraw(self))
 
 class TestError(Exception):
     pass
@@ -47,34 +45,40 @@ class UnitTest:
         subst['GREEN'] = fgcolor(32)
         subst['RESET'] = fgcolor(0)
 
-        monitor("==== Testing {script} Started {total} cases ====".format(subst))
+        monitor("{GREEN}[ STARTED ]{RESET} {script} {total} cases.".format(subst))
 
         nfail = 0
+        itest = 0
         for test in tests:
             testfunc = self[test]
             result = self.runone(test, testfunc)
-            if result.status != "OK":
-                nfail = nfail + 1
             subst['name'] = test
-            subst['status'] = result.status
-            msg = "[ {status} ] {name}".format(subst)
+            if result.passed:
+                subst['status'] = "PASS"
+            else:
+                nfail = nfail + 1
+                subst['status'] = "FAIL"
+            subst['id'] = itest
+            msg = "[ {status} ] {id}: {name}".format(subst)
+            itest = itest + 1
             monitor(msg)
 
         subst['nfail'] = nfail
         if nfail > 0:
-            msg = "==== Testing {script} {RED}{nfail} Failed{RESET} ====".format(subst)
+            msg = "{RED}[ FAIL ]{RESET} {script} {nfail} Failed.".format(subst)
         else:
-            msg = "==== Testing {script} {GREEN}All Passed{RESET} ====".format(subst)
+            msg = "{GREEN}[ HEALTHY ]{RESET} {script}.".format(subst)
 
         monitor(msg)
         if nfail > 0:
-            raise TestError(msg)
+            return False
+        return True
 
     def runone(self, test, testfunc):
         self.setup(test)
         try:
             testfunc(self)
-            return TestResult(test, "OK", None)
+            return TestResult(test, True, None)
         except:
-            return TestResult(test, "FAIL")
+            return TestResult(test, False, None)
         self.teardown(test)
