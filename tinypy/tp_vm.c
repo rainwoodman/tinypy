@@ -123,6 +123,7 @@ void tp_continue_frame(TP, int cur) {
     }
     /* keep runing till the frame drops back (aka function returns) */
     while (tp->cur >= cur) {
+        tp_gcinc(tp);
         if (tp_step(tp) == -1) break;
     }
 

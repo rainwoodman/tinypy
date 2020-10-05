@@ -161,7 +161,6 @@ void tp_gcinc(TP) {
 }
 
 tp_obj tp_track(TP,tp_obj v) {
-    tp_gcinc(tp);
     tp_grey(tp,v);
     return v;
 }
