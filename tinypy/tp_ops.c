@@ -108,6 +108,12 @@ tp_obj tp_mget(TP, tp_obj self, tp_obj k) {
     return _tp_get(tp, self, k, 1);
 }
 
+tp_obj tp_getraw(TP, tp_obj self) {
+    tp_obj r = self;
+    r.type.magic = TP_DICT_RAW;
+    return r;
+}
+
 static tp_obj
 _tp_get(TP, tp_obj self, tp_obj k, int mget)
 {

@@ -239,8 +239,7 @@ tp_obj tpy_object_call(TP) {
  */
 tp_obj tpy_getraw(TP) {
     tp_obj self = TP_TYPE(TP_DICT);
-    self.type.magic = TP_DICT_RAW;
-    return self;
+    return tp_getraw(tp, self);
 }
 
 /* Function: tp_class
