@@ -75,7 +75,7 @@ def main(args=None):
         save(dest, out)
 
 def do_opcodes(opts):
-    return opcodes.create_ccode()
+    return opcodes.create_ccode().encode()
 
 def do_compile(src, opts):
     s = read(src)

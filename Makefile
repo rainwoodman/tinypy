@@ -57,6 +57,7 @@ clean:
 	rm -rf $(RUNTIME_C_FILES)
 	rm -rf $(COMPILER_C_FILES)
 	rm -rf tinypy/*.o
+	rm -rf tinypy/tp_opcodes.h
 	rm -rf modules/*/*.o
 	rm -rf modules/*.a
 	rm -rf modules/modules.c
