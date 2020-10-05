@@ -73,6 +73,7 @@ void tp_gc_init(TP) {
     tp->grey = tpd_list_new(tp);
     tp->black = tpd_list_new(tp);
     tp->steps = 0;
+    tp->gcmax = 16384;
 }
 
 /* Add a reachable object to the gc root. */
@@ -148,16 +149,15 @@ void tp_full(TP) {
 
 void tp_gcinc(TP) {
     tp->steps += 1;
-    if (tp->steps < TP_GCMAX || tp->grey->len > 0) {
+
+    if (tp->steps < tp->gcmax || tp->grey->len > 0) {
         /* follow two objects every one new object is tracked */
         _tp_gcinc(tp);
         _tp_gcinc(tp);
+        return;
     }
-    if (tp->steps >= TP_GCMAX && tp->grey->len == 0) {
-        tp->steps = 0;
-        tp_full(tp);
-    }
-    return;
+    tp->steps = 0;
+    tp_full(tp);
 }
 
 tp_obj tp_track(TP,tp_obj v) {

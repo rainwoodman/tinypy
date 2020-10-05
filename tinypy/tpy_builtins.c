@@ -195,19 +195,6 @@ tp_obj tpy_getmeta(TP) {
     return self.obj.info->meta;
 }
 
-/* Function: tp_object
- * Creates a new object.
- *
- * Returns:
- * The newly created object. The object initially has no parent class, use
- * <tp_setmeta> to set a class. Also see <tp_object_new>.
- */
-tp_obj tp_object(TP) {
-    tp_obj self = tp_dict_t(tp);
-    self.type.magic = TP_DICT_OBJECT;
-    return self;
-}
-
 tp_obj tpy_object_new(TP) {
     tp_obj klass = TP_TYPE(TP_DICT);
     tp_obj self = tp_object(tp);

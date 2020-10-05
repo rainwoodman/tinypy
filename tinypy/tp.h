@@ -182,7 +182,6 @@ typedef struct tpd_frame {
     int cregs;
 } tpd_frame;
 
-#define TP_GCMAX 16384 /* FIXME: increased so that gc doesn't get called while running tp_str() */
 #define TP_FRAMES 256
 #define TP_REGS_EXTRA 2
 /* #define TP_REGS_PER_FRAME 256*/
@@ -229,6 +228,7 @@ typedef struct tp_vm {
     int cur;
     void (*echo)(const char* data, int length);
     /* gc */
+    int gcmax;
     tp_obj root;
     tpd_list *white;
     tpd_list *grey;

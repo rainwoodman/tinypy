@@ -86,6 +86,19 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
     tp_raise(tp_None,tp_string_atom(tp, "(tp_iter) TypeError: iteration over non-sequence"));
 }
 
+/* Function: tp_object
+ * Creates a new object.
+ *
+ * Returns:
+ * The newly created object. The object initially has no parent class, use
+ * <tp_setmeta> to set a class. Also see <tp_object_new>.
+ */
+tp_obj tp_object(TP) {
+    tp_obj self = tp_dict_t(tp);
+    self.type.magic = TP_DICT_OBJECT;
+    return self;
+}
+
 /* Function: tp_get
  * Attribute lookup.
  * 
