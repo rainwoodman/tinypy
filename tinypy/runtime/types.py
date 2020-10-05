@@ -33,7 +33,7 @@ def format(s, d):
 
             spec = s[i+1:j-1]
             #name, fmt = spec.split(':')
-            foo = eval(spec, d)
+            foo = d[spec]  # eval requires the compiler: eval(spec, d)
             #foo = spec
             # print('foo', foo, spec, d)
             r.append(str(foo))
