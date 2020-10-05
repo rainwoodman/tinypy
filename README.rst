@@ -1,6 +1,9 @@
 Tinypy
 ======
 
+.. image:: https://travis-ci.com/rainwoodman/tinypy.svg?branch=master
+    :target: https://travis-ci.com/rainwoodman/tinypy
+
 This is a refactored version of tinypy.
 
 The focus is on the core language, and production readiness features
