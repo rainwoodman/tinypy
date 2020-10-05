@@ -56,7 +56,7 @@ if not "tinypy" in sys.version:
         return r
 
     def save(fname,v):
-        f = open(fname,'w')
+        f = open(fname,'wb')
         f.write(v)
         f.close()
 else:
