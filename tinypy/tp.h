@@ -222,6 +222,12 @@ typedef struct tp_vm {
     jmp_buf nextexpr;
 #endif
     int jmp;
+    /* FIXME:
+     * 1. Expose ex to python, to e.g. sys.get_exc().
+     * 2. move ex to the frame (thread safety)
+     * 3. it shall probably be tracked by the GC too.
+     * 4. chaining of exceptions (via frame or special object type?)
+     * */
     tp_obj ex;
     tp_obj last_result;
     char chars[256][2];
