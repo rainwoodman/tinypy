@@ -1,8 +1,15 @@
 TESTS=$@
 
 function run {
-    echo "./tpy $1"
-    ./tpy $1
+    tpc=${1//.py/.tpc}
+    if [[ "${tpc}" == "$1" ]]; then
+        echo $1 does not end with .py
+        exit 1
+    fi
+    echo "./tpc -o ${tpc} $1"
+    echo "./tpvm ${tpc}"
+    ./tpc -o ${tpc} $1
+    ./tpvm ${tpc}
 }
 
 st=0
