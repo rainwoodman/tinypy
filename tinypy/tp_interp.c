@@ -64,11 +64,6 @@ tp_vm * tp_init(int argc, char *argv[]) {
  * may be good practice to call this function on shutdown.
  */
 void tp_deinit(TP) {
-    while (tp->root.list.val->len) {
-        tpd_list_pop(tp, tp->root.list.val, 0, "tp_deinit");
-    }
-    tp_full(tp); tp_full(tp);
-    tp_delete(tp,tp->root);
     tp_gc_deinit(tp);
     tp->mem_used -= sizeof(tp_vm); 
     free(tp);
