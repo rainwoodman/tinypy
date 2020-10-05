@@ -1,6 +1,7 @@
 TESTS=$@
 
 function run {
+    echo "./tpy $1"
     ./tpy $1
 }
 
