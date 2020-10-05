@@ -51,6 +51,16 @@ tp_obj tp_dict_get(TP, tp_obj self, tp_obj k) {
     return tpd_dict_get(tp, self.dict.val, n);
 }
 
+int tp_dict_has(TP, tp_obj self, tp_obj k) {
+    int hash = tp_hash(tp, k);
+    int n = tpd_dict_hashfind(tp, self.dict.val, hash, k);
+
+    if (n < 0) {
+        return 0;
+    }
+    return 1;
+}
+
 void tp_dict_del(TP, tp_obj self, tp_obj k) {
     int n = tpd_dict_hashfind(tp, self.dict.val, tp_hash(tp, k), k);
     if (n < 0) {

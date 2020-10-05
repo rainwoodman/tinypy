@@ -1,9 +1,9 @@
-int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *meta, int depth) {
+int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *r, int depth) {
     if(self.type.typeid == TP_DICT) {
         /* first do a dict look up from the object itself */
         int n = tpd_dict_hashfind(tp, self.dict.val, hash, k);
         if (n != -1) {
-            *meta = self.dict.val->items[n].val;
+            *r= self.dict.val->items[n].val;
             return 1;
         }
         /* raw dict, no meta chain up. we are done. */
@@ -20,15 +20,15 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *meta, int depth) {
     }
 
     if (self.obj.info->meta.type.typeid == TP_DICT &&
-        _tp_lookup_(tp, self.obj.info->meta, hash, k, meta, depth)) {
-        if ( meta->type.typeid == TP_FUNC) {
+        _tp_lookup_(tp, self.obj.info->meta, hash, k, r, depth)) {
+        if ( r->type.typeid == TP_FUNC) {
             /* object dict or string, or list */
             if ((self.type.typeid == TP_DICT && self.type.magic == TP_DICT_OBJECT)
                 || self.type.typeid == TP_LIST
                 || self.type.typeid == TP_STRING
             ) {
                 /* an object is seen, bind the meta method to the instance FIXME: for list and string */
-                *meta = tp_bind(tp, *meta, self);
+                *r = tp_bind(tp, *r, self);
             }
         }
         return 1;
@@ -36,8 +36,8 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *meta, int depth) {
     return 0;
 }
 
-int _tp_lookup(TP, tp_obj self, tp_obj k, tp_obj *meta) {
-    return _tp_lookup_(tp, self, tp_hash(tp, k), k, meta, 8);
+int _tp_lookup(TP, tp_obj self, tp_obj k, tp_obj *r) {
+    return _tp_lookup_(tp, self, tp_hash(tp, k), k, r, 8);
 }
 
 #define TP_META_BEGIN(self,name) \

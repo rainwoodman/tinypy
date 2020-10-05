@@ -98,12 +98,12 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
 static tp_obj
 _tp_get(TP, tp_obj self, tp_obj k, int mget);
 
-/* look up using []; prefer members; and fall back to meta dict */
+/* lookup by []. */
 tp_obj tp_get(TP, tp_obj self, tp_obj k) {
     return _tp_get(tp, self, k, 0);
 }
 
-/* look up using .; prefer meta dict and attrs */
+/* look up by ".". */
 tp_obj tp_mget(TP, tp_obj self, tp_obj k) {
     return _tp_get(tp, self, k, 1);
 }
@@ -117,26 +117,28 @@ tp_obj tp_getraw(TP, tp_obj self) {
 static tp_obj
 _tp_get(TP, tp_obj self, tp_obj k, int mget)
 {
+    /* mget is currently ignored. attributes and items are still treated the same way. */
     int type = self.type.typeid;
     tp_obj r;
     if (type >= TP_HAS_META) {
         if (type == TP_DICT) {
-            if (mget) {
-                TP_META_BEGIN(self, "__getattr__");
-                    return tp_call(tp, meta, tp_params_v(tp,1,k));
-                TP_META_END;
-                if(self.type.magic != TP_DICT_RAW && _tp_lookup(tp, self.obj.info->meta, k, &r)) {
-                    return tp_bind(tp, r, self);
-                }
+            if (tp_dict_has(tp, self, k)) {
+                return tp_dict_get(tp, self, k);
             }
-
-            TP_META_BEGIN(self,"__getitem__");
+            /* create a raw dict. */
+            if (tp_cmp(tp, k, tp_string_atom(tp, "__dict__")) == 0) {
+                return tp_getraw(tp, self);
+            }
+            TP_META_BEGIN(self, "__get__");
                 return tp_call(tp, meta, tp_params_v(tp,1,k));
             TP_META_END;
             if (self.type.magic != TP_DICT_RAW && _tp_lookup(tp, self, k, &r)) {
                 return r;
             }
-            return tp_dict_get(tp, self, k);
+            char * str = tp_cstr(tp, k);
+            tp_obj message = tp_printf(tp, "(tpd_dict_del) KeyError: %s", str);
+            free(str);
+            tp_raise(tp_None, message);
         } else if (type == TP_LIST) {
             if (k.type.typeid == TP_NUMBER) {
                 int l = tp_len(tp,self).number.val;
@@ -234,7 +236,10 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
 
     if (type == TP_DICT) {
         TP_META_BEGIN(self,"__set__");
-            tp_call(tp,meta,tp_params_v(tp,2,k,v));
+            /* unhandled case returns true, and uses the default. */
+            if(tp_true(tp, tp_call(tp,meta,tp_params_v(tp,2,k,v)))) {
+                tp_dict_set(tp, self, k, v);
+            }
             return;
         TP_META_END;
         tp_dict_set(tp, self, k, v);
