@@ -81,7 +81,7 @@ def do_compile(src, opts):
     s = read(src)
     data = py2bc.compile(s, src)
     if '-d' in opts:
-        out = disasm.disassemble(data)
+        out = disasm.disassemble(data).encode()
     elif '-c' in opts:
         out = []
         cols = 16
