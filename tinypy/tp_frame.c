@@ -11,6 +11,9 @@ tpd_frame tp_frame_nt(TP, tp_obj globals, tp_obj code, tp_obj * ret_dest)
 
     f.regs[0] = f.globals;
     f.regs[1] = f.code;
+    f.line = &f.regs[2];
+    f.name = &f.regs[3];
+    f.fname = &f.regs[4];
     f.regs += TP_REGS_EXTRA;
 
     if (f.regs+(256+TP_REGS_EXTRA) >= tp->regs+TP_REGS || tp->cur >= TP_FRAMES-1) {
@@ -19,9 +22,9 @@ tpd_frame tp_frame_nt(TP, tp_obj globals, tp_obj code, tp_obj * ret_dest)
 
     f.ret_dest = ret_dest;
     f.lineno = 0;
-    f.line = tp_string_atom(tp, "");
-    f.name = tp_string_atom(tp, "?");
-    f.fname = tp_string_atom(tp, "?");
+    *f.line = tp_string_atom(tp, "");
+    *f.name = tp_string_atom(tp, "?");
+    *f.fname = tp_string_atom(tp, "?");
     f.cregs = 0;
     return f;
 }

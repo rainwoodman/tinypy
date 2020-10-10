@@ -174,16 +174,16 @@ typedef struct tpd_frame {
     tpd_code *jmp;
     tp_obj *regs;
     tp_obj *ret_dest;
-    tp_obj fname;
-    tp_obj name;
-    tp_obj line;
+    tp_obj *fname;
+    tp_obj *name;
+    tp_obj *line;
     tp_obj globals;
     int lineno;
     int cregs;
 } tpd_frame;
 
 #define TP_FRAMES 256
-#define TP_REGS_EXTRA 2
+#define TP_REGS_EXTRA 5
 /* #define TP_REGS_PER_FRAME 256*/
 #define TP_REGS 16384
 
@@ -222,7 +222,7 @@ typedef struct tp_vm {
     tp_obj params;
     tp_obj _regs;
     tp_obj *regs;
-    tp_obj last_result;
+    tp_obj *last_result;
 
     /* exception */
     jmp_buf buf;

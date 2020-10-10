@@ -150,7 +150,7 @@ void tp_full(TP) {
 void tp_gcinc(TP) {
     tp->steps += 1;
 
-    if (tp->steps < tp->gcmax || tp->grey->len > 0) {
+    if (tp->steps < tp->gcmax && tp->grey->len > 0) {
         /* follow two objects every one new object is tracked */
         _tp_gcinc(tp);
         _tp_gcinc(tp);

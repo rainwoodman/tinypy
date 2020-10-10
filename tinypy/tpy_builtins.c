@@ -343,7 +343,7 @@ tp_obj tpy_eval(TP) {
 
     tp_exec(tp, code, globals);
 
-    return tp->last_result;
+    return *tp->last_result;
 }
 
 tp_obj tpy_globals(TP) {

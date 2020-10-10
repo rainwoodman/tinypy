@@ -26,15 +26,13 @@ tp_vm * tp_create_vm(void) {
 
     /* gc initialized, can use tpy_ functions. */
 
-    tp->_exc = tp_list_t(tp);
-    tp_set(tp, tp->_exc, tp_None, tp_None);
-    tp_set(tp, tp->_exc, tp_None, tp_None);
-    tp->exc = tp->_exc.list.val->items + 0;
-    tp->exc_stack = tp->_exc.list.val->items + 1;
-
     tp->_regs = tp_list_t(tp);
-    for (i=0; i < TP_REGS + 1; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
-    tp->regs = tp->_regs.list.val->items + 1;
+    for (i=0; i < TP_REGS + 3; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
+
+    tp->last_result = tp->_regs.list.val->items + 0;
+    tp->exc = tp->_regs.list.val->items + 1;
+    tp->exc_stack = tp->_regs.list.val->items + 2;
+    tp->regs = tp->_regs.list.val->items + 3;
 
     tp->builtins = tp_rawdict_t(tp);
     tp->modules = tp_rawdict_t(tp);
@@ -51,13 +49,12 @@ tp_vm * tp_create_vm(void) {
     tp_gc_set_reachable(tp, tp->modules);
     tp_gc_set_reachable(tp, tp->_regs);
     tp_gc_set_reachable(tp, tp->_params);
-    tp_gc_set_reachable(tp, tp->_exc);
 
     tp_gc_set_reachable(tp, tp->_list_meta);
     tp_gc_set_reachable(tp, tp->_dict_meta);
     tp_gc_set_reachable(tp, tp->_string_meta);
 
-    tp->last_result = tp_None;
+    *tp->last_result = tp_None;
     tp_full(tp);
     return tp;
 }
@@ -98,12 +95,12 @@ void tp_format_stack_internal(TP, StringBuilder * sb)
     for (i=0; i<=tp->cur; i++) {
         if (!tp->frames[i].lineno) { continue; }
         string_builder_write(tp, sb, "File \"", -1);
-        string_builder_echo(tp, sb, tp->frames[i].fname);
+        string_builder_echo(tp, sb, *tp->frames[i].fname);
         string_builder_write(tp, sb, "\", ", -1);
         string_builder_echo(tp, sb, tp_printf(tp, "line %d, in ", tp->frames[i].lineno));
-        string_builder_echo(tp, sb, tp->frames[i].name);
+        string_builder_echo(tp, sb, *tp->frames[i].name);
         string_builder_write(tp, sb, "\n ", -1);
-        string_builder_echo(tp, sb, tp->frames[i].line);
+        string_builder_echo(tp, sb, *tp->frames[i].line);
         string_builder_write(tp, sb, "\n", -1);
     }
 }
@@ -207,7 +204,7 @@ int tp_step(TP) {
    
 //    tp_obj tpy_print(TP);
     switch (e.i) {
-        case TP_IEOF: tp->last_result = RA; tp_return(tp,tp_None); SR(0); break;
+        case TP_IEOF: *tp->last_result = RA; tp_return(tp,tp_None); SR(0); break;
         case TP_IADD: RA = tp_add(tp,RB,RC); break;
         case TP_ISUB: RA = tp_sub(tp,RB,RC); break;
         case TP_IMUL: RA = tp_mul(tp,RB,RC); break;
@@ -308,12 +305,12 @@ int tp_step(TP) {
             ;
             int a = (*(cur+1)).string.val - tp_string_getptr(f->code);
             if(tp_string_getptr(f->code)[a] == ';') abort();
-            f->line = tp_string_view(tp, f->code, a, a+VA*4-1);
+            *f->line = tp_string_view(tp, f->code, a, a+VA*4-1);
             cur += VA; f->lineno = UVBC;
             }
             break;
-        case TP_IFILE: f->fname = RA; break;
-        case TP_INAME: f->name = RA; break;
+        case TP_IFILE: *f->fname = RA; break;
+        case TP_INAME: *f->name = RA; break;
         case TP_IREGS: f->cregs = VA; break;
         default:
             tp_raise(0,tp_string_atom(tp, "(tp_step) RuntimeError: invalid instruction"));
@@ -343,6 +340,6 @@ tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
 tp_obj tp_eval_from_cstr(TP, const char *text, tp_obj globals) {
     tp_obj code = tp_compile(tp, tp_string_atom(tp, text), tp_string_atom(tp, "<eval>"));
     tp_exec(tp,code,globals);
-    return tp->last_result;
+    return *tp->last_result;
 }
 

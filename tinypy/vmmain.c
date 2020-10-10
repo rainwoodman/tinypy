@@ -7,6 +7,10 @@ tp_obj tp_load(TP, const char*);
 int main(int argc,  char *argv[]) {
     tp_vm *tp = tp_init(argc, argv);
 
+#ifdef TPVM_DEBUG
+    tp->gcmax = 0;
+#endif
+
     tp_obj fname = tp_string_atom(tp, argv[1]);
     tp_obj code = tp_load(tp, argv[1]);
 
