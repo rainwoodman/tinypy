@@ -18,6 +18,7 @@
 
 #ifdef __GNUC__
 #define tp_inline __inline__
+#define TP_PACKED __attribute__ ((packed))
 #endif
 
 #ifdef _MSC_VER
@@ -27,6 +28,9 @@
 /* don't inline in debug builds (for easier debugging) */
 #define tp_inline
 #endif
+
+/* Find out what msvc expects for packed enum */
+#define TP_PACKED __attribute__ ((packed))
 #endif
 
 #ifndef tp_inline
@@ -42,41 +46,38 @@
    #define tp_realloc(x,y) GC_REALLOC(x,y)
    #define tp_free(x)*/
 
-enum TPTypeID {
+enum TP_PACKED TPTypeID {
     TP_NONE = 0,
     TP_NUMBER = 1,
-    TP_GC_TRACKED = 10,
+    TP_GC_TRACKED = 9,
     TP_FUNC = 10,
     TP_DATA = 11,
 
-    TP_HAS_META = 100,
+    TP_HAS_META = 99,
     TP_STRING = 100,
     TP_DICT = 101,
     TP_LIST = 102,
 };
 
+enum TP_PACKED TPTypeMagic {
+    TP_DICT_RAW,
+    TP_DICT_CLASS, /* do not bind func members */
+    TP_DICT_OBJECT, /* bind func members */
+
+    TP_STRING_NONE,
+    TP_STRING_ATOM,
+    TP_STRING_EXTERN,
+    TP_STRING_VIEW,
+
+    TP_FUNC_MASK_C = 1<<6,
+    TP_FUNC_MASK_METHOD = 1<<7,
+};
+
 typedef struct TPTypeInfo {
-    unsigned int typeid : 32; /* TPTypeID */
-    unsigned int magic: 32;
+    enum TPTypeID typeid;
+    enum TPTypeMagic magic;
 } TPTypeInfo;
 
-enum TPDictMagic {
-    TP_DICT_RAW = 0,
-    TP_DICT_CLASS = 1, /* do not bind func members */
-    TP_DICT_OBJECT = 2, /* bind func members */
-};
-
-enum TPFuncMagic {
-    TP_FUNC_MASK_C = 1,
-    TP_FUNC_MASK_METHOD = 2,
-};
-
-enum TPStringMagic {
-    TP_STRING_NONE = 0,
-    TP_STRING_ATOM = 1,
-    TP_STRING_EXTERN = 2,
-    TP_STRING_VIEW = 3,
-};
 typedef double tp_num;
 
 /* Type: tp_obj

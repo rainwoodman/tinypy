@@ -413,7 +413,7 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
     }
 
     if (self.type.typeid == TP_FUNC) {
-        if(!(self.type.magic & TP_FUNC_MASK_C)) {
+        if(self.type.magic & TP_FUNC_MASK_C) {
             if (self.type.magic & TP_FUNC_MASK_METHOD) {
                 /* METHOD */
                 tpd_list_insert(tp, tp->params.list.val, 0, self.func.info->instance);
