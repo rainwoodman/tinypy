@@ -20,12 +20,15 @@ class TestError(Exception):
 
 class UnitTest:
     def __init__(self):
-        pass
+        self._known_failure_prefix = 'known_failure_test'
+        self._test_prefix = 'test_'
 
-    def discover(self, test_prefix):
+    def discover(self, test_prefix, known_failure_prefix):
         r = []
         meta = getmeta(self)
         for name in meta:
+            if name.find(known_failure_prefix) == 0:
+                r.append(name)
             if name.find(test_prefix) == 0:
                 r.append(name)
         return r
@@ -37,7 +40,7 @@ class UnitTest:
         pass
 
     def run(self, monitor=print):
-        tests = self.discover("test_")
+        tests = self.discover(self._test_prefix, self._known_failure_prefix)
         tests.sort()
 
         subst = dict(script=sys.argv[0], total=len(tests))
@@ -49,6 +52,7 @@ class UnitTest:
         monitor("{GREEN}[ STARTED ]{RESET} {script} {total} cases.".format(subst))
 
         nfail = 0
+        nknownfail = 0
         itest = 0
         for test in tests:
             testfunc = self[test]
@@ -56,6 +60,9 @@ class UnitTest:
             subst['name'] = test
             if result.passed:
                 subst['status'] = "PASS"
+            elif test.startswith(self._known_failure_prefix):
+                nknownfail = nknownfail + 1
+                subst['status'] = "KNOWN"
             else:
                 nfail = nfail + 1
                 subst['status'] = "FAIL"
@@ -67,10 +74,11 @@ class UnitTest:
                 monitor("Exception:\n{exc}\n{stack}".format(result))
 
         subst['nfail'] = nfail
+        subst['nknownfail'] = nknownfail
         if nfail > 0:
             msg = "{RED}[ FAIL ]{RESET} {script} {nfail} Failed.".format(subst)
         else:
-            msg = "{GREEN}[ HEALTHY ]{RESET} {script}.".format(subst)
+            msg = "{GREEN}[ HEALTHY ]{RESET} {script} {nknownfail} Known Failures.".format(subst)
 
         monitor(msg)
         if nfail > 0:

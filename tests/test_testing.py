@@ -10,8 +10,8 @@ class MyTest(UnitTest):
     def test_0_ok(self):
         return
 
-    #def test_1_fail(self):
-    #   assert 1 == 2
+    def known_failure_test_1_fail(self):
+       assert 1 == 2
 
 t = MyTest()
 
