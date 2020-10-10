@@ -11,7 +11,7 @@ class MyTest(UnitTest):
         return
 
     #def test_1_fail(self):
-    #    raise
+    #   assert 1 == 2
 
 t = MyTest()
 

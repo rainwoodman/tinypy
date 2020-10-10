@@ -19,13 +19,19 @@ tp_vm * tp_create_vm(void) {
     tp->mem_used = sizeof(tp_vm);
     tp->cur = 0;
     tp->jmp = 0;
-    tp->ex = tp_None;
 
     for (i=0; i<256; i++) { tp->chars[i][0]=i; }
 
     tp_gc_init(tp);
-    
+
     /* gc initialized, can use tpy_ functions. */
+
+    tp->_exc = tp_list_t(tp);
+    tp_set(tp, tp->_exc, tp_None, tp_None);
+    tp_set(tp, tp->_exc, tp_None, tp_None);
+    tp->exc = tp->_exc.list.val->items + 0;
+    tp->exc_stack = tp->_exc.list.val->items + 1;
+
     tp->_regs = tp_list_t(tp);
     for (i=0; i < TP_REGS + 1; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
     tp->regs = tp->_regs.list.val->items + 1;
@@ -45,6 +51,7 @@ tp_vm * tp_create_vm(void) {
     tp_gc_set_reachable(tp, tp->modules);
     tp_gc_set_reachable(tp, tp->_regs);
     tp_gc_set_reachable(tp, tp->_params);
+    tp_gc_set_reachable(tp, tp->_exc);
 
     tp_gc_set_reachable(tp, tp->_list_meta);
     tp_gc_set_reachable(tp, tp->_dict_meta);
@@ -70,28 +77,53 @@ void _tp_raise(TP, tp_obj e) {
         abort(); \
         exit(-1);
 #else
-        tp->ex = e;
+        *(tp->exc) = e;
+        *(tp->exc_stack) = tp_format_stack(tp);
         longjmp(tp->nextexpr,1);
 #endif
     }
-    if (e.type.typeid != TP_NONE) { tp->ex = e; }
+    if (e.type.typeid != TP_NONE) {
+        *(tp->exc) = e;
+        *(tp->exc_stack) = tp_format_stack(tp);
+    }
     tp_grey(tp,e);
     longjmp(tp->buf,1);
 }
 
-void tp_print_stack(TP) {
+void tp_format_stack_internal(TP, StringBuilder * sb)
+{
     int i;
-    tp->echo("\n", -1);
+    string_builder_write(tp, sb, "\n", -1);
+
     for (i=0; i<=tp->cur; i++) {
         if (!tp->frames[i].lineno) { continue; }
-        tp->echo("File \"", -1); tp_echo(tp,tp->frames[i].fname); tp->echo("\", ", -1);
-        tp_echo(tp, tp_printf(tp, "line %d, in ",tp->frames[i].lineno));
-        tp_echo(tp,tp->frames[i].name); tp->echo("\n ", -1);
-        tp_echo(tp,tp->frames[i].line); tp->echo("\n", -1);
+        string_builder_write(tp, sb, "File \"", -1);
+        string_builder_echo(tp, sb, tp->frames[i].fname);
+        string_builder_write(tp, sb, "\", ", -1);
+        string_builder_echo(tp, sb, tp_printf(tp, "line %d, in ", tp->frames[i].lineno));
+        string_builder_echo(tp, sb, tp->frames[i].name);
+        string_builder_write(tp, sb, "\n ", -1);
+        string_builder_echo(tp, sb, tp->frames[i].line);
+        string_builder_write(tp, sb, "\n", -1);
     }
-    tp->echo("\nException:\n", -1); tp_echo(tp,tp->ex); tp->echo("\n", -1);
 }
 
+tp_obj tp_format_stack(TP)
+{
+    StringBuilder sb[1] = {0};
+    tp_format_stack_internal(tp, sb);
+    return tp_string_steal_from_builder(tp, sb);
+}
+
+void tp_print_exc(TP) {
+    StringBuilder sb[1] = {0};
+    tp_format_stack_internal(tp, sb);
+    string_builder_write(tp, sb, "\nException:\n", -1);
+    string_builder_echo(tp, sb, *(tp->exc));
+    string_builder_write(tp, sb, "\n", -1);
+    tp->echo(sb->buffer, sb->len);
+    tp_free(tp, sb->buffer);
+}
 
 void tp_handle(TP) {
     int i;
@@ -105,7 +137,7 @@ void tp_handle(TP) {
         return;
     }
 #ifndef CPYTHON_MOD
-    tp_print_stack(tp);
+    tp_print_exc(tp);
     exit(-1);
 #else
     longjmp(tp->nextexpr,1);

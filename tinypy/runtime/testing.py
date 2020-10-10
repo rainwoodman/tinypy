@@ -9,10 +9,11 @@ def fgcolor(code):
         return ESC + "[0m"
 
 class TestResult:
-    def __init__(self, name, passed, exc):
+    def __init__(self, name, passed, exc, stack):
         self.passed = passed
         self.name = name
         self.exc = exc
+        self.stack = stack
 
 class TestError(Exception):
     pass
@@ -62,6 +63,8 @@ class UnitTest:
             msg = "[ {status} ] {id}: {name}".format(subst)
             itest = itest + 1
             monitor(msg)
+            if not result.passed:
+                monitor("Exception:\n{exc}\n{stack}".format(result))
 
         subst['nfail'] = nfail
         if nfail > 0:
@@ -78,7 +81,8 @@ class UnitTest:
         self.setup(test)
         try:
             testfunc(self)
-            return TestResult(test, True, None)
+            return TestResult(test, True, None, None)
         except:
-            return TestResult(test, False, None)
+            exc, stack = sys.get_exc()
+            return TestResult(test, False, exc, stack)
         self.teardown(test)

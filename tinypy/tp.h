@@ -209,30 +209,31 @@ typedef struct tpd_frame {
 typedef struct tp_vm {
     tp_obj builtins;
     tp_obj modules;
+
+    /* types */
     tp_obj _list_meta;
     tp_obj _dict_meta;
     tp_obj _string_meta;
+
+    /* call */
+    int cur;
     tpd_frame frames[TP_FRAMES];
     tp_obj _params;
     tp_obj params;
     tp_obj _regs;
     tp_obj *regs;
+    tp_obj last_result;
+
+    /* exception */
     jmp_buf buf;
 #ifdef CPYTHON_MOD
     jmp_buf nextexpr;
 #endif
     int jmp;
-    /* FIXME:
-     * 1. Expose ex to python, to e.g. sys.get_exc().
-     * 2. move ex to the frame (thread safety)
-     * 3. it shall probably be tracked by the GC too.
-     * 4. chaining of exceptions (via frame or special object type?)
-     * */
-    tp_obj ex;
-    tp_obj last_result;
-    char chars[256][2];
-    int cur;
-    void (*echo)(const char* data, int length);
+    tp_obj _exc;
+    tp_obj * exc;
+    tp_obj * exc_stack;
+
     /* gc */
     int gcmax;
     tp_obj root;
@@ -240,6 +241,8 @@ typedef struct tp_vm {
     tpd_list *grey;
     tpd_list *black;
     int steps;
+    /* cached objects */
+    char chars[256][2];
     /* sandbox */
     clock_t clocks;
     double time_elapsed;
@@ -247,6 +250,8 @@ typedef struct tp_vm {
     unsigned long mem_limit;
     unsigned long mem_used;
     int mem_exceeded;
+
+    void (*echo)(const char* data, int length);
 } tp_vm;
 
 #define TP tp_vm *tp
@@ -405,6 +410,8 @@ tp_obj tp_function(TP, tp_obj v(TP));
 tp_obj tp_method(TP, tp_obj self,tp_obj v(TP));
 tp_obj tp_def(TP, tp_obj code, tp_obj g);
 tp_obj tp_bind(TP, tp_obj function, tp_obj self);
+
+tp_obj tp_format_stack(TP);
 
 tp_obj tp_printf(TP, const char * fmt, ...);
 

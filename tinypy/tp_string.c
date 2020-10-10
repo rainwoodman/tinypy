@@ -1,3 +1,33 @@
+typedef struct {
+    char * buffer;
+    int size;
+    int len;
+} StringBuilder;
+
+void string_builder_write(TP, StringBuilder * sb, const char * s, int len)
+{
+    if(sb->buffer == NULL) {
+        sb->buffer = tp_malloc(tp, 128);
+        sb->len = 0;
+        sb->size = 128;
+    }
+    if(len < 0) len = strlen(s);
+    if(sb->len + len + 1 >= sb->size) {
+        sb->size = (sb->len + len + 1) + sb->len / 2;
+        sb->buffer = tp_realloc(tp, sb->buffer, sb->size);
+    }
+    memcpy(sb->buffer + sb->len, s, len);
+    sb->len += len;
+    sb->buffer[sb->len] = 0;
+}
+
+void string_builder_echo(TP, StringBuilder * sb, tp_obj o)
+{
+    o = tp_str(tp, o);
+    string_builder_write(tp, sb, tp_string_getptr(o), tp_string_len(o));
+}
+
+
 /* File: String
  * String handling functions.
  */
@@ -57,6 +87,20 @@ tp_obj tp_string_from_buffer(TP, const char *s, int n) {
     tp_obj r = tp_string_t(tp, n);
     memcpy(tp_string_getptr(r), s, n);
     return r;
+}
+
+tp_obj tp_string_steal_from_builder(TP, StringBuilder * sb)
+{
+    tp_obj r;
+    r.type.typeid = TP_STRING;
+    r.type.magic = TP_STRING_NONE;
+    r.string.info = (tpd_string*)tp_malloc(tp, sizeof(tpd_string));
+    r.string.info->len = sb->len;
+    r.string.info->s = sb->buffer;
+    r.obj.info->meta = tp->_string_meta;
+    sb->buffer = NULL;
+    sb->len = 0;
+    return tp_track(tp, r);
 }
 
 char * tp_string_getptr(tp_obj s) {

@@ -3,6 +3,8 @@
 tp_obj tpy_str_join(TP) {
     tp_obj delim = TP_OBJ();
     tp_obj val = TP_OBJ();
+    StringBuilder sb[1] = {0};
+
     int l=0,i;
     tp_obj r;
     char *s;
@@ -16,12 +18,12 @@ tp_obj tpy_str_join(TP) {
     for (i=0; i<val.list.val->len; i++) {
         tp_obj e;
         if (i!=0) {
-            memcpy(s+l, tp_string_getptr(delim), tp_string_len(delim)); l += tp_string_len(delim);
+            string_builder_write(tp, sb, tp_string_getptr(delim), tp_string_len(delim));
         }
         e = tp_str(tp, val.list.val->items[i]);
-        memcpy(s+l, tp_string_getptr(e), tp_string_len(e)); l += tp_string_len(e);
+        tp_str_internal(tp, val.list.val->items[i], sb, 1);
     }
-    return r;
+    return tp_string_steal_from_builder(tp, sb);
 }
 
 tp_obj tpy_str_split(TP) {
