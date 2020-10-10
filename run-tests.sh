@@ -1,3 +1,9 @@
+TPVM=./tpvm
+if [[ "$1" == "-dbg" ]]; then
+    TPVM=./tpvm-dbg
+    shift
+fi
+
 TESTS=$@
 
 function run {
@@ -7,9 +13,9 @@ function run {
         exit 1
     fi
     echo "./tpc -o ${tpc} $1"
-    echo "./tpvm ${tpc}"
+    echo "${TPVM} ${tpc}"
     ./tpc -o ${tpc} $1
-    ./tpvm ${tpc}
+    "${TPVM}" ${tpc}
 }
 
 st=0

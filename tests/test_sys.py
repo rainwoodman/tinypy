@@ -17,9 +17,11 @@ class MyTest(UnitTest):
         assert len(sys.argv) > 0
 
     def test_sys_conf(self):
-        assert sys.conf.gcmax > 0
+        assert sys.conf.gcmax >= 0
+        old = sys.conf.gcmax
         sys.conf.gcmax = 16383
         assert sys.conf.gcmax == 16383
+        sys.conf.gcmax = old
 
 t = MyTest()
 

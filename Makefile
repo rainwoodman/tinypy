@@ -42,18 +42,24 @@ tinypy/compiler.o : $(COMPILER_C_FILES) tinypy/compiler.c tinypy/*.h
 tinypy/runtime.o : $(RUNTIME_C_FILES) tinypy/runtime.c tinypy/*.h
 #
 # tpvm only takes compiled byte codes (.tpc files)
-tpvm : $(VMLIB_FILES:%.c=tinypy/%.o) tinypy/vmmain.o modules/modules.a
+tpvm : $(VMLIB_FILES:%.c=tinypy/%.o) tinypy/vmmain.c modules/modules.a
 	$(CC) -o $@ $^ -lm
+#
+tpvm-dbg : $(VMLIB_FILES:%.c=tinypy/%.o) tinypy/vmmain.c modules/modules.a
+	$(CC) -D TPVM_DEBUG -o $@ $^ -lm
 	
 # tpy takes .py files
-tpy : $(TPLIB_FILES:%.c=tinypy/%.o) tinypy/tpmain.o modules/modules.a
+tpy : $(TPLIB_FILES:%.c=tinypy/%.o) tinypy/tpmain.c modules/modules.a
 	$(CC) -o $@ $^ -lm
 
-test: $(TESTS_PY_FILES) tpy run-tests.sh
+test: $(TESTS_PY_FILES) tpy tpvm tpvm-dbg run-tests.sh
 	bash run-tests.sh $(TESTS_PY_FILES)
 
+test-dbg: $(TESTS_PY_FILES) tpy tpvm tpvm-dbg run-tests.sh
+	bash run-tests.sh -dbg $(TESTS_PY_FILES)
+
 clean:
-	rm -rf tpy tpvm
+	rm -rf tpy tpvm tpvm-dbg
 	rm -rf $(RUNTIME_C_FILES)
 	rm -rf $(COMPILER_C_FILES)
 	rm -rf tinypy/*.o
