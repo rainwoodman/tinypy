@@ -29,3 +29,4 @@ tp_obj tp_div(TP,tp_obj a, tp_obj b) ;
 tp_obj tp_pow(TP,tp_obj a, tp_obj b) ;
 tp_obj tp_bitwise_not(TP, tp_obj);
 
+void tp_assert(TP, tp_obj r, tp_obj b, tp_obj c);

@@ -641,29 +641,18 @@ def do_assert(t):
         e = t.items[0]
         if e.type == 'symbol' and e.val in cmps:
             r, b, c = do_cmp(e, True)
-            op = e.val
         else:
             r = do(e)
             b = _do_none()
             c = _do_none()
-            op = None
     else:
         r = _do_none()
         b = _do_none()
         c = _do_none()
-        op = None
     un_tmp(r)
     un_tmp(b)
     un_tmp(c)
-    v = do_call(Token(t.pos,'call',None,[
-        Token(t.pos,'name','__assert__'),
-        Token(t.pos, 'reg', r), #REG
-        Token(t.pos, 'reg', b), #REG
-        Token(t.pos, 'reg', c), #REG
-        Token(t.pos, 'string', str(op)), #REG
-        ]
-        ))
-    free_tmp(v)
+    code(ASSERT,r,b,c);
     return
 
 def do_raise(t):

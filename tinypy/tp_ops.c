@@ -446,4 +446,14 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
     tp_raise(tp_None,tp_string_atom(tp, "(tp_call) TypeError: object is not callable"));
 }
 
+void tp_assert(TP, tp_obj r, tp_obj b, tp_obj c)
+{
+    if (tp_true(tp, r)) { return; }
+    tp_obj msg = tp_string_atom(tp, "(tp_assert) AssertionError: Failure");
+    msg = tp_add(tp, msg, tp_string_atom(tp, "\nLeft Side : "));
+    msg = tp_add(tp, msg, tp_repr(tp, b));
+    msg = tp_add(tp, msg, tp_string_atom(tp, "\nRight Side : "));
+    msg = tp_add(tp, msg, tp_repr(tp, c));
+    tp_raise(, msg);
+}
 /**/

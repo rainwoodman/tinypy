@@ -292,10 +292,8 @@ int tp_step(TP) {
             
         case TP_IRETURN: tp_return(tp,RA); SR(0); break;
         case TP_IRAISE: _tp_raise(tp,RA); SR(0); break;
-        case TP_IDEBUG:
-            tp_echo(tp, tp_string_atom(tp, "DEBUG:"));
-            tp_echo(tp, tp_number(VA));
-            tp_echo(tp, RA);
+        case TP_IASSERT:
+            tp_assert(tp, RA, RB, RC);
             break;
         case TP_INONE: RA = tp_None; break;
         case TP_ILINE: {
