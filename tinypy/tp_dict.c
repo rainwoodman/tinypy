@@ -91,3 +91,14 @@ tp_obj tp_dict_copy(TP, tp_obj rr) {
     return obj;
 }
 
+void tp_dict_update(TP, tp_obj self, tp_obj v)
+{
+    int i;
+    for (i=0; i<v.dict.val->len; i++) {
+        int n = tpd_dict_next(tp, v.dict.val);
+        tp_dict_set(tp,
+                self,
+                v.dict.val->items[n].key,
+                v.dict.val->items[n].val);
+    }
+}

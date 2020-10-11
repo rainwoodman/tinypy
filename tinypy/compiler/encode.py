@@ -18,16 +18,17 @@ class DState:
         self._scopei += 1
         insert(self.cregs)
     def end(self):
+        # cregs is already inserted to out; this modifies it in place.
         self.cregs.append(self.mreg)
         code(EOF)
-        
+
+        if self.tmpc != 0:
+            print("Warning:\nencode.py contains a register leak\n")
         # This next line forces the encoder to
         # throw an exception if any tmp regs 
         # were leaked within the frame
-        # assert(self.tmpc == 0) #REG
-        if self.tmpc != 0:
-            print("Warning:\nencode.py contains a register leak\n")
-        
+        assert(self.tmpc == 0) #REG
+
         if len(self.stack) > 1:
             self.vars,self.r2n,self.n2r,self._tmpi,self.mreg,self.snum,self._globals,self.lineno,self.globals,self.rglobals,self.cregs,self.tmpc = self.stack.pop()
         else: self.stack.pop()
@@ -169,10 +170,6 @@ def get_reg(n):
     if n not in D.n2r:
         set_reg(alloc(1),n)
     return D.n2r[n]
-#def get_clean_reg(n):
-    #if n in D.n2r: raise
-    #set_reg(D.mreg,n)
-    #return D.n2r[n]
 def set_reg(r,n):
     D.n2r[n] = r; D.r2n[r] = n
     D.mreg = max(D.mreg,r+1)
@@ -398,17 +395,11 @@ def do_from(t):
         items,
         ]))
 
-    un_tmp(v)
+    g = do(Token(t.pos, 'name', '__dict__'))
+    code(UPDATE, g, v);
+    free_tmp(g)
+    free_tmp(v)
 
-    free_tmp(do(Token(t.pos, 'call', None, [
-            Token(t.pos, 'name', '__merge__'),
-            Token(t.pos, 'name', '__dict__'),
-            Token(t.pos, 'reg', v) #REG
-            ]
-        )))
-
-    free_reg(v)
- 
 def do_globals(t):
     for t in t.items:
         if t.val not in D.globals:
@@ -433,12 +424,10 @@ def do_call(t,r=None):
             t1,t2 = do(p.items[0]),do(p.items[1])
             code(SET,e,t1,t2)
             free_tmp(t1); free_tmp(t2) #REG
-        if d: free_tmp(do(
-            Token(t.pos,'call',None,
-                [ Token(t.pos,'name', '__merge__'),
-                  Token(t.pos,'reg',e),
-                  d.items[0]
-                ]))) #REG
+        if d: 
+            f = do(d.items[0])
+            un_tmp(f)
+            code(MERGE,e,f)
     manage_seq(PARAMS,r,a)
     if c != None:
         t1,t2 = _do_string('*'),do(c.items[0])
@@ -649,10 +638,10 @@ def do_assert(t):
         r = _do_none()
         b = _do_none()
         c = _do_none()
-    un_tmp(r)
-    un_tmp(b)
-    un_tmp(c)
     code(ASSERT,r,b,c);
+    free_tmp(r)
+    free_tmp(b)
+    free_tmp(c)
     return
 
 def do_raise(t):

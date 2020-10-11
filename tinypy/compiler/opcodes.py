@@ -26,6 +26,7 @@ GGET = 14
 GSET = 15
 IGET = 33
 DEL = 44
+UPDATE = 50
 
 DEF = 17
 PASS = 18

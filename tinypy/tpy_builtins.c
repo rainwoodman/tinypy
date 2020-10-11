@@ -398,7 +398,6 @@ void tp_module_builtins_init(TP) {
     {"bind", tpy_bind},
     {"copy",tpy_copy},
     {"__import__",tpy_import},
-    {"__merge__", tpy_dict_merge},
     {"len",tpy_len},
     {"__assert__", tpy_assert},
     {"str", tpy_str},
@@ -454,7 +453,7 @@ void tp_module_builtins_init(TP) {
     tp_set(tp, tp->_string_meta, tp_string_atom(tp, "strip"), tp_function(tp, tpy_str_strip));
     tp_set(tp, tp->_string_meta, tp_string_atom(tp, "replace"), tp_function(tp, tpy_str_replace));
 
-    tp_set(tp, tp->_dict_meta, tp_string_atom(tp, "update"), tp_function(tp, tpy_dict_merge));
+    tp_set(tp, tp->_dict_meta, tp_string_atom(tp, "update"), tp_function(tp, tpy_dict_update));
 
     tp->builtins = builtins;
 }

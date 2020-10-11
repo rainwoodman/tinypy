@@ -242,6 +242,9 @@ int tp_step(TP) {
         case TP_IIGET: tp_iget(tp,&RA,RB,RC); break;
         case TP_ISET: tp_set(tp,RA,RB,RC); break;
         case TP_IDEL: tp_del(tp,RA,RB); break;
+        case TP_IUPDATE:
+            tp_dict_update(tp, RA, RB);
+            break;
         case TP_IMOVE: RA = RB; break;
         case TP_INUMBER:
             #ifdef TP_SANDBOX
