@@ -240,6 +240,12 @@ def do_cmp(t, trace, r=None):
     if v == '<': cd = LT
     if v == '<=': cd = LE
     if v == '!=': cd = NE
+    if v == 'is': cd = EQ
+    if v == 'isnot': cd = NE
+    if v == 'in':
+        cd = IN
+    if v == 'notin':
+        cd = NOTIN
     if trace:
         return infix_traced(cd,b,c,r)
     else:
@@ -248,7 +254,7 @@ def do_cmp(t, trace, r=None):
 def do_symbol(t,r=None):
     sets = ['=']
     isets = ['+=','-=','*=','/=', '|=', '&=', '^=']
-    cmps = ['<','>','<=','>=','==','!=']
+    cmps = ['<','>','<=','>=','==','!=', 'in', 'is', 'isnot', 'notin']
     metas = {
         '+':ADD,'*':MUL,'/':DIV,'**':POW,
         '-':SUB,
@@ -266,19 +272,8 @@ def do_symbol(t,r=None):
         return logic_infix(t.val, items[0], items[1], r)
     if t.val in isets:
         return imanage(t,do_symbol)
-    if t.val == 'is':
-        return infix(EQ,items[0],items[1],r)
-    if t.val == 'isnot':
-        return infix(NE,items[0],items[1],r)
     if t.val == 'not':
         return unary(NOT, items[0], r)
-    if t.val == 'in':
-        return infix(HAS,items[1],items[0],r)
-    if t.val == 'notin':
-        r = infix(HAS,items[1],items[0],r)
-        zero = _do_number('0')
-        code(EQ,r,r,free_tmp(zero))
-        return r
     if t.val in sets:
         return do_set_ctx(items[0],items[1]);
     elif t.val in cmps:
@@ -634,7 +629,7 @@ def do_return(t):
     return
 
 def do_assert(t):
-    cmps = ['<','>','<=','>=','==','!=']
+    cmps = ['<','>','<=','>=','==','!=', 'in', 'is', 'isnot', 'notin']
     if t.items:
         e = t.items[0]
         if e.type == 'symbol' and e.val in cmps:

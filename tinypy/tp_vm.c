@@ -238,7 +238,8 @@ int tp_step(TP) {
                 cur += 1;
             }
             break;
-        case TP_IHAS: RA = tp_has(tp,RB,RC); break;
+        case TP_IIN: RA = tp_has(tp,RC,RB); break;
+        case TP_INOTIN: RA = tp_number(!tp_true(tp, tp_has(tp,RC,RB))); break;
         case TP_IIGET: tp_iget(tp,&RA,RB,RC); break;
         case TP_ISET: tp_set(tp,RA,RB,RC); break;
         case TP_IDEL: tp_del(tp,RA,RB); break;

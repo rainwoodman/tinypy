@@ -1,3 +1,4 @@
+import sys
 from tinypy.runtime.testing import UnitTest
 
 class StringUnitTests(UnitTest):
@@ -19,10 +20,15 @@ class StringUnitTests(UnitTest):
         a = "012345"
         assert a.find("0") == 0
         assert a.find("1") == 1
+        assert a.find("9") == -1
 
     def test_index(self):
         a = "012345"
         assert a.index("0") == 0
+        try:
+            assert a.index("9") == -1
+        except:
+            assert "ValueError" in sys.get_exc()[0]
 
     def test_split(self):
         a = "012345"
