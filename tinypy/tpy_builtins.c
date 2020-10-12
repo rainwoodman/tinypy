@@ -13,7 +13,7 @@ tp_obj tpy_min(TP) {
     tp_obj r = TP_OBJ();
     tp_obj e;
     TP_LOOP(e)
-        if (tp_cmp(tp,r,e) > 0) { r = e; }
+        if (!tp_lessthan(tp,r,e)) { r = e; }
     TP_END;
     return r;
 }
@@ -22,7 +22,7 @@ tp_obj tpy_max(TP) {
     tp_obj r = TP_OBJ();
     tp_obj e;
     TP_LOOP(e)
-        if (tp_cmp(tp,r,e) < 0) { r = e; }
+        if (tp_lessthan(tp,r,e)) { r = e; }
     TP_END;
     return r;
 }
@@ -72,12 +72,12 @@ tp_obj tpy_range(TP) {
 tp_obj tpy_istype(TP) {
     tp_obj v = TP_OBJ();
     tp_obj t = TP_STR();
-    if (tp_cmp(tp,t,tp_string_atom(tp, "string")) == 0) { return tp_number(v.type.typeid == TP_STRING); }
-    if (tp_cmp(tp,t,tp_string_atom(tp, "list")) == 0) { return tp_number(v.type.typeid == TP_LIST); }
-    if (tp_cmp(tp,t,tp_string_atom(tp, "dict")) == 0) { return tp_number(v.type.typeid == TP_DICT); }
-    if (tp_cmp(tp,t,tp_string_atom(tp, "number")) == 0) { return tp_number(v.type.typeid == TP_NUMBER); }
-    if (tp_cmp(tp,t,tp_string_atom(tp, "func")) == 0) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) == 0); }
-    if (tp_cmp(tp,t,tp_string_atom(tp, "method")) == 0) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) != 0); }
+    if (tp_equal(tp,t,tp_string_atom(tp, "string"))) { return tp_number(v.type.typeid == TP_STRING); }
+    if (tp_equal(tp,t,tp_string_atom(tp, "list"))) { return tp_number(v.type.typeid == TP_LIST); }
+    if (tp_equal(tp,t,tp_string_atom(tp, "dict"))) { return tp_number(v.type.typeid == TP_DICT); }
+    if (tp_equal(tp,t,tp_string_atom(tp, "number"))) { return tp_number(v.type.typeid == TP_NUMBER); }
+    if (tp_equal(tp,t,tp_string_atom(tp, "func"))) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) == 0); }
+    if (tp_equal(tp,t,tp_string_atom(tp, "method"))) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) != 0); }
     tp_raise(tp_None,tp_string_atom(tp, "(is_type) TypeError: ?"));
 }
 

@@ -68,10 +68,10 @@ tp_obj tpd_list_pop(TP,tpd_list *self, int n, const char *error) {
     return r;
 }
 
-int tpd_list_find(TP, tpd_list * self, tp_obj v, int (*cmp)(TP, tp_obj self, tp_obj v)) {
+int tpd_list_find(TP, tpd_list * self, tp_obj v, int (*equal)(TP, tp_obj self, tp_obj v)) {
     int n;
     for (n=0; n<self->len; n++) {
-        if (cmp(tp, v, self->items[n]) == 0) {
+        if (equal(tp, v, self->items[n])) {
             return n;
         }
     }

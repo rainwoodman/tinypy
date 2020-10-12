@@ -52,14 +52,32 @@ tp_obj tp_list_mul(TP, tp_obj a, int n)
     return r;
 }
 
-int tp_list_cmp(TP, tp_obj a, tp_obj b)
+int tp_list_equal(TP, tp_obj a, tp_obj b)
+{
+    int n, v;
+    if(a.list.val->len != b.list.val->len) {
+        return 0;
+    }
+    for(n=0; n<a.list.val->len; n++) {
+        tp_obj aa = a.list.val->items[n];
+        tp_obj bb = b.list.val->items[n];
+        if(!tp_equal(tp, aa, bb)) return 0;
+    }
+    return 1;
+}
+
+int tp_list_lessthan(TP, tp_obj a, tp_obj b)
 {
     int n, v;
     for(n=0; n<_tp_min(a.list.val->len, b.list.val->len); n++) {
         tp_obj aa = a.list.val->items[n];
         tp_obj bb = b.list.val->items[n];
-        v = tp_cmp(tp, aa, bb);
-        if (v) { return v; }
+        if(tp_equal(tp, aa, bb)) continue;
+        if(tp_lessthan(tp, aa, bb)) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
-    return a.list.val->len - b.list.val->len;
+    return a.list.val->len < b.list.val->len;
 }

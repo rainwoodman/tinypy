@@ -269,7 +269,7 @@ def do_symbol(t,r=None):
     if t.val == 'is':
         return infix(EQ,items[0],items[1],r)
     if t.val == 'isnot':
-        return infix(CMP,items[0],items[1],r)
+        return infix(NE,items[0],items[1],r)
     if t.val == 'not':
         return unary(NOT, items[0], r)
     if t.val == 'in':

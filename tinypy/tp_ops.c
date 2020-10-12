@@ -33,7 +33,7 @@ tp_obj tp_has(TP,tp_obj self, tp_obj k) {
     } else if (type == TP_STRING && k.type.typeid == TP_STRING) {
         return tp_number(tp_str_index(self,k)!=-1);
     } else if (type == TP_LIST) {
-        return tp_number(tpd_list_find(tp, self.list.val, k, tp_cmp)!=-1);
+        return tp_number(tpd_list_find(tp, self.list.val, k, tp_equal)!=-1);
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_has) TypeError: iterable argument required"));
 }
@@ -139,7 +139,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
                 return tp_dict_get(tp, self, k);
             }
             /* create a raw dict. */
-            if (tp_cmp(tp, k, tp_string_atom(tp, "__dict__")) == 0) {
+            if (tp_equal(tp, k, tp_string_atom(tp, "__dict__"))) {
                 return tp_getraw(tp, self);
             }
             TP_META_BEGIN(self, "__get__");
@@ -316,18 +316,36 @@ tp_obj tp_len(TP,tp_obj self) {
     tp_raise(tp_None,tp_string_atom(tp, "(tp_len) TypeError: len() of unsized object"));
 }
 
-int tp_cmp(TP, tp_obj a, tp_obj b) {
-    if (a.type.typeid != b.type.typeid) { return a.type.typeid-b.type.typeid; }
+int tp_equal(TP, tp_obj a, tp_obj b) {
+    if (a.type.typeid != b.type.typeid) { return 0;}
+    switch(a.type.typeid) {
+        case TP_NONE: return 1;
+        case TP_NUMBER: return a.number.val == b.number.val;
+        case TP_STRING: return tp_string_cmp(a, b) == 0;
+        case TP_LIST: return tp_list_equal(tp, a, b);
+        case TP_DICT: return tp_dict_equal(tp, a, b);
+        case TP_FUNC: return a.func.info == b.func.info;
+        case TP_DATA: return (char*)a.data.val == (char*)b.data.val;
+    }
+    tp_raise(0,tp_string_atom(tp, "(tp_equal) TypeError: Unknown types."));
+}
+
+int tp_lessthan(TP, tp_obj a, tp_obj b) {
+    if (a.type.typeid != b.type.typeid) { 
+        tp_raise(0,tp_string_atom(tp, "(tp_lessthan) TypeError: Cannot compare different types."));
+    }
     switch(a.type.typeid) {
         case TP_NONE: return 0;
-        case TP_NUMBER: return _tp_sign(a.number.val-b.number.val);
-        case TP_STRING: return tp_string_cmp(a, b);
-        case TP_LIST: return tp_list_cmp(tp, a, b);
-        case TP_DICT: return tp_dict_cmp(tp, a, b);
-        case TP_FUNC: return a.func.info - b.func.info;
-        case TP_DATA: return (char*)a.data.val - (char*)b.data.val;
+        case TP_NUMBER: return a.number.val < b.number.val;
+        case TP_STRING: return tp_string_cmp(a, b) < 0;
+        case TP_LIST: return tp_list_lessthan(tp, a, b);
+        case TP_DICT: {
+            tp_raise(0,tp_string_atom(tp, "(tp_lessthan) TypeError: Cannot compare dict."));
+        }
+        case TP_FUNC: return a.func.info < b.func.info;
+        case TP_DATA: return (char*)a.data.val < (char*)b.data.val;
     }
-    tp_raise(0,tp_string_atom(tp, "(tp_cmp) TypeError: ?"));
+    tp_raise(0,tp_string_atom(tp, "(tp_lessthan) TypeError: Unknown types."));
 }
 
 tp_obj tp_mod(TP, tp_obj a, tp_obj b) {

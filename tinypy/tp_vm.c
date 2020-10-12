@@ -217,11 +217,10 @@ int tp_step(TP) {
         case TP_IMOD:  RA = tp_mod(tp,RB,RC); break;
         case TP_ILSH:  RA = tp_lsh(tp,RB,RC); break;
         case TP_IRSH:  RA = tp_rsh(tp,RB,RC); break;
-        case TP_ICMP: RA = tp_number(tp_cmp(tp,RB,RC)); break;
-        case TP_INE: RA = tp_number(tp_cmp(tp,RB,RC)!=0); break;
-        case TP_IEQ: RA = tp_number(tp_cmp(tp,RB,RC)==0); break;
-        case TP_ILE: RA = tp_number(tp_cmp(tp,RB,RC)<=0); break;
-        case TP_ILT: RA = tp_number(tp_cmp(tp,RB,RC)<0); break;
+        case TP_INE: RA = tp_number(!tp_equal(tp,RB,RC)); break;
+        case TP_IEQ: RA = tp_number(tp_equal(tp,RB,RC)); break;
+        case TP_ILE: RA = tp_number(tp_equal(tp,RB,RC) || tp_lessthan(tp, RB, RC)); break;
+        case TP_ILT: RA = tp_number(tp_lessthan(tp,RB,RC)); break;
         case TP_IBITNOT:  RA = tp_bitwise_not(tp,RB); break;
         case TP_INOT: RA = tp_number(!tp_true(tp,RB)); break;
         case TP_IPASS: break;

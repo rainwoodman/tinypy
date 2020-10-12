@@ -50,7 +50,7 @@ int tpd_dict_hashfind(TP, tpd_dict * self, int hash, tp_obj k) {
         if (self->items[n].used == 0) { break; }
         if (self->items[n].used < 0) { continue; }
         if (self->items[n].hash != hash) { continue; }
-        if (tp_cmp(tp, self->items[n].key, k) != 0) { continue; }
+        if (!tp_equal(tp, self->items[n].key, k)) { continue; }
         return n;
     }
     return -1;

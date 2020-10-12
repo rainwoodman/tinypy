@@ -91,11 +91,11 @@ tp_obj tp_dict_copy(TP, tp_obj rr) {
     return obj;
 }
 
-/* FIXME: this only returns 0 or 1. For dict there is
- * no easy > and <. Py3 got rid of rich cmp altogether,
- * follow that and only implement tp_dict_equal(). */
-int tp_dict_cmp(TP, tp_obj a, tp_obj b) {
+int tp_dict_equal(TP, tp_obj a, tp_obj b) {
     int i;
+    if(a.dict.val->len != b.dict.val->len) {
+        return 0;
+    }
     for (i=0; i<a.dict.val->len; i++) {
         int na = tpd_dict_next(tp, a.dict.val);
         tp_obj key = a.dict.val->items[na].key;
@@ -103,13 +103,11 @@ int tp_dict_cmp(TP, tp_obj a, tp_obj b) {
         int hash = tp_hash(tp, key);
 
         int nb = tpd_dict_hashfind(tp, b.dict.val, hash, key);
-        if (nb < 0) return 1;
+        if (nb < 0) return 0;
         tp_obj bv = tpd_dict_get(tp, b.dict.val, nb);
-        int c = tp_cmp(tp, value, bv);
-        if(c != 0) return 1;
+        if(!tp_equal(tp, value, bv)) return 0;
     }
-
-    return 0;
+    return 1;
 }
 
 void tp_dict_update(TP, tp_obj self, tp_obj v)

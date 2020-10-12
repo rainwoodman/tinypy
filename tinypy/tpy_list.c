@@ -6,7 +6,7 @@
 tp_obj tpy_list_index(TP) {
     tp_obj self = TP_OBJ();
     tp_obj v = TP_OBJ();
-    int i = tpd_list_find(tp, self.list.val, v, tp_cmp);
+    int i = tpd_list_find(tp, self.list.val, v, tp_equal);
     if (i < 0) {
         tp_raise(tp_None,tp_string_atom(tp, "(tp_index) ValueError: list.index(x): x not in list"));
     }
@@ -44,7 +44,13 @@ tp_obj tpy_list_extend(TP) {
 
 /* FIXME: add tpd interface. */
 int _tp_list_sort_cmp(tp_obj *a, tp_obj *b) {
-    return tp_cmp(0, *a, *b);
+    if(tp_equal(0, *a, *b)) {
+        return 0;
+    }
+    if (tp_lessthan(0, *a, *b)) {
+        return -1;
+    }
+    return 1;
 }
 
 tp_obj tpy_list_sort(TP) {

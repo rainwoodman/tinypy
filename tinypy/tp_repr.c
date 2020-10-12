@@ -43,14 +43,14 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
     if(type == TP_DICT) {
         tp_obj data = tp_data_nt(tp, 0, self.dict.val);
         /* FIXME: use tp_data_cmp */
-        if(tpd_list_find(tp, visited, data, tp_cmp) >= 0) {
+        if(tpd_list_find(tp, visited, data, tp_equal) >= 0) {
             string_builder_write(tp, sb, "{...}", -1);
             return;
         }
         tpd_list_append(tp, visited, data);
     } else if(type == TP_LIST) {
         tp_obj data = tp_data_nt(tp, 0, self.list.val);
-        if(tpd_list_find(tp, visited, data, tp_cmp) >= 0) {
+        if(tpd_list_find(tp, visited, data, tp_equal) >= 0) {
             string_builder_write(tp, sb, "[...]", -1);
             return;
         }

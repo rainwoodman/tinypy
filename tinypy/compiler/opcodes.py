@@ -41,7 +41,7 @@ SETJMP = 39
 
 ASSERT = 23
 
-CMP = 8
+UNUSED = 8
 EQ = 24
 LE = 25
 LT = 26
