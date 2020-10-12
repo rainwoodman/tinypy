@@ -14,13 +14,14 @@ function run {
     fi
     echo "./tpc -o ${tpc} $1"
     echo "${TPVM} ${tpc}"
-    ./tpc -o ${tpc} $1 || return 255
-    "${TPVM}" ${tpc}
+    ./tpc -o ${tpc} $1 || return 1
+    "${TPVM}" ${tpc} || return 1
 }
 
 st=0
 for i in ${TESTS[@]}; do
     if ! run "${i}"; then
+        echo ==== ${st}
         st=1
     fi
 done

@@ -1,9 +1,6 @@
 from tinypy.runtime.testing import UnitTest
 
 class StringUnitTests(UnitTest):
-    def setup(self, testname):
-        pass
-
     def test_startswith(self):
         a = "012345"
         assert a.startswith("0")

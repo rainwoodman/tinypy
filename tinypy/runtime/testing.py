@@ -82,7 +82,9 @@ class UnitTest:
 
         monitor(msg)
         if nfail > 0:
+            sys.exit(255)
             return False
+        sys.exit(0)
         return True
 
     def runone(self, test, testfunc):

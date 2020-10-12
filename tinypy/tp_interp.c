@@ -55,6 +55,12 @@ tp_obj tp_get_exc(TP) {
     return tp_list_from_items(tp, 2, elems);
 }
 
+tp_obj tpy_exit(TP) {
+    int code = TP_NUM();
+    exit(code);
+    return tp_None;
+}
+
 void tp_module_sys_init (TP, int argc, char * argv[]) {
     tp_obj sys = tp_dict_t(tp);
     tp_obj args = tp_args(tp,argc,argv);
@@ -67,6 +73,7 @@ void tp_module_sys_init (TP, int argc, char * argv[]) {
     tp_set(tp, sys, tp_string_atom(tp, "modules"), tp->modules);
     tp_set(tp, sys, tp_string_atom(tp, "argv"), args);
     tp_set(tp, sys, tp_string_atom(tp, "conf"), conf);
+    tp_set(tp, sys, tp_string_atom(tp, "exit"), tp_function(tp, tpy_exit));
     tp_set(tp, sys, tp_string_atom(tp, "get_exc"), tp_function(tp, tp_get_exc));
     tp_set(tp, tp->modules, tp_string_atom(tp, "sys"), sys);
 }
