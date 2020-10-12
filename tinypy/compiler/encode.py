@@ -173,6 +173,12 @@ def get_reg(n):
 def set_reg(r,n):
     D.n2r[n] = r; D.r2n[r] = n
     D.mreg = max(D.mreg,r+1)
+    if not is_tmp(r):
+      val = n.encode() + b"\0"*(4-len(n)%4)
+      code_16(VAR, r, len(n))
+      write(val)
+    return r
+
 def free_reg(r):
     if is_tmp(r): D.tmpc -= 1
     n = D.r2n[r]; del D.r2n[r]; del D.n2r[n]
@@ -468,7 +474,7 @@ def do_def(tok,kls=None):
 
     D.begin()
     setpos(tok.pos)
-    r = do_local(Token(tok.pos,'name','__params'))
+    r = do_local(Token(tok.pos,'name','__params__'))
     do_info(items[0].val)
     a,b,c,d = p_filter(items[1].items)
     for p in a:

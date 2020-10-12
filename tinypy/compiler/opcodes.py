@@ -60,6 +60,7 @@ FILE = 34
 NAME = 35
 
 REGS = 45
+VAR = 51
 
 def _make_dicts():
     names = {}

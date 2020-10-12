@@ -164,8 +164,9 @@ typedef struct tpd_func {
 typedef union tpd_code {
     unsigned char i;
     struct { unsigned char i,a,b,c; } regs;
-    struct { char val[4]; } string;
-    struct { float val; } number;
+    struct { char val[0]; } string;
+    /* ensure the struct is 0 bytes long. */
+    TP_PACKED struct { tp_num val[0]; } number;
 } tpd_code;
 
 typedef struct tpd_frame {

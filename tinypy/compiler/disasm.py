@@ -32,22 +32,28 @@ def disassemble(bc):
     while ip < len(bc):
         i, a, b, c = bc[ip:ip + 4]
         line = ""
+        line += pad(str(ip), 4) + ":" 
         line += pad(names[i], 10) + ":" 
         line += " " + pad(str(a), -3)
         line += " " + pad(str(b), -3)
         line += " " + pad(str(c), -3)
         ip += 4
-        if names[i] == "LINE":
+        if i == opcodes.LINE:
             n = a * 4
             line += " " + str(text(n,ip,bc))
             line = trim(line)
             ip += n
-        elif names[i] == "STRING":
+        elif i == opcodes.VAR:
+            n = b * 256 + c
+            line += " " + str(a) + ": " + str(text(n,ip,bc))
+            line = trim(line)
+            ip += (int(n / 4) + 1) * 4
+        elif i == opcodes.STRING:
             n = b * 256 + c
             line += " " + str(text(n,ip,bc))
             line = trim(line)
             ip += (int(n / 4) + 1) * 4 
-        elif names[i] == "NUMBER":   
+        elif i == opcodes.NUMBER:
             f = funpack(text(8,ip,bc))
             line += " " + str(f)
             ip += 8

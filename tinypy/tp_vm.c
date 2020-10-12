@@ -198,8 +198,9 @@ int tp_step(TP) {
     tp_bounds(tp,cur,1);
     #endif
     tpd_code e = *cur;
-    
-//    fprintf(stdout,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur,cur - (tpd_code*)f->code.string.info->s,tp_strings[e.i],VA,VB,VC);
+    tpd_code *base = (tpd_code*)f->code.string.info->s;
+    /* FIXME: convert this to a flag */
+    // fprintf(stdout,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
 //       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(regs[i])); }
    
 //    tp_obj tpy_print(TP);
@@ -250,8 +251,9 @@ int tp_step(TP) {
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,sizeof(tp_num)/4);
             #endif
-            RA = tp_number(*(tp_num*)((*++cur).string.val ));
-            cur += sizeof(tp_num)/4;
+            cur++;
+            RA = tp_number((*cur).number.val[0]);
+            cur+= sizeof(tp_num)/4;
             continue;
         case TP_ISTRING: {
             #ifdef TP_SANDBOX
@@ -312,6 +314,11 @@ int tp_step(TP) {
             break;
         case TP_IFILE: *f->fname = RA; break;
         case TP_INAME: *f->name = RA; break;
+        case TP_IVAR: {
+            cur += (UVBC/4) + 1;
+            /* Watch out: crash if continue. */
+            break;
+        }
         case TP_IREGS: f->cregs = VA; break;
         default:
             tp_raise(0,tp_string_atom(tp, "(tp_step) RuntimeError: invalid instruction"));
