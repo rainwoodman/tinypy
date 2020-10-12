@@ -31,7 +31,7 @@ tp_obj tp_conf_set(TP) {
     tp_obj o = TP_OBJ();
     tp_obj k = TP_STR();
     int v = TP_NUM();
-    if(tp_equal(tp, k, tp_string_atom(tp, "gcmax"))) {
+    if(tp_string_equal_atom(k, "gcmax")) {
         tp->gcmax = v;
     } else {
         tp_raise_printf(tp_None, "(tp_conf_set) unknown key %s", k);
@@ -42,7 +42,7 @@ tp_obj tp_conf_set(TP) {
 tp_obj tp_conf_get(TP) {
     tp_obj o = TP_OBJ();
     tp_obj k = TP_STR();
-    if(tp_equal(tp, k, tp_string_atom(tp, "gcmax"))) {
+    if(tp_string_equal_atom(k, "gcmax")) {
         return tp_number(tp->gcmax);
     } else {
         tp_raise_printf(tp_None, "(tp_conf_get) unknown key %s", k);

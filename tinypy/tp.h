@@ -316,6 +316,8 @@ void   _tp_raise(TP,tp_obj);
  * manages storage for you.
  */
 tp_obj tp_string_atom(TP, const char * v);
+#define tp_string_equal_atom(a, cstr) (0 == tp_string_cmp_const((a), (cstr), sizeof(cstr) - 1))
+
 int tp_string_len(tp_obj s);
 char * tp_string_getptr(tp_obj s);
 
@@ -391,6 +393,7 @@ tp_inline static tp_obj tp_number(tp_num v) {
  */
 tp_inline static
 tp_obj tp_string_from_const(TP, char const * v, int n);
+int tp_string_cmp_const(tp_obj, const char * v, int n);
 
 tp_obj tp_params(TP);
 tp_obj tp_params_n(TP, int n, tp_obj argv[]);

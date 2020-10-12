@@ -139,7 +139,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
                 return tp_dict_get(tp, self, k);
             }
             /* create a raw dict. */
-            if (tp_equal(tp, k, tp_string_atom(tp, "__dict__"))) {
+            if (tp_string_equal_atom(k, "__dict__")) {
                 return tp_getraw(tp, self);
             }
             TP_META_BEGIN(self, "__get__");

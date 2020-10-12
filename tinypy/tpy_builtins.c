@@ -72,12 +72,12 @@ tp_obj tpy_range(TP) {
 tp_obj tpy_istype(TP) {
     tp_obj v = TP_OBJ();
     tp_obj t = TP_STR();
-    if (tp_equal(tp,t,tp_string_atom(tp, "string"))) { return tp_number(v.type.typeid == TP_STRING); }
-    if (tp_equal(tp,t,tp_string_atom(tp, "list"))) { return tp_number(v.type.typeid == TP_LIST); }
-    if (tp_equal(tp,t,tp_string_atom(tp, "dict"))) { return tp_number(v.type.typeid == TP_DICT); }
-    if (tp_equal(tp,t,tp_string_atom(tp, "number"))) { return tp_number(v.type.typeid == TP_NUMBER); }
-    if (tp_equal(tp,t,tp_string_atom(tp, "func"))) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) == 0); }
-    if (tp_equal(tp,t,tp_string_atom(tp, "method"))) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) != 0); }
+    if (tp_string_equal_atom(t, "string")) { return tp_number(v.type.typeid == TP_STRING); }
+    if (tp_string_equal_atom(t, "list")) { return tp_number(v.type.typeid == TP_LIST); }
+    if (tp_string_equal_atom(t, "dict")) { return tp_number(v.type.typeid == TP_DICT); }
+    if (tp_string_equal_atom(t, "number")) { return tp_number(v.type.typeid == TP_NUMBER); }
+    if (tp_string_equal_atom(t, "func")) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) == 0); }
+    if (tp_string_equal_atom(t, "method")) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) != 0); }
     tp_raise(tp_None,tp_string_atom(tp, "(is_type) TypeError: ?"));
 }
 

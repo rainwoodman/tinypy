@@ -160,6 +160,15 @@ int tp_str_index (tp_obj s, tp_obj k) {
     return -1;
 }
 
+int tp_string_cmp_const(tp_obj a, const char * b, int n)
+{
+    int l = _tp_min(tp_string_len(a), n);
+    int v = memcmp(tp_string_getptr(a), b, l);
+    if (v == 0) {
+        v = tp_string_len(a) - n;
+    }
+    return v;
+}
 
 int tp_string_cmp(tp_obj a, tp_obj b)
 {
