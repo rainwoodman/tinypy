@@ -14,7 +14,7 @@ function run {
     fi
     echo "./tpc -o ${tpc} $1"
     echo "${TPVM} ${tpc}"
-    ./tpc -o ${tpc} $1
+    ./tpc -o ${tpc} $1 || return 255
     "${TPVM}" ${tpc}
 }
 

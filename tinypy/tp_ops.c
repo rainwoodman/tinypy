@@ -264,13 +264,6 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
         } else if (k.type.typeid == TP_NONE) {
             tpd_list_append(tp, self.list.val, v);
             return;
-        } else if (k.type.typeid == TP_STRING) {
-            /* WTF is this syntax? a['*'] = b will extend a by b ??
-             * FIXME: remove this support. Use a + b */
-            if (tp_cmp(tp, tp_string_atom(tp, "*"), k) == 0) {
-                tpd_list_extend(tp, self.list.val, v.list.val);
-                return;
-            }
         }
     }
     tp_raise(,tp_string_atom(tp, "(tp_set) TypeError: object does not support item assignment"));

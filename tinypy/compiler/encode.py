@@ -434,10 +434,13 @@ def do_call(t,r=None):
             f = do(d.items[0])
             un_tmp(f)
             code(MERGE,e,f)
+    # FIXME: for CPython compat we shall change the convention
+    # to always set the two last PARAMS to * and **,
+    # then on the caller side unpack the args.
     manage_seq(PARAMS,r,a)
     if c != None:
-        t1,t2 = _do_string('*'),do(c.items[0])
-        code(SET,r,t1,t2)
+        t2 = do(c.items[0])
+        code(ADD,r,r,t2)
         free_tmp(t1); free_tmp(t2) #REG
     if e != None:
         t1 = _do_none()
