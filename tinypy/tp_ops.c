@@ -323,7 +323,7 @@ int tp_cmp(TP, tp_obj a, tp_obj b) {
         case TP_NUMBER: return _tp_sign(a.number.val-b.number.val);
         case TP_STRING: return tp_string_cmp(a, b);
         case TP_LIST: return tp_list_cmp(tp, a, b);
-        case TP_DICT: return a.dict.val - b.dict.val;
+        case TP_DICT: return tp_dict_cmp(tp, a, b);
         case TP_FUNC: return a.func.info - b.func.info;
         case TP_DATA: return (char*)a.data.val - (char*)b.data.val;
     }
