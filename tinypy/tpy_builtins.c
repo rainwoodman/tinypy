@@ -44,14 +44,6 @@ tp_obj tpy_len(TP) {
     return tp_len(tp,e);
 }
 
-tp_obj tpy_assert(TP) {
-    tp_obj a = TP_OBJ();
-    tp_obj b = TP_OBJ();
-    tp_obj c = TP_OBJ();
-    tp_assert(tp, a, b, c);
-    return tp_None;
-}
-
 tp_obj tpy_range(TP) {
     int a,b,c,i;
     tp_obj r = tp_list_t(tp);
@@ -399,7 +391,6 @@ void tp_module_builtins_init(TP) {
     {"copy",tpy_copy},
     {"__import__",tpy_import},
     {"len",tpy_len},
-    {"__assert__", tpy_assert},
     {"str", tpy_str},
     {"float",tpy_float}, 
     {"istype",tpy_istype},
