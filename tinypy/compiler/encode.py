@@ -17,10 +17,11 @@ class DState:
         self.vars,self.r2n,self.n2r,self._tmpi,self.mreg,self.snum,self._globals,self.lineno,self.globals,self.rglobals,self.cregs,self.tmpc = [],{},{},0,0,str(self._scopei),gbl,-1,[],[],['regs'],0
         self._scopei += 1
         insert(self.cregs)
-    def end(self):
+    def end(self, eof=True):
         # cregs is already inserted to out; this modifies it in place.
         self.cregs.append(self.mreg)
-        code(EOF)
+        if eof:
+            code(EOF)
 
         if self.tmpc != 0:
             print("Warning:\nencode.py contains a register leak\n")
@@ -464,7 +465,7 @@ def do_local(t,r=None):
         D.vars.append(t.val)
     return get_reg(t.val)
 
-def do_def(tok,kls=None):
+def do_def(tok):
     items = tok.items
 
     t = get_tag()
@@ -502,13 +503,8 @@ def do_def(tok,kls=None):
 
     tag(t,'end')
 
-    if kls == None:
-        if D._globals: do_globals(Token(tok.pos,0,0,[items[0]]))
-        r = do_set_ctx(items[0],Token(tok.pos,'reg',rf))
-    else:
-        rn = do_string(items[0])
-        code(SET,kls,rn,rf)
-        free_tmp(rn)
+    if D._globals: do_globals(Token(tok.pos,0,0,[items[0]]))
+    r = do_set_ctx(items[0],Token(tok.pos,'reg',rf))
 
     free_tmp(rf)
 
@@ -533,21 +529,32 @@ def do_class(t):
         Token(tok.pos,'name','setmeta'),
         Token(tok.pos,'reg',kls),
         parent])))
-        
-    for member in items[1].items:
-        if member.type == 'def': do_def(member,kls)
-        elif member.type == 'symbol' and member.val == '=': do_classvar(member,kls)
-        else: continue
-        
     free_reg(kls) #REG
 
-def do_classvar(t,r):
-    var = do_string(t.items[0])
-    val = do(t.items[1])
-    code(SET,r,var,val)
-    free_reg(var)
-    free_reg(val)
-    
+    # We really only want to run the class block and then merge the local scope with
+    # the kls.
+    # FIXME: This is not ideal; we shall cleanup begin / end to make this better.
+    D.begin()
+    # Run the class body.
+    free_tmp(do(items[1])) #REG
+
+    # we must refetch the kls object, because after begin() the kls reg is
+    # invalidated.
+    ts = _do_string(name)
+    kls = get_tmp()
+    code(GGET, kls, ts)
+    un_tmp(kls)
+    free_tmp(ts) #REG
+    for val in D.vars:
+        ts = _do_string(val)
+        code(SET,kls, ts, get_reg(val))
+        free_tmp(ts) #REG
+    free_reg(kls)
+    # As class block is run immediately (unlike function), we shall not create tags or
+    # end the frame.
+    D.end(eof=False)
+
+
 def do_while(t):
     items = t.items
     t = stack_tag()

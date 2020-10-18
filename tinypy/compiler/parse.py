@@ -220,6 +220,9 @@ def block():
         P.terminal()
     while check(P.token,'nl'): advance()
 
+    # FIXME: this is not normal. Consider always return
+    # statements and squeeze on the caller side with a helper.
+    # also see class_nud where we use ilst to revert the squeeze.
     if len(items) > 1:
         return Token(tok.pos,'statements',';',items)
     return items.pop()
@@ -251,7 +254,8 @@ def class_nud(t):
     items = t.items = []
     items.append(expression(0))
     advance(':')
-    items.append(ilst('methods',block()))
+    # ensure we create a list.
+    items.append(ilst('statements',block()))
     return t
 
 def from_nud(t):
