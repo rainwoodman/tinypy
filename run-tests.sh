@@ -1,6 +1,12 @@
 TPVM=./tpvm
+XFAIL=0
 if [[ "$1" == "-dbg" ]]; then
     TPVM=./tpvm-dbg
+    shift
+fi
+
+if [[ "$1" == "-xfail" ]]; then
+    XFAIL=1
     shift
 fi
 
@@ -22,6 +28,9 @@ st=0
 for i in ${TESTS[@]}; do
     if ! run "${i}"; then
         echo ==== ${st}
+        if [[ ${XFAIL} -ne 0 ]]; then
+            exit 255
+        fi
         st=1
     fi
 done

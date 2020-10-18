@@ -55,6 +55,9 @@ tpy : $(TPLIB_FILES:%.c=tinypy/%.o) tinypy/tpmain.c modules/modules.a
 test: $(TESTS_PY_FILES) tpy tpvm tpvm-dbg run-tests.sh
 	bash run-tests.sh $(TESTS_PY_FILES)
 
+xtest: $(TESTS_PY_FILES) tpy tpvm tpvm-dbg run-tests.sh
+	bash run-tests.sh -xfail $(TESTS_PY_FILES)
+
 test-dbg: $(TESTS_PY_FILES) tpy tpvm tpvm-dbg run-tests.sh
 	bash run-tests.sh -dbg $(TESTS_PY_FILES)
 
