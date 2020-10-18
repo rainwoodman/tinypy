@@ -27,7 +27,6 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *r, int depth) {
                 || self.type.typeid == TP_LIST
                 || self.type.typeid == TP_STRING
             ) {
-                /* an object is seen, bind the meta method to the instance FIXME: for list and string */
                 *r = tp_bind(tp, *r, self);
             }
         }

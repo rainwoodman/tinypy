@@ -27,7 +27,7 @@ tp_obj tp_bind(TP, tp_obj function, tp_obj self) {
 }
 
 tp_obj tp_def(TP, tp_obj code, tp_obj g) {
-    return tp_func_t(tp,0,0,code,tp_None,g);
+    return tp_func_t(tp, 0, NULL, code, tp_None, g);
 }
 
 /* Function: tp_func
@@ -37,11 +37,15 @@ tp_obj tp_def(TP, tp_obj code, tp_obj g) {
  * the script, calls the provided C function.
  */
 tp_obj tp_function(TP, tp_obj v(TP)) {
-    return tp_func_t(tp,TP_FUNC_MASK_C,v,tp_None,tp_None,tp_None);
+    return tp_func_t(tp, 0, v, tp_None, tp_None, tp_None);
 }
 
+/* Function: tp_method
+ * Creates a method for an instance. Use this in a C module to create objects by
+ * proto-typing.
+ */
 tp_obj tp_method(TP,tp_obj self, tp_obj v(TP)) {
-    return tp_func_t(tp, TP_FUNC_MASK_METHOD,v,tp_None,self,tp_None);
+    return tp_func_t(tp, TP_FUNC_MASK_METHOD, v, tp_None, self, tp_None);
 }
 
 

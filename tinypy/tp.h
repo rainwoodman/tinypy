@@ -69,7 +69,6 @@ enum TP_PACKED TPTypeMagic {
     TP_STRING_EXTERN,
     TP_STRING_VIEW,
 
-    TP_FUNC_MASK_C = 1<<6,
     TP_FUNC_MASK_METHOD = 1<<7,
 };
 

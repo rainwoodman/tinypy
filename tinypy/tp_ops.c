@@ -405,10 +405,6 @@ tp_obj tp_bitwise_not(TP, tp_obj a) {
  * positional parameter containing the string "hello".
  */
 tp_obj tp_call(TP, tp_obj self, tp_obj params) {
-    /* I'm not sure we should have to do this, but
-    just for giggles we will. */
-    tp->params = params;
-
     if (self.type.typeid == TP_DICT) {
         if (self.type.magic == TP_DICT_CLASS) {
             tp_obj meta;
@@ -424,11 +420,14 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
     }
 
     if (self.type.typeid == TP_FUNC) {
-        if(self.type.magic & TP_FUNC_MASK_C) {
-            if (self.type.magic & TP_FUNC_MASK_METHOD) {
-                /* METHOD */
-                tpd_list_insert(tp, tp->params.list.val, 0, self.func.info->instance);
-            }
+        if (self.type.magic & TP_FUNC_MASK_METHOD) {
+            /* method, add instance */
+            tpd_list_insert(tp, params.list.val, 0, self.func.info->instance);
+        }
+        if(self.func.cfnc != NULL) {
+            /* C func, set tp->params for the CAPI calling convention. */
+            tp->params = params;
+
             tp_obj (* cfunc)(tp_vm *);
             cfunc = self.func.cfnc;
 
@@ -441,14 +440,7 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
             tp_enter_frame(tp, self.func.info->globals,
                                self.func.info->code,
                               &dest);
-            if ((self.type.magic & TP_FUNC_MASK_METHOD)) {
-                /* method */
-                tp->frames[tp->cur].regs[0] = params;
-                tpd_list_insert(tp, params.list.val, 0, self.func.info->instance);
-            } else {
-                /* function */
-                tp->frames[tp->cur].regs[0] = params;
-            }
+            tp->frames[tp->cur].regs[0] = params;
             tp_run_frame(tp);
             return dest;
         }
