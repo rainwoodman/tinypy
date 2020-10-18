@@ -26,6 +26,15 @@ tp_obj tp_bind(TP, tp_obj function, tp_obj self) {
                 function.func.info->globals);
 }
 
+tp_obj tp_staticmethod(TP, tp_obj function) {
+    return tp_func_t(tp,
+                function.type.magic | TP_FUNC_MASK_STATIC,
+                function.func.cfnc,
+                function.func.info->code,
+                tp_None,
+                function.func.info->globals);
+}
+
 tp_obj tp_def(TP, tp_obj code, tp_obj g) {
     return tp_func_t(tp, 0, NULL, code, tp_None, g);
 }

@@ -9,6 +9,11 @@ tp_obj tpy_bind(TP) {
     return tp_bind(tp, r, self);
 }
 
+tp_obj tpy_staticmethod(TP) {
+    tp_obj r = TP_TYPE(TP_FUNC);
+    return tp_staticmethod(tp, r);
+}
+
 tp_obj tpy_min(TP) {
     tp_obj r = TP_OBJ();
     tp_obj e;
@@ -388,6 +393,7 @@ void tp_module_builtins_init(TP) {
     {"min",tpy_min},
     {"max",tpy_max},
     {"bind", tpy_bind},
+    {"staticmethod", tpy_staticmethod},
     {"copy",tpy_copy},
     {"__import__",tpy_import},
     {"len",tpy_len},

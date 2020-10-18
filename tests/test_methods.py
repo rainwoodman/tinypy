@@ -7,9 +7,9 @@ class MyClass:
     def b(self, k):
         return k
 
-#    def f(k):
-#        return k
-#    s = staticmethod(f)
+    def f(k):
+        return k
+    s = staticmethod(f)
 
 class MyTest(UnitTest):
 
@@ -23,11 +23,11 @@ class MyTest(UnitTest):
         assert obj.a == 3
         assert MyClass.a == 3
 
-    #def test_staticmethod(self):
-    #    obj = MyClass()
-    #    assert MyClass.s(3) == 3
-    #    assert MyClass.f(3) == 3
-    #    assert obj.s(3) == 3
+    def test_staticmethod(self):
+        obj = MyClass()
+        assert MyClass.s(3) == 3
+        assert MyClass.f(3) == 3
+        assert obj.s(3) == 3
 
 t = MyTest()
 

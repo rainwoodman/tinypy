@@ -69,7 +69,8 @@ enum TP_PACKED TPTypeMagic {
     TP_STRING_EXTERN,
     TP_STRING_VIEW,
 
-    TP_FUNC_MASK_METHOD = 1<<7,
+    TP_FUNC_MASK_STATIC = 1<<6,  /* function will not automatically bind to an instance. */
+    TP_FUNC_MASK_METHOD = 1<<7,  /* (bound) prepend instance to params before call. */
 };
 
 typedef struct TPTypeInfo {
@@ -414,6 +415,7 @@ tp_obj tp_function(TP, tp_obj v(TP));
 tp_obj tp_method(TP, tp_obj self,tp_obj v(TP));
 tp_obj tp_def(TP, tp_obj code, tp_obj g);
 tp_obj tp_bind(TP, tp_obj function, tp_obj self);
+tp_obj tp_staticmethod(TP, tp_obj function);
 
 tp_obj tp_format_stack(TP);
 
