@@ -133,15 +133,15 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
             if (tp_string_equal_atom(k, "__dict__")) {
                 return tp_getraw(tp, self);
             }
+            /* method? */
+            if (_tp_lookup(tp, self, k, &r)) {
+                return r;
+            }
             /* getter? */
             TP_META_BEGIN(self, __get__);
                 return tp_call(tp, __get__, tp_params_v(tp,1,k));
             TP_META_END;
 
-            /* method? FIXME: this probably should be before the getter. */
-            if (_tp_lookup(tp, self, k, &r)) {
-                return r;
-            }
             char * str = tp_cstr(tp, k);
             tp_obj message = tp_printf(tp, "(tpd_dict_get) KeyError: %s", str);
             free(str);

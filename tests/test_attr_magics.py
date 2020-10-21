@@ -7,8 +7,12 @@ class MyClass:
     def __set__(self, k, v):
         self.internal[k] = v
 
+    def f(self):
+        return 3
+
     def __get__(self, k):
         return k
+
 class MyBypass:
     def __set__(self, k, v):
         return True
@@ -38,6 +42,7 @@ class MyTest(UnitTest):
         obj = MyClass()
         obj.set_attr = '1234'
         obj.internal = 'foo'
+        assert obj.f() == 3
         assert obj.unset_attr == "unset_attr"
         assert obj.internal['set_attr'] == '1234'
         assert obj.internal['internal'] == 'foo'
