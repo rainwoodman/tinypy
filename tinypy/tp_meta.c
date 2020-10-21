@@ -7,13 +7,13 @@ void tp_set_meta(TP, tp_obj self, tp_obj meta) {
 }
 tp_obj tp_get_meta(TP, tp_obj self) {
     if(self.type.typeid == TP_STRING) {
-        return tp->_string_meta;
+        return tp->string_class;
     }
     if(self.type.typeid == TP_LIST) {
-        return tp->_list_meta;
+        return tp->list_class;
     }
     if(self.type.typeid == TP_DICT && self.type.magic == TP_DICT_RAW) {
-        return tp->_dict_meta;
+        return tp->dict_class;
     }
     if(self.type.typeid == TP_DICT && self.type.magic != TP_DICT_RAW) {
         return self.dict.val->meta;
@@ -40,11 +40,6 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *r, int depth) {
     }
 
     tp_obj meta = tp_get_meta(tp, self);
-    if(self.type.typeid == TP_DICT && self.type.magic == TP_DICT_RAW) {
-        if(meta.dict.val != tp->_dict_meta.dict.val) {
-            abort();
-        }
-    }
     if (tp_none(meta)) {
         return 0;
     }

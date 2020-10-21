@@ -38,9 +38,9 @@ tp_vm * tp_create_vm(void) {
     object_class.type.magic = TP_DICT_CLASS;
     tp->object_class = object_class;
 
-    tp->_list_meta = tp_class(tp);
-    tp->_dict_meta = tp_class(tp);
-    tp->_string_meta = tp_class(tp);
+    tp->list_class = tp_class(tp);
+    tp->dict_class = tp_class(tp);
+    tp->string_class = tp_class(tp);
 
     tp->builtins = tp_dict_t(tp);
     tp->modules = tp_dict_t(tp);
@@ -56,9 +56,9 @@ tp_vm * tp_create_vm(void) {
     tp_gc_set_reachable(tp, tp->_regs);
     tp_gc_set_reachable(tp, tp->_params);
 
-    tp_gc_set_reachable(tp, tp->_list_meta);
-    tp_gc_set_reachable(tp, tp->_dict_meta);
-    tp_gc_set_reachable(tp, tp->_string_meta);
+    tp_gc_set_reachable(tp, tp->list_class);
+    tp_gc_set_reachable(tp, tp->dict_class);
+    tp_gc_set_reachable(tp, tp->string_class);
 
     *tp->last_result = tp_None;
     tp_full(tp);

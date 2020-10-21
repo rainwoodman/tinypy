@@ -210,9 +210,9 @@ typedef struct tp_vm {
 
     /* types */
     tp_obj object_class;
-    tp_obj _list_meta;
-    tp_obj _dict_meta;
-    tp_obj _string_meta;
+    tp_obj list_class;
+    tp_obj dict_class;
+    tp_obj string_class;
 
     /* call */
     int cur;
