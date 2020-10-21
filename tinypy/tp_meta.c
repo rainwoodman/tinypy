@@ -1,6 +1,22 @@
+void tp_set_meta(TP, tp_obj self, tp_obj meta) {
+    if(self.type.typeid != TP_DICT) {
+        tp_raise(,
+            tp_string_atom(tp, "(tp_check_type) TypeError: type does not support meta."));
+    }
+    self.dict.val->meta = meta;
+}
 tp_obj tp_get_meta(TP, tp_obj self) {
-    if(self.type.typeid > TP_HAS_META) {
-        return self.obj.info->meta;
+    if(self.type.typeid == TP_STRING) {
+        return tp->_string_meta;
+    }
+    if(self.type.typeid == TP_LIST) {
+        return tp->_list_meta;
+    }
+    if(self.type.typeid == TP_DICT && self.type.magic == TP_DICT_RAW) {
+        return tp->_dict_meta;
+    }
+    if(self.type.typeid == TP_DICT && self.type.magic != TP_DICT_RAW) {
+        return self.dict.val->meta;
     }
     return tp_None;
 }
@@ -24,7 +40,11 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *r, int depth) {
     }
 
     tp_obj meta = tp_get_meta(tp, self);
-
+    if(self.type.typeid == TP_DICT && self.type.magic == TP_DICT_RAW) {
+        if(meta.dict.val != tp->_dict_meta.dict.val) {
+            abort();
+        }
+    }
     if (tp_none(meta)) {
         return 0;
     }

@@ -1,6 +1,9 @@
 import sys
 from tinypy.runtime.testing import UnitTest
 
+class C:
+    pass
+
 class MyTest(UnitTest):
 
     def test_eq(self):
@@ -18,6 +21,7 @@ class MyTest(UnitTest):
         a = {}
         b = {'a' : 1}
         a.update(b)
+
         assert a['a'] == 1
 
 t = MyTest()

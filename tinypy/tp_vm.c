@@ -34,9 +34,6 @@ tp_vm * tp_create_vm(void) {
     tp->exc_stack = tp->_regs.list.val->items + 2;
     tp->regs = tp->_regs.list.val->items + 3;
 
-    tp->builtins = tp_dict_t(tp);
-    tp->modules = tp_dict_t(tp);
-
     tp_obj object_class = tp_object(tp);
     object_class.type.magic = TP_DICT_CLASS;
     tp->object_class = object_class;
@@ -44,6 +41,9 @@ tp_vm * tp_create_vm(void) {
     tp->_list_meta = tp_class(tp);
     tp->_dict_meta = tp_class(tp);
     tp->_string_meta = tp_class(tp);
+
+    tp->builtins = tp_dict_t(tp);
+    tp->modules = tp_dict_t(tp);
 
     tp->_params = tp_list_t(tp);
 

@@ -124,63 +124,61 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
     /* mget is currently ignored. attributes and items are still treated the same way. */
     int type = self.type.typeid;
     tp_obj r;
-    if (type >= TP_HAS_META) {
-        if (type == TP_DICT && self.type.typeid != TP_DICT_RAW) {
+    if (type == TP_DICT && self.type.magic != TP_DICT_RAW) {
+        if (tp_dict_has(tp, self, k)) {
+            return tp_dict_get(tp, self, k);
+        }
+        /* want to check the raw dict? */
+        if (tp_string_equal_atom(k, "__dict__")) {
+            return tp_getraw(tp, self);
+        }
+        /* method? */
+        if (_tp_lookup(tp, self, k, &r)) {
+            return r;
+        }
+        /* getter? */
+        TP_META_BEGIN(self, __get__);
+            return tp_call(tp, __get__, tp_params_v(tp,1,k));
+        TP_META_END;
+
+        char * str = tp_cstr(tp, k);
+        tp_obj message = tp_printf(tp, "(tpd_dict_get) KeyError: %s", str);
+        free(str);
+        tp_raise(tp_None, message);
+    } else if (type == TP_DICT && self.type.magic == TP_DICT_RAW) {
+        /* raw dict distinguishes [] and . */
+        if(mget == 0) {
             if (tp_dict_has(tp, self, k)) {
                 return tp_dict_get(tp, self, k);
             }
-            /* want to check the raw dict? */
-            if (tp_string_equal_atom(k, "__dict__")) {
-                return tp_getraw(tp, self);
-            }
-            /* method? */
+        } else {
             if (_tp_lookup(tp, self, k, &r)) {
                 return r;
             }
-            /* getter? */
-            TP_META_BEGIN(self, __get__);
-                return tp_call(tp, __get__, tp_params_v(tp,1,k));
-            TP_META_END;
-
-            char * str = tp_cstr(tp, k);
-            tp_obj message = tp_printf(tp, "(tpd_dict_get) KeyError: %s", str);
-            free(str);
-            tp_raise(tp_None, message);
-        } else if (type == TP_DICT && self.type.typeid == TP_DICT_RAW) {
-            /* raw dict distinguishes [] and . */
-            if(mget == 0) {
-                if (tp_dict_has(tp, self, k)) {
-                    return tp_dict_get(tp, self, k);
-                }
-            } else {
-                if (_tp_lookup(tp, self, k, &r)) {
-                    return r;
-                }
-            }
-            char * str = tp_cstr(tp, k);
-            tp_obj message = tp_printf(tp, "(tpd_dict_get) KeyError: %s", str);
-            free(str);
-            tp_raise(tp_None, message);
-        } else if (type == TP_LIST) {
-            if (k.type.typeid == TP_NUMBER) {
-                int l = tp_len(tp,self).number.val;
-                int n = k.number.val;
-                n = (n<0?l+n:n);
-                return tpd_list_get(tp, self.list.val, n, "tp_get");
-            } else if (k.type.typeid == TP_STRING) {
-                if (_tp_lookup(tp, self, k, &r)) { return r;}
-            } else if (k.type.typeid == TP_NONE) {
-                return tpd_list_pop(tp, self.list.val, 0, "tp_get");
-            }
-        } else if (type == TP_STRING) {
-            if (k.type.typeid == TP_NUMBER) {
-                int l = tp_string_len(self);
-                int n = k.number.val;
-                n = (n<0?l+n:n);
-                if (n >= 0 && n < l) { return tp_string_t_from_const(tp, tp->chars[(unsigned char) tp_string_getptr(self)[n]], 1); }
-            } else if (k.type.typeid == TP_STRING) {
-                if (_tp_lookup(tp, self, k, &r)) { return r;}
-            }
+        }
+        char * str = tp_cstr(tp, k);
+        tp_obj message = tp_printf(tp, "(tpd_dict_get) KeyError: %s", str);
+        free(str);
+        tp_raise(tp_None, message);
+    } else if (type == TP_LIST) {
+        if (k.type.typeid == TP_NUMBER) {
+            int l = tp_len(tp,self).number.val;
+            int n = k.number.val;
+            n = (n<0?l+n:n);
+            return tpd_list_get(tp, self.list.val, n, "tp_get");
+        } else if (k.type.typeid == TP_STRING) {
+            if (_tp_lookup(tp, self, k, &r)) { return r;}
+        } else if (k.type.typeid == TP_NONE) {
+            return tpd_list_pop(tp, self.list.val, 0, "tp_get");
+        }
+    } else if (type == TP_STRING) {
+        if (k.type.typeid == TP_NUMBER) {
+            int l = tp_string_len(self);
+            int n = k.number.val;
+            n = (n<0?l+n:n);
+            if (n >= 0 && n < l) { return tp_string_t_from_const(tp, tp->chars[(unsigned char) tp_string_getptr(self)[n]], 1); }
+        } else if (k.type.typeid == TP_STRING) {
+            if (_tp_lookup(tp, self, k, &r)) { return r;}
         }
     }
     /* deal with list / string keys on any unknown types */

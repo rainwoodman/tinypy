@@ -53,7 +53,6 @@ enum TP_PACKED TPTypeID {
     TP_FUNC = 10,
     TP_DATA = 11,
 
-    TP_HAS_META = 99,
     TP_STRING = 100,
     TP_DICT = 101,
     TP_LIST = 102,
@@ -117,12 +116,10 @@ typedef union tp_obj {
 
 typedef struct tpd_obj {
     int gci;
-    tp_obj meta;
 } tpd_obj;
 
 typedef struct tpd_string {
     int gci;
-    tp_obj meta;
     tp_obj base;
     char * s;
     int len;
@@ -130,7 +127,6 @@ typedef struct tpd_string {
 
 typedef struct tpd_list {
     int gci;
-    tp_obj meta;
     tp_obj *items;
     int len;
     int alloc;
@@ -419,6 +415,7 @@ tp_obj tp_method(TP, tp_obj self,tp_obj v(TP));
 tp_obj tp_def(TP, tp_obj code, tp_obj g);
 tp_obj tp_bind(TP, tp_obj function, tp_obj self);
 tp_obj tp_staticmethod(TP, tp_obj function);
+void tp_set_meta(TP, tp_obj self, tp_obj meta);
 tp_obj tp_get_meta(TP, tp_obj self);
 int tp_true(TP, tp_obj);
 int tp_none(tp_obj);

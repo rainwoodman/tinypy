@@ -42,7 +42,6 @@ tp_obj tp_string_t(TP, int n) {
     r.string.info = (tpd_string*)tp_malloc(tp, sizeof(tpd_string));
     r.string.info->len = n;
     r.string.info->s = tp_malloc(tp, n);
-    r.obj.info->meta = tp->_string_meta;
     return tp_track(tp, r);
 }
 
@@ -53,7 +52,6 @@ tp_obj tp_string_atom(TP, const char * v) {
     r.type.typeid = TP_STRING;
     r.type.magic = TP_STRING_ATOM;
     r.string.info = &info;
-    r.string.info->meta = tp->_string_meta;
     r.string.val = v;
     return r;
 }
@@ -70,7 +68,6 @@ tp_obj tp_string_from_const(TP, const char *s, int n) {
     r.string.info->base = tp_None;
     r.string.info->s = (char*) s;
     r.string.info->len = n;
-    r.obj.info->meta = tp->_string_meta;
     return r;
 }
 
@@ -97,7 +94,6 @@ tp_obj tp_string_steal_from_builder(TP, StringBuilder * sb)
     r.string.info = (tpd_string*)tp_malloc(tp, sizeof(tpd_string));
     r.string.info->len = sb->len;
     r.string.info->s = sb->buffer;
-    r.obj.info->meta = tp->_string_meta;
     sb->buffer = NULL;
     sb->len = 0;
     return tp_track(tp, r);

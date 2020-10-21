@@ -1,7 +1,6 @@
 tp_obj tp_list_nt(TP) {
     tp_obj r = {TP_LIST};
     r.list.val = tpd_list_new(tp);
-    r.obj.info->meta = tp->_list_meta;
     return r;
 }
 

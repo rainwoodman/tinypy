@@ -2,9 +2,8 @@ from tinypy.runtime.testing import UnitTest
 
 class Create:
     def __init__(self, **args):
-        # FIXME: use dict.update() after it is fixed.
-        for k in args:
-            self.__dict__[k] = args[k]
+        self.__dict__.update(args)
+
     def create_with_a(a):
         return Create(a=a)
     create_with_a = staticmethod(create_with_a)

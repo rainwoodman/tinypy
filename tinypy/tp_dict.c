@@ -2,7 +2,6 @@ tp_obj tp_dict_nt(TP) {
     tp_obj r = {TP_DICT};
     r.dict.val = tpd_dict_new(tp);
     r.type.magic = TP_DICT_RAW;
-    r.obj.info->meta = tp->_dict_meta;
     return r;
 }
 
@@ -31,6 +30,7 @@ tp_obj tp_dict_t(TP) {
 tp_obj tp_object(TP) {
     tp_obj self = tp_dict_t(tp);
     self.type.magic = TP_DICT_OBJECT;
+    tp_set_meta(tp, self, tp->object_class);
     return self;
 }
 
@@ -46,7 +46,7 @@ tp_obj tp_object(TP) {
 tp_obj tp_class(TP) {
     tp_obj klass = tp_dict_t(tp);
     klass.type.magic = TP_DICT_CLASS;
-    klass.obj.info->meta = tp->object_class;
+    tp_set_meta(tp, klass, tp->object_class);
     return klass;
 }
 

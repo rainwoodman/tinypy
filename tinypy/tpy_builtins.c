@@ -81,17 +81,21 @@ tp_obj tpy_istype(TP) {
 tp_obj tpy_isinstance(TP) {
     tp_obj v = TP_OBJ();
     tp_obj t = TP_OBJ();
-    
-    tp_obj * pv = &v;
+
     if(t.type.typeid != TP_DICT) {
         tp_raise(tp_None, tp_string_atom(tp, "isinstance TypeError: class argument must be a dictionary."));
     }
 
-    while(pv->type.typeid >= TP_HAS_META) {
-        if (pv->obj.info->meta.dict.val == t.dict.val) {
+    tp_obj p = v;
+    tp_obj meta;
+    while(1) {
+        meta = tp_get_meta(tp, p);
+        if(tp_none(meta)) break;
+
+        if (meta.dict.val == t.dict.val) {
             return tp_number(1);
         }
-        pv = &(pv->obj.info->meta);
+        p = meta;
     }
     return tp_number(0);
 }
@@ -166,28 +170,20 @@ tp_obj tpy_round(TP) {
  */
 tp_obj tpy_setmeta(TP) {
     tp_obj self = TP_OBJ();
-    if(self.type.typeid < TP_HAS_META) {
-        tp_raise(tp_None,
-            tp_string_atom(tp, "(tp_check_type) TypeError: type does not support meta."));
-    }
     tp_obj meta = TP_TYPE(TP_DICT);
-    self.obj.info->meta = meta;
+    tp_set_meta(tp, self, meta);
     return tp_None;
 }
 
 tp_obj tpy_getmeta(TP) {
     tp_obj self = TP_OBJ();
-    if(self.type.typeid < TP_HAS_META) {
-        tp_raise(tp_None,
-            tp_string_atom(tp, "(tp_check_type) TypeError: type does not support meta."));
-    }
-    return self.obj.info->meta;
+    return tp_get_meta(tp, self);
 }
 
 tp_obj tpy_object_new(TP) {
     tp_obj klass = TP_TYPE(TP_DICT);
     tp_obj self = tp_object(tp);
-    self.obj.info->meta = klass;
+    self.dict.val->meta = klass;
     TP_META_BEGIN(self, __init__);
         tp_call(tp, __init__, tp->params);
     TP_META_END;

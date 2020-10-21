@@ -68,7 +68,7 @@ void tp_module_sys_init (TP, int argc, char * argv[]) {
     tp_obj conf_class = tp_class(tp);
     tp_set(tp, conf_class, tp_string_atom(tp, "__set__"), tp_function(tp, tp_conf_set));
     tp_set(tp, conf_class, tp_string_atom(tp, "__get__"), tp_function(tp, tp_conf_get));
-    conf.obj.info->meta = conf_class;
+    tp_set_meta(tp, conf, conf_class);
 
     tp_set(tp, sys, tp_string_atom(tp, "version"), tp_string_atom(tp, "tinypy 1.2+SVN"));
     tp_set(tp, sys, tp_string_atom(tp, "modules"), tp->modules);
