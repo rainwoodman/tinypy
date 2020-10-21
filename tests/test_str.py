@@ -41,6 +41,12 @@ class StringUnitTests(UnitTest):
         j = ' '.join(['abc', 'def'])
         assert j == 'abc def'
 
+    def test_slice(self):
+        assert '0123'[1, 2] == '1'
+        assert '0123'[1, None] == '123'
+        assert '0123'[None, None] == '0123'
+        assert '0123'[None, 1] == '0'
+        assert '0123'[None, 2] == '01'
 
 if __name__ == '__main__':
     tests = StringUnitTests()

@@ -35,6 +35,14 @@ class MyTest(UnitTest):
         assert min(3, 1, 2) == 1
         assert min(2, 1, 1) == 1
 
+    def test_slice(self):
+        # FIXME: support 1:2 and 1:2:1
+        assert [0, 1, 2, 3][1, 2] == [1]
+        assert [0, 1, 2, 3][1, None] == [1, 2, 3]
+        assert [0, 1, 2, 3][None, None] == [0, 1, 2, 3]
+        assert [0, 1, 2, 3][None, 1] == [0]
+        assert [0, 1, 2, 3][None, 2] == [0, 1]
+
 t = MyTest()
 
 t.run()

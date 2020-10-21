@@ -118,6 +118,23 @@ tp_obj tp_getraw(TP, tp_obj self) {
     return r;
 }
 
+static void tp_slice_get_indices(TP, tp_obj slice, tp_obj obj, int * start, int * stop) {
+    int a, b, l;
+    tp_obj tmp;
+    l = tp_len(tp, obj).number.val;
+    tmp = tp_get(tp, slice, tp_number(0));
+    if (tmp.type.typeid == TP_NUMBER) { a = tmp.number.val; }
+    else if(tmp.type.typeid == TP_NONE) { a = 0; }
+    else { tp_raise(,tp_string_atom(tp, "(tp_get) TypeError: indices must be numbers")); }
+    tmp = tp_get(tp,slice,tp_number(1));
+    if (tmp.type.typeid == TP_NUMBER) { b = tmp.number.val; }
+    else if(tmp.type.typeid == TP_NONE) { b = l; }
+    else { tp_raise(,tp_string_atom(tp, "(tp_get) TypeError: indices must be numbers")); }
+    a = _tp_max(0,(a<0?l+a:a)); b = _tp_min(l,(b<0?l+b:b));
+    *start = a;
+    *stop = b;
+}
+
 static tp_obj
 _tp_get(TP, tp_obj self, tp_obj k, int mget)
 {
@@ -168,6 +185,10 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
             return tpd_list_get(tp, self.list.val, n, "tp_get");
         } else if (k.type.typeid == TP_STRING) {
             if (_tp_lookup(tp, self, k, &r)) { return r;}
+        } else if (k.type.typeid == TP_LIST) {
+            int a, b;
+            tp_slice_get_indices(tp, k, self, &a, &b);
+            return tp_list_from_items(tp,b-a,&self.list.val->items[a]);
         } else if (k.type.typeid == TP_NONE) {
             return tpd_list_pop(tp, self.list.val, 0, "tp_get");
         }
@@ -179,28 +200,14 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
             if (n >= 0 && n < l) { return tp_string_t_from_const(tp, tp->chars[(unsigned char) tp_string_getptr(self)[n]], 1); }
         } else if (k.type.typeid == TP_STRING) {
             if (_tp_lookup(tp, self, k, &r)) { return r;}
-        }
-    }
-    /* deal with list / string keys on any unknown types */
-    if (k.type.typeid == TP_LIST) {
-        int a,b,l;
-        tp_obj tmp;
-        l = tp_len(tp,self).number.val;
-        tmp = tp_get(tp,k,tp_number(0));
-        if (tmp.type.typeid == TP_NUMBER) { a = tmp.number.val; }
-        else if(tmp.type.typeid == TP_NONE) { a = 0; }
-        else { tp_raise(tp_None,tp_string_atom(tp, "(tp_get) TypeError: indices must be numbers")); }
-        tmp = tp_get(tp,k,tp_number(1));
-        if (tmp.type.typeid == TP_NUMBER) { b = tmp.number.val; }
-        else if(tmp.type.typeid == TP_NONE) { b = l; }
-        else { tp_raise(tp_None,tp_string_atom(tp, "(tp_get) TypeError: indices must be numbers")); }
-        a = _tp_max(0,(a<0?l+a:a)); b = _tp_min(l,(b<0?l+b:b));
-        if (type == TP_LIST) {
-            return tp_list_from_items(tp,b-a,&self.list.val->items[a]);
-        } else if (type == TP_STRING) {
+        } else if (k.type.typeid == TP_LIST) {
+            int a, b;
+            tp_slice_get_indices(tp, k, self, &a, &b);
             return tp_string_view(tp,self,a,b);
         }
-    } else if (k.type.typeid == TP_STRING) {
+    }
+    /* We use '*' for copy during args handling. See if we can get rid of this after args are fixed. */
+    if (k.type.typeid == TP_STRING) {
         return tp_copy(tp, self);
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_get) TypeError: ?"));
