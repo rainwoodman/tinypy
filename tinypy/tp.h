@@ -416,6 +416,9 @@ tp_obj tp_method(TP, tp_obj self,tp_obj v(TP));
 tp_obj tp_def(TP, tp_obj code, tp_obj g);
 tp_obj tp_bind(TP, tp_obj function, tp_obj self);
 tp_obj tp_staticmethod(TP, tp_obj function);
+tp_obj tp_get_meta(TP, tp_obj self);
+int tp_true(TP, tp_obj);
+int tp_none(tp_obj);
 
 tp_obj tp_format_stack(TP);
 

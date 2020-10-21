@@ -6,7 +6,7 @@
  * type None or v is a string list or dictionary with a length of 0. Else true
  * is returned.
  */
-int tp_true(TP,tp_obj v) {
+int tp_true(TP, tp_obj v) {
     switch(v.type.typeid) {
         case TP_NUMBER: return v.number.val != 0;
         case TP_NONE: return 0;
@@ -17,6 +17,9 @@ int tp_true(TP,tp_obj v) {
     return 1;
 }
 
+int tp_none(tp_obj v) {
+    return v.type.typeid == TP_NONE;
+}
 
 /* Function: tp_has
  * Checks if an object contains a key.
@@ -142,8 +145,8 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
             if (tp_string_equal_atom(k, "__dict__")) {
                 return tp_getraw(tp, self);
             }
-            TP_META_BEGIN(self, "__get__");
-                return tp_call(tp, meta, tp_params_v(tp,1,k));
+            TP_META_BEGIN(self, __get__);
+                return tp_call(tp, __get__, tp_params_v(tp,1,k));
             TP_META_END;
             if (self.type.magic != TP_DICT_RAW && _tp_lookup(tp, self, k, &r)) {
                 return r;
@@ -248,9 +251,9 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
     int type = self.type.typeid;
 
     if (type == TP_DICT) {
-        TP_META_BEGIN(self,"__set__");
+        TP_META_BEGIN(self, __set__);
             /* unhandled case returns true, and uses the default. */
-            if(tp_true(tp, tp_call(tp,meta,tp_params_v(tp,2,k,v)))) {
+            if(tp_true(tp, tp_call(tp,__set__,tp_params_v(tp,2,k,v)))) {
                 tp_dict_set(tp, self, k, v);
             }
             return;
@@ -355,8 +358,8 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
                 return tp_number(((long)a.number.val) % ((long)b.number.val));
             break;
         case TP_STRING:
-            TP_META_BEGIN(a, "format");
-            return tp_call(tp,meta,tp_params_v(tp, 1, b));
+            TP_META_BEGIN(a, format);
+            return tp_call(tp, format, tp_params_v(tp, 1, b));
             TP_META_END;
     }
     tp_raise(tp_None, tp_string_atom(tp, "(tp_mod) TypeError: ?"));
@@ -407,14 +410,13 @@ tp_obj tp_bitwise_not(TP, tp_obj a) {
 tp_obj tp_call(TP, tp_obj self, tp_obj params) {
     if (self.type.typeid == TP_DICT) {
         if (self.type.magic == TP_DICT_CLASS) {
-            tp_obj meta;
-            if (_tp_lookup(tp, self, tp_string_atom(tp, "__new__"), &meta)) {
+            TP_META_BEGIN_CLASS(self, __new__)
                 tpd_list_insert(tp, params.list.val, 0, self);
-                return tp_call(tp, meta, params);
-            }
+                return tp_call(tp, __new__, params);
+            TP_META_END_CLASS;
         } else if (self.type.magic == TP_DICT_OBJECT) {
-            TP_META_BEGIN(self,"__call__");
-                return tp_call(tp, meta, params);
+            TP_META_BEGIN(self, __call__);
+                return tp_call(tp, __call__, params);
             TP_META_END;
         }
     }

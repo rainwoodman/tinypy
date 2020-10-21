@@ -56,9 +56,7 @@ void tp_follow(TP,tp_obj v) {
             tp_grey(tp,v.dict.val->items[n].val);
         }
     }
-    if (type >= TP_HAS_META) {
-        tp_grey(tp, v.obj.info->meta); 
-    }
+    tp_grey(tp, tp_get_meta(tp, v));
 
     if (type == TP_FUNC) {
         tp_grey(tp,v.func.info->instance);

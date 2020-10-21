@@ -27,14 +27,14 @@ tp_obj tp_repr(TP, tp_obj self) {
 void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) {
     /* if the class has __str__ or __repr__ use those */
     if(mode != 0) { /* str mode */
-        TP_META_BEGIN(self,"__str__");
-            tp_obj obj = tp_call(tp, meta, tp_params(tp));
+        TP_META_BEGIN(self, __str__);
+            tp_obj obj = tp_call(tp, __str__, tp_params(tp));
             string_builder_write(tp, sb, tp_string_getptr(obj), tp_string_len(obj));
             return;
         TP_META_END;
     }
-    TP_META_BEGIN(self,"__repr___");
-        tp_obj obj = tp_call(tp, meta, tp_params(tp));
+    TP_META_BEGIN(self, __repr__);
+        tp_obj obj = tp_call(tp, __repr__, tp_params(tp));
         string_builder_write(tp, sb, tp_string_getptr(obj), tp_string_len(obj));
         return;
     TP_META_END;

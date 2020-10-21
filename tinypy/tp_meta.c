@@ -1,3 +1,10 @@
+tp_obj tp_get_meta(TP, tp_obj self) {
+    if(self.type.typeid > TP_HAS_META) {
+        return self.obj.info->meta;
+    }
+    return tp_None;
+}
+
 int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *r, int depth) {
     if(self.type.typeid == TP_DICT) {
         /* first do a dict look up from the object itself */
@@ -15,12 +22,15 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *r, int depth) {
     if (!depth) {
         tp_raise(0,tp_string_atom(tp, "(tp_lookup) RuntimeError: maximum lookup depth exceeded"));
     }
-    if (self.type.typeid < TP_HAS_META) {
+
+    tp_obj meta = tp_get_meta(tp, self);
+
+    if (tp_none(meta)) {
         return 0;
     }
 
-    if (self.obj.info->meta.type.typeid == TP_DICT &&
-        _tp_lookup_(tp, self.obj.info->meta, hash, k, r, depth)) {
+    if (meta.type.typeid == TP_DICT &&
+        _tp_lookup_(tp, meta, hash, k, r, depth)) {
         if ( r->type.typeid == TP_FUNC && 0 == (r->type.magic & TP_FUNC_MASK_STATIC)) {
             /* object dict or string, or list */
             if ((self.type.typeid == TP_DICT && self.type.magic == TP_DICT_OBJECT)
@@ -39,12 +49,20 @@ int _tp_lookup(TP, tp_obj self, tp_obj k, tp_obj *r) {
     return _tp_lookup_(tp, self, tp_hash(tp, k), k, r, 8);
 }
 
-#define TP_META_BEGIN(self,name) \
+#define TP_META_BEGIN(self, name) \
     if ((self.type.typeid == TP_DICT && self.type.magic == TP_DICT_OBJECT) || \
         (self.type.typeid == TP_STRING || self.type.typeid == TP_LIST ) \
         ) { \
-        tp_obj meta; if (_tp_lookup(tp, self, tp_string_atom(tp, name),&meta)) {
+        tp_obj name; if (_tp_lookup(tp, self, tp_string_atom(tp, #name), &name)) {
 #define TP_META_END \
+        } \
+    }
+
+#define TP_META_BEGIN_CLASS(self, name) \
+    if ((self.type.typeid == TP_DICT && self.type.magic == TP_DICT_CLASS) \
+        ) { \
+        tp_obj name; if (_tp_lookup(tp, self, tp_string_atom(tp, #name), &name)) {
+#define TP_META_END_CLASS \
         } \
     }
 

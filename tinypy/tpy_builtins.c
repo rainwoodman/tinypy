@@ -188,20 +188,9 @@ tp_obj tpy_object_new(TP) {
     tp_obj klass = TP_TYPE(TP_DICT);
     tp_obj self = tp_object(tp);
     self.obj.info->meta = klass;
-    TP_META_BEGIN(self,"__init__");
-        tp_call(tp,meta,tp->params);
+    TP_META_BEGIN(self, __init__);
+        tp_call(tp, __init__, tp->params);
     TP_META_END;
-    return self;
-}
-
-tp_obj tpy_object_call(TP) {
-    tp_obj self;
-    if (tp->params.list.val->len) {
-        self = TP_TYPE(TP_DICT);
-        self.type.magic = TP_DICT_OBJECT;
-    } else {
-        self = tp_object(tp);
-    }
     return self;
 }
 
@@ -430,8 +419,9 @@ void tp_module_builtins_init(TP) {
     }
     
     o = tp_object(tp);
-    tp_set(tp, o, tp_string_atom(tp, "__call__"), tp_function(tp, tpy_object_call));
-    tp_set(tp, o, tp_string_atom(tp, "__new__"),  tp_function(tp, tpy_object_new));
+    o.type.magic = TP_DICT_CLASS;
+
+    tp_set(tp, o, tp_string_atom(tp, "__new__"), tp_function(tp, tpy_object_new));
     tp_set(tp, builtins, tp_string_atom(tp, "object"), o);
     
     tp_set(tp, tp->modules, tp_string_atom(tp, "tinypy.runtime.builtins"), builtins);
