@@ -6,8 +6,8 @@ tp_obj tp_get_meta(TP, tp_obj self) {
 }
 
 int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *r, int depth) {
-    if(self.type.typeid == TP_DICT) {
-        /* first do a dict look up from the object itself */
+    /* first do a dict look up from the object itself, but never look for values from a raw dict. */
+    if(self.type.typeid == TP_DICT && self.type.magic != TP_DICT_RAW) {
         int n = tpd_dict_hashfind(tp, self.dict.val, hash, k);
         if (n != -1) {
             *r= self.dict.val->items[n].val;
@@ -33,7 +33,7 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *r, int depth) {
         _tp_lookup_(tp, meta, hash, k, r, depth)) {
         if ( r->type.typeid == TP_FUNC && 0 == (r->type.magic & TP_FUNC_MASK_STATIC)) {
             /* object dict or string, or list */
-            if ((self.type.typeid == TP_DICT && self.type.magic == TP_DICT_OBJECT)
+            if ((self.type.typeid == TP_DICT && self.type.magic != TP_DICT_CLASS)
                 || self.type.typeid == TP_LIST
                 || self.type.typeid == TP_STRING
             ) {

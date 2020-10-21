@@ -14,6 +14,12 @@ class MyTest(UnitTest):
         except:
             assert 'TypeError' in sys.get_exc()[0]
 
+    def test_update(self):
+        a = {}
+        b = {'a' : 1}
+        a.update(b)
+        assert a['a'] == 1
+
 t = MyTest()
 
 t.run()

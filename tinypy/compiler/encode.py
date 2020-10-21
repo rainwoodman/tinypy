@@ -519,7 +519,8 @@ def do_class(t):
         name = items[0].items[0].val
         parent = items[0].items[1]
 
-    kls = do(Token(t.pos,'dict',0,[]))
+    kls = get_tmp()
+    code(CLASS, kls)
     un_tmp(kls)
     ts = _do_string(name)
     code(GSET,ts,kls)

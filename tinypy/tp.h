@@ -213,6 +213,7 @@ typedef struct tp_vm {
     tp_obj modules;
 
     /* types */
+    tp_obj object_class;
     tp_obj _list_meta;
     tp_obj _dict_meta;
     tp_obj _string_meta;
@@ -411,6 +412,8 @@ tp_obj tp_list_t(TP);
 tp_obj tp_list_nt(TP);
 tp_obj tp_dict_t(TP);
 tp_obj tp_dict_nt(TP);
+tp_obj tp_object(TP);
+tp_obj tp_class(TP);
 tp_obj tp_function(TP, tp_obj v(TP));
 tp_obj tp_method(TP, tp_obj self,tp_obj v(TP));
 tp_obj tp_def(TP, tp_obj code, tp_obj g);

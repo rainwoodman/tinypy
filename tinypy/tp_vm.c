@@ -34,11 +34,16 @@ tp_vm * tp_create_vm(void) {
     tp->exc_stack = tp->_regs.list.val->items + 2;
     tp->regs = tp->_regs.list.val->items + 3;
 
-    tp->builtins = tp_rawdict_t(tp);
-    tp->modules = tp_rawdict_t(tp);
-    tp->_list_meta = tp_rawdict_t(tp);
-    tp->_dict_meta = tp_rawdict_t(tp);
-    tp->_string_meta = tp_rawdict_t(tp);
+    tp->builtins = tp_dict_t(tp);
+    tp->modules = tp_dict_t(tp);
+
+    tp_obj object_class = tp_object(tp);
+    object_class.type.magic = TP_DICT_CLASS;
+    tp->object_class = object_class;
+
+    tp->_list_meta = tp_class(tp);
+    tp->_dict_meta = tp_class(tp);
+    tp->_string_meta = tp_class(tp);
 
     tp->_params = tp_list_t(tp);
 
@@ -47,6 +52,7 @@ tp_vm * tp_create_vm(void) {
 
     tp_gc_set_reachable(tp, tp->builtins);
     tp_gc_set_reachable(tp, tp->modules);
+    tp_gc_set_reachable(tp, tp->object_class);
     tp_gc_set_reachable(tp, tp->_regs);
     tp_gc_set_reachable(tp, tp->_params);
 
@@ -265,6 +271,7 @@ int tp_step(TP) {
             }
             break;
         case TP_IDICT: RA = tp_dict_from_items(tp, VC/2, &RB); break;
+        case TP_ICLASS: RA = tp_class(tp); break;
         case TP_ILIST: RA = tp_list_from_items(tp, VC, &RB); break;
         case TP_IPARAMS: RA = tp_params_n(tp,VC,&RB); break;
         case TP_ILEN: RA = tp_len(tp,RB); break;

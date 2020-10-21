@@ -86,7 +86,7 @@ tp_obj tpy_system(TP) {
 }
 
 void tp_module_os_init (TP) {
-    tp_obj os = tp_dict_t(tp);
+    tp_obj os = tp_object(tp);
     tp_set(tp, os, tp_string_atom(tp, "exists"), tp_function(tp, tpy_exists));
     tp_set(tp, os, tp_string_atom(tp, "read"), tp_function(tp, tpy_load));
     tp_set(tp, os, tp_string_atom(tp, "load"), tp_function(tp, tpy_load));

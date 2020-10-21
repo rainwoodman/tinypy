@@ -207,21 +207,6 @@ tp_obj tpy_getraw(TP) {
     return tp_getraw(tp, self);
 }
 
-/* Function: tp_class
- * Creates a new base class.
- *
- * Parameters:
- * none
- *
- * Returns:
- * A new, empty class (derived from tinypy's builtin "object" class).
- */
-tp_obj tp_class(TP) {
-    tp_obj klass = tp_dict_t(tp);
-    klass.obj.info->meta = tp_get(tp, tp->builtins, tp_string_atom(tp, "object")); 
-    return klass;
-}
-
 /* Function: tpy_bool
  * Coerces any value to a boolean.
  */
@@ -267,7 +252,7 @@ tp_obj tpy_import(TP) {
     }
 
     /* import members as a dict */
-    tp_obj ret = tp_dict_t(tp);
+    tp_obj ret = tp_object(tp);
 
     if (member.type.typeid == TP_STRING) {
 
@@ -369,8 +354,15 @@ tp_obj tpy_dict(TP) {
     return tp_dict_copy(tp, TP_TYPE(TP_DICT));
 }
 
+tp_obj tpy_dict_update(TP) {
+    tp_obj self = TP_OBJ();
+    tp_obj v = TP_OBJ();
+    tp_dict_update(tp, self, v);
+    return tp_None;
+}
+
 void tp_module_builtins_init(TP) {
-    tp_obj builtins = tp_dict_t(tp);
+    tp_obj builtins = tp_object(tp);
     tp_set(tp, builtins, tp_string_atom(tp, "MODULES"), tp->modules);
     tp_set(tp, builtins, tp_string_atom(tp, "__dict__"), tp->builtins);
 
@@ -417,13 +409,11 @@ void tp_module_builtins_init(TP) {
     for(i=0; b[i].s; i++) {
         tp_set(tp, builtins, tp_string_atom(tp, b[i].s), tp_function(tp,(tp_obj (*)(tp_vm *))b[i].f));
     }
-    
-    o = tp_object(tp);
-    o.type.magic = TP_DICT_CLASS;
+    tp_set(tp, builtins, tp_string_atom(tp, "object"), tp->object_class);
 
-    tp_set(tp, o, tp_string_atom(tp, "__new__"), tp_function(tp, tpy_object_new));
-    tp_set(tp, builtins, tp_string_atom(tp, "object"), o);
-    
+    /* enable creating objects with object() */
+    tp_set(tp, tp->object_class, tp_string_atom(tp, "__new__"), tp_function(tp, tpy_object_new));
+
     tp_set(tp, tp->modules, tp_string_atom(tp, "tinypy.runtime.builtins"), builtins);
 
     tp_set(tp, tp->_list_meta, tp_string_atom(tp, "append"), tp_function(tp, tpy_list_append));

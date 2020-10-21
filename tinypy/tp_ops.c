@@ -89,18 +89,6 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
     tp_raise(tp_None,tp_string_atom(tp, "(tp_iter) TypeError: iteration over non-sequence"));
 }
 
-/* Function: tp_object
- * Creates a new object.
- *
- * Returns:
- * The newly created object. The object initially has no parent class, use
- * <tp_setmeta> to set a class. Also see <tp_object_new>.
- */
-tp_obj tp_object(TP) {
-    tp_obj self = tp_dict_t(tp);
-    self.type.magic = TP_DICT_OBJECT;
-    return self;
-}
 
 /* Function: tp_get
  * Attribute lookup.
@@ -137,22 +125,40 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
     int type = self.type.typeid;
     tp_obj r;
     if (type >= TP_HAS_META) {
-        if (type == TP_DICT) {
+        if (type == TP_DICT && self.type.typeid != TP_DICT_RAW) {
             if (tp_dict_has(tp, self, k)) {
                 return tp_dict_get(tp, self, k);
             }
-            /* create a raw dict. */
+            /* want to check the raw dict? */
             if (tp_string_equal_atom(k, "__dict__")) {
                 return tp_getraw(tp, self);
             }
+            /* getter? */
             TP_META_BEGIN(self, __get__);
                 return tp_call(tp, __get__, tp_params_v(tp,1,k));
             TP_META_END;
-            if (self.type.magic != TP_DICT_RAW && _tp_lookup(tp, self, k, &r)) {
+
+            /* method? FIXME: this probably should be before the getter. */
+            if (_tp_lookup(tp, self, k, &r)) {
                 return r;
             }
             char * str = tp_cstr(tp, k);
-            tp_obj message = tp_printf(tp, "(tpd_dict_del) KeyError: %s", str);
+            tp_obj message = tp_printf(tp, "(tpd_dict_get) KeyError: %s", str);
+            free(str);
+            tp_raise(tp_None, message);
+        } else if (type == TP_DICT && self.type.typeid == TP_DICT_RAW) {
+            /* raw dict distinguishes [] and . */
+            if(mget == 0) {
+                if (tp_dict_has(tp, self, k)) {
+                    return tp_dict_get(tp, self, k);
+                }
+            } else {
+                if (_tp_lookup(tp, self, k, &r)) {
+                    return r;
+                }
+            }
+            char * str = tp_cstr(tp, k);
+            tp_obj message = tp_printf(tp, "(tpd_dict_get) KeyError: %s", str);
             free(str);
             tp_raise(tp_None, message);
         } else if (type == TP_LIST) {
@@ -279,6 +285,10 @@ tp_obj tp_add(TP, tp_obj a, tp_obj b) {
         return tp_string_add(tp, a, b);
     } else if (a.type.typeid == TP_LIST && a.type.typeid == b.type.typeid) {
         return tp_list_add(tp, a, b);
+    } else if (a.type.typeid == TP_DICT && a.type.typeid == b.type.typeid) {
+        tp_obj r = tp_dict_copy(tp, a);
+        tp_dict_update(tp, r, b);
+        return r;
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_add) TypeError: ?"));
 }

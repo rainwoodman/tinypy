@@ -1,7 +1,7 @@
 tp_obj tp_dict_nt(TP) {
     tp_obj r = {TP_DICT};
     r.dict.val = tpd_dict_new(tp);
-    r.type.magic = TP_DICT_CLASS;
+    r.type.magic = TP_DICT_RAW;
     r.obj.info->meta = tp->_dict_meta;
     return r;
 }
@@ -21,13 +21,34 @@ tp_obj tp_dict_t(TP) {
     return tp_track(tp, tp_dict_nt(tp));
 }
 
-tp_obj tp_rawdict_t(TP) {
-    tp_obj r = {TP_DICT};
-    r.dict.val = tpd_dict_new(tp);
-    r.type.magic = TP_DICT_RAW;
-    return r;
+/* Function: tp_object
+ * Creates a new object.
+ *
+ * Returns:
+ * The newly created object. The object initially has no parent class, use
+ * <tp_setmeta> to set a class. Also see <tp_object_new>.
+ */
+tp_obj tp_object(TP) {
+    tp_obj self = tp_dict_t(tp);
+    self.type.magic = TP_DICT_OBJECT;
+    return self;
 }
 
+/* Function: tp_class
+ * Creates a new base class.
+ *
+ * Parameters:
+ * none
+ *
+ * Returns:
+ * A new, empty class (derived from tinypy's builtin "object" class).
+ */
+tp_obj tp_class(TP) {
+    tp_obj klass = tp_dict_t(tp);
+    klass.type.magic = TP_DICT_CLASS;
+    klass.obj.info->meta = tp->object_class;
+    return klass;
+}
 
 tp_obj tp_dict_from_items (TP, int n, tp_obj * argv) {
     tp_obj r = tp_dict_t(tp);

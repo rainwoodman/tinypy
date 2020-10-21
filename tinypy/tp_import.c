@@ -1,7 +1,7 @@
 tp_obj tp_import(TP, tp_obj name, tp_obj code, tp_obj fname) {
     tp_obj g;
 
-    g = tp_dict_t(tp);
+    g = tp_object(tp);
     tp_set(tp, g, tp_string_atom(tp, "__name__"), name);
     tp_set(tp, g, tp_string_atom(tp, "__file__"), fname);
     tp_set(tp, g, tp_string_atom(tp, "__code__"), code);

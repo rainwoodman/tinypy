@@ -62,13 +62,14 @@ tp_obj tpy_exit(TP) {
 }
 
 void tp_module_sys_init (TP, int argc, char * argv[]) {
-    tp_obj sys = tp_dict_t(tp);
+    tp_obj sys = tp_object(tp);
     tp_obj args = tp_args(tp,argc,argv);
     tp_obj conf = tp_object(tp);
-    tp_obj conf_meta = tp_dict_t(tp);
-    tp_set(tp, conf_meta, tp_string_atom(tp, "__set__"), tp_function(tp, tp_conf_set));
-    tp_set(tp, conf_meta, tp_string_atom(tp, "__get__"), tp_function(tp, tp_conf_get));
-    conf.obj.info->meta = conf_meta;
+    tp_obj conf_class = tp_class(tp);
+    tp_set(tp, conf_class, tp_string_atom(tp, "__set__"), tp_function(tp, tp_conf_set));
+    tp_set(tp, conf_class, tp_string_atom(tp, "__get__"), tp_function(tp, tp_conf_get));
+    conf.obj.info->meta = conf_class;
+
     tp_set(tp, sys, tp_string_atom(tp, "version"), tp_string_atom(tp, "tinypy 1.2+SVN"));
     tp_set(tp, sys, tp_string_atom(tp, "modules"), tp->modules);
     tp_set(tp, sys, tp_string_atom(tp, "argv"), args);

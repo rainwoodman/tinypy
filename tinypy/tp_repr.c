@@ -95,6 +95,13 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
             snprintf(buf, 120, "%f", v);
         }
     } else if(type == TP_DICT) {
+        if(self.type.magic == TP_DICT_CLASS) {
+            string_builder_write(tp, sb, "C", -1);
+        } else if(self.type.magic == TP_DICT_OBJECT) {
+            string_builder_write(tp, sb, "O", -1);
+        } else if(self.type.magic == TP_DICT_RAW) {
+            string_builder_write(tp, sb, "R", -1);
+        }
         string_builder_write(tp, sb, "{", -1);
         int i, n = 0;
         for(i = 0; i < self.dict.val->alloc; i++) {
