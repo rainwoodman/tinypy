@@ -4,6 +4,9 @@ class MyClass:
     a = 3
     a = a
 
+    def __call__(self, a):
+        return a
+
     def b(self, k):
         return k
 
@@ -28,6 +31,10 @@ class MyTest(UnitTest):
         assert MyClass.s(3) == 3
         assert MyClass.f(3) == 3
         assert obj.s(3) == 3
+
+    def test_call(self):
+        obj = MyClass()
+        assert obj(3) == 3
 
 t = MyTest()
 
