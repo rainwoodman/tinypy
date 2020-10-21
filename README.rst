@@ -17,7 +17,7 @@ See README.txt.old for a description of the original tinypy.
 build
 -----
 
-To build this version of tinypy, you will need a Python 3 to bootstrap
+To build this version of tinypy, you will need a Python (2/3) to bootstrap
 the compiler.
 
 .. code::
