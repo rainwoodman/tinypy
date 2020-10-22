@@ -17,6 +17,12 @@ class MyTest(UnitTest):
         except:
             assert 'TypeError' in sys.get_exc()[0]
 
+    def test_keyerror(self):
+        try:
+            {}['a']
+        except:
+            assert "(tpd_dict_get) KeyError: a" in sys.get_exc()[0]
+
     def test_update(self):
         a = {}
         b = {'a' : 1}

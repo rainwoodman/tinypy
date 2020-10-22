@@ -2,6 +2,12 @@ import sys
 from tinypy.runtime.testing import UnitTest
 
 class StringUnitTests(UnitTest):
+
+    def test_eq(self):
+        assert "a" == "a"
+        assert "abcdef" == "abcdef"
+        assert "abcdef\0" != "abcdef"
+
     def test_startswith(self):
         a = "012345"
         assert a.startswith("0")

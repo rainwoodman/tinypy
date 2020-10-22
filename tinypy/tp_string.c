@@ -1,3 +1,7 @@
+#define mini_printf_object_t tp_obj
+#include "printf/mini-printf.h"
+#include "printf/mini-printf.c"
+
 typedef struct {
     char * buffer;
     int size;
@@ -127,18 +131,37 @@ tp_obj tp_string_view(TP, tp_obj s, int a, int b) {
     return tp_track(tp, r);
 }
 
+static int _tp_printf_handler(void* tp, tp_obj* obj_ptr, int ch, int lenhint, char **buf)
+{
+    tp_obj * obj = obj_ptr;
+    tp_obj str = (ch == 'o')?tp_str(tp, *obj):tp_repr(tp, *obj);
+    char * ptr = tp_string_getptr(str);
+    int len = tp_string_len(str);
+    if (lenhint > 0 && len > lenhint) len = lenhint;
+    *buf = malloc(len);
+    memcpy(*buf, ptr, len);
+    return len;
+}
+
+static void _tp_printf_freeor(void* tp, void* buf)
+{
+    free(buf);
+}
+
 tp_obj tp_printf(TP, char const *fmt,...) {
     int l;
     tp_obj r;
     char *s;
     va_list arg;
+
+    mini_printf_set_handler(tp, _tp_printf_handler, _tp_printf_freeor);
     va_start(arg, fmt);
-    l = vsnprintf(NULL, 0, fmt,arg);
+    l = mini_vsnprintf(NULL, 0, fmt,arg);
     r = tp_string_t(tp, l + 1);
     s = tp_string_getptr(r);
     va_end(arg);
     va_start(arg, fmt);
-    vsnprintf(s, l + 1, fmt, arg);
+    mini_vsnprintf(s, l + 1, fmt, arg);
     va_end(arg);
     return r;
 }

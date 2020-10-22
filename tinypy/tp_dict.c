@@ -63,10 +63,7 @@ tp_obj tp_dict_get(TP, tp_obj self, tp_obj k) {
     int n = tpd_dict_hashfind(tp, self.dict.val, hash, k);
 
     if (n < 0) {
-        char * str = tp_cstr(tp, k);
-        tp_obj message = tp_printf(tp, "(tpd_dict_get) KeyError: %s (%d)", str, hash);
-        tp_free(tp, str);
-        tp_raise(tp_None, message);
+        tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %o (%d)", k, hash);
     }
 
     return tpd_dict_get(tp, self.dict.val, n);
@@ -85,10 +82,7 @@ int tp_dict_has(TP, tp_obj self, tp_obj k) {
 void tp_dict_del(TP, tp_obj self, tp_obj k) {
     int n = tpd_dict_hashfind(tp, self.dict.val, tp_hash(tp, k), k);
     if (n < 0) {
-        char * str = tp_cstr(tp, k);
-        tp_obj message = tp_printf(tp, "(tpd_dict_del) KeyError: %s", str);
-        tp_free(tp, str);
-        tp_raise(, message);
+        tp_raise_printf(, "(tpd_dict_del) KeyError: %o", k);
     }
     tpd_dict_del(tp, self.dict.val, n);
 }

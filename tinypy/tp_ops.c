@@ -125,11 +125,11 @@ static void tp_slice_get_indices(TP, tp_obj slice, tp_obj obj, int * start, int 
     tmp = tp_get(tp, slice, tp_number(0));
     if (tmp.type.typeid == TP_NUMBER) { a = tmp.number.val; }
     else if(tmp.type.typeid == TP_NONE) { a = 0; }
-    else { tp_raise(,tp_string_atom(tp, "(tp_get) TypeError: indices must be numbers")); }
+    else { tp_raise_printf(, "(tp_get) TypeError: indices must be numbers"); }
     tmp = tp_get(tp,slice,tp_number(1));
     if (tmp.type.typeid == TP_NUMBER) { b = tmp.number.val; }
     else if(tmp.type.typeid == TP_NONE) { b = l; }
-    else { tp_raise(,tp_string_atom(tp, "(tp_get) TypeError: indices must be numbers")); }
+    else { tp_raise_printf(, "(tp_get) TypeError: indices must be numbers"); }
     a = _tp_max(0,(a<0?l+a:a)); b = _tp_min(l,(b<0?l+b:b));
     *start = a;
     *stop = b;
@@ -158,10 +158,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
             return tp_call(tp, __get__, tp_params_v(tp,1,k));
         TP_META_END;
 
-        char * str = tp_cstr(tp, k);
-        tp_obj message = tp_printf(tp, "(tpd_dict_get) KeyError: %s", str);
-        free(str);
-        tp_raise(tp_None, message);
+        tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %o", k);
     } else if (type == TP_DICT && self.type.magic == TP_DICT_RAW) {
         /* raw dict distinguishes [] and . */
         if(mget == 0) {
@@ -173,10 +170,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
                 return r;
             }
         }
-        char * str = tp_cstr(tp, k);
-        tp_obj message = tp_printf(tp, "(tpd_dict_get) KeyError: %s", str);
-        free(str);
-        tp_raise(tp_None, message);
+        tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %o", k);
     } else if (type == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
             int l = tp_len(tp,self).number.val;
@@ -210,7 +204,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
     if (k.type.typeid == TP_STRING) {
         return tp_copy(tp, self);
     }
-    tp_raise(tp_None,tp_string_atom(tp, "(tp_get) TypeError: ?"));
+    tp_raise_printf(tp_None, "(tp_get) TypeError: ?");
 }
 
 /* function: tp_copy
