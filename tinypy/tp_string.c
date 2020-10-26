@@ -1,5 +1,4 @@
-#define mini_printf_object_t tp_obj
-#include "printf/mini-printf.h"
+#define MINI_PRINTF_ENABLE_OBJECTS
 #include "printf/mini-printf.c"
 
 typedef struct {
@@ -131,10 +130,10 @@ tp_obj tp_string_view(TP, tp_obj s, int a, int b) {
     return tp_track(tp, r);
 }
 
-static int _tp_printf_handler(void* tp, tp_obj* obj_ptr, int ch, int lenhint, char **buf)
+static int _tp_printf_handler(void* tp, void* obj_ptr, int ch, int lenhint, char **buf)
 {
     tp_obj * obj = obj_ptr;
-    tp_obj str = (ch == 'o')?tp_str(tp, *obj):tp_repr(tp, *obj);
+    tp_obj str = (ch == 'O')?tp_str(tp, *obj):tp_repr(tp, *obj);
     char * ptr = tp_string_getptr(str);
     int len = tp_string_len(str);
     if (lenhint > 0 && len > lenhint) len = lenhint;

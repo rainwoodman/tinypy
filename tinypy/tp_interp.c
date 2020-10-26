@@ -34,7 +34,7 @@ tp_obj tp_conf_set(TP) {
     if(tp_string_equal_atom(k, "gcmax")) {
         tp->gcmax = v;
     } else {
-        tp_raise_printf(tp_None, "(tp_conf_set) unknown key %s", k);
+        tp_raise_printf(tp_None, "(tp_conf_set) unknown key %O", &k);
     }
     return tp_None;
 }
@@ -45,7 +45,7 @@ tp_obj tp_conf_get(TP) {
     if(tp_string_equal_atom(k, "gcmax")) {
         return tp_number(tp->gcmax);
     } else {
-        tp_raise_printf(tp_None, "(tp_conf_get) unknown key %s", k);
+        tp_raise_printf(tp_None, "(tp_conf_get) unknown key %O", &k);
     }
     return tp_None;
 }

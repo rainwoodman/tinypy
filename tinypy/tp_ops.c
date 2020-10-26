@@ -158,7 +158,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
             return tp_call(tp, __get__, tp_params_v(tp,1,k));
         TP_META_END;
 
-        tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %o", k);
+        tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %O", &k);
     } else if (type == TP_DICT && self.type.magic == TP_DICT_RAW) {
         /* raw dict distinguishes [] and . */
         if(mget == 0) {
@@ -170,7 +170,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
                 return r;
             }
         }
-        tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %o", k);
+        tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %O", &k);
     } else if (type == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
             int l = tp_len(tp,self).number.val;

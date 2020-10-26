@@ -29,7 +29,7 @@ void tpd_list_free(TP, tpd_list *self) {
 
 tp_obj tpd_list_get(TP, tpd_list *self, int k, const char *error) {
     if (k >= self->len) {
-        tp_raise(tp_None, tp_printf(tp, "(tpd_list_get) KeyError : Index %d request, but length is %d", k, self->len));
+        tp_raise_printf(tp_None, "(tpd_list_get) KeyError : Index %d request, but length is %d", k, self->len);
     }
     return self->items[k];
 }
