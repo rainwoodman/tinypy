@@ -3,7 +3,7 @@
 tp_obj tpy_str_join(TP) {
     tp_obj delim = TP_OBJ();
     tp_obj val = TP_OBJ();
-    StringBuilder sb[1] = {0};
+    StringBuilder sb[1] = {tp};
 
     int l=0,i;
     tp_obj r;
@@ -18,7 +18,7 @@ tp_obj tpy_str_join(TP) {
     for (i=0; i<val.list.val->len; i++) {
         tp_obj e;
         if (i!=0) {
-            string_builder_write(tp, sb, tp_string_getptr(delim), tp_string_len(delim));
+            string_builder_write(sb, tp_string_getptr(delim), tp_string_len(delim));
         }
         e = tp_str(tp, val.list.val->items[i]);
         tp_str_internal(tp, val.list.val->items[i], sb, 1);

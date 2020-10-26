@@ -2,13 +2,15 @@
 #include "printf/mini-printf.c"
 
 typedef struct {
+    TP;
     char * buffer;
     int size;
     int len;
 } StringBuilder;
 
-void string_builder_write(TP, StringBuilder * sb, const char * s, int len)
+void string_builder_write(StringBuilder * sb, const char * s, int len)
 {
+    TP = sb->tp;
     if(sb->buffer == NULL) {
         sb->buffer = tp_malloc(tp, 128);
         sb->len = 0;
@@ -24,10 +26,11 @@ void string_builder_write(TP, StringBuilder * sb, const char * s, int len)
     sb->buffer[sb->len] = 0;
 }
 
-void string_builder_echo(TP, StringBuilder * sb, tp_obj o)
+void string_builder_echo(StringBuilder * sb, tp_obj o)
 {
+    TP = sb->tp;
     o = tp_str(tp, o);
-    string_builder_write(tp, sb, tp_string_getptr(o), tp_string_len(o));
+    string_builder_write(sb, tp_string_getptr(o), tp_string_len(o));
 }
 
 
@@ -142,27 +145,26 @@ static int _tp_printf_handler(void* tp, void* obj_ptr, int ch, int lenhint, char
     return len;
 }
 
+static int _tp_printf_puts(char* s, unsigned int len, void * buf)
+{
+    StringBuilder * sb = buf;
+    string_builder_write(sb, s, len);
+    return len;
+}
 static void _tp_printf_freeor(void* tp, void* buf)
 {
     free(buf);
 }
 
 tp_obj tp_printf(TP, char const *fmt,...) {
-    int l;
-    tp_obj r;
-    char *s;
     va_list arg;
 
     mini_printf_set_handler(tp, _tp_printf_handler, _tp_printf_freeor);
+    StringBuilder sb[1] = {tp};
     va_start(arg, fmt);
-    l = mini_vsnprintf(NULL, 0, fmt,arg);
-    r = tp_string_t(tp, l + 1);
-    s = tp_string_getptr(r);
+    mini_vpprintf(_tp_printf_puts, sb, fmt, arg);
     va_end(arg);
-    va_start(arg, fmt);
-    mini_vsnprintf(s, l + 1, fmt, arg);
-    va_end(arg);
-    return r;
+    return tp_string_steal_from_builder(tp, sb);
 }
 
 int tp_str_index (tp_obj s, tp_obj k) {

@@ -96,34 +96,34 @@ void _tp_raise(TP, tp_obj e) {
 void tp_format_stack_internal(TP, StringBuilder * sb)
 {
     int i;
-    string_builder_write(tp, sb, "\n", -1);
+    string_builder_write(sb, "\n", -1);
 
     for (i=0; i<=tp->cur; i++) {
         if (!tp->frames[i].lineno) { continue; }
-        string_builder_write(tp, sb, "File \"", -1);
-        string_builder_echo(tp, sb, *tp->frames[i].fname);
-        string_builder_write(tp, sb, "\", ", -1);
-        string_builder_echo(tp, sb, tp_printf(tp, "line %d, in ", tp->frames[i].lineno));
-        string_builder_echo(tp, sb, *tp->frames[i].name);
-        string_builder_write(tp, sb, "\n ", -1);
-        string_builder_echo(tp, sb, *tp->frames[i].line);
-        string_builder_write(tp, sb, "\n", -1);
+        string_builder_write(sb, "File \"", -1);
+        string_builder_echo(sb, *tp->frames[i].fname);
+        string_builder_write(sb, "\", ", -1);
+        string_builder_echo(sb, tp_printf(tp, "line %d, in ", tp->frames[i].lineno));
+        string_builder_echo(sb, *tp->frames[i].name);
+        string_builder_write(sb, "\n ", -1);
+        string_builder_echo(sb, *tp->frames[i].line);
+        string_builder_write(sb, "\n", -1);
     }
 }
 
 tp_obj tp_format_stack(TP)
 {
-    StringBuilder sb[1] = {0};
+    StringBuilder sb[1] = {tp};
     tp_format_stack_internal(tp, sb);
     return tp_string_steal_from_builder(tp, sb);
 }
 
 void tp_print_exc(TP) {
-    StringBuilder sb[1] = {0};
+    StringBuilder sb[1] = {tp};
     tp_format_stack_internal(tp, sb);
-    string_builder_write(tp, sb, "\nException:\n", -1);
-    string_builder_echo(tp, sb, *(tp->exc));
-    string_builder_write(tp, sb, "\n", -1);
+    string_builder_write(sb, "\nException:\n", -1);
+    string_builder_echo(sb, *(tp->exc));
+    string_builder_write(sb, "\n", -1);
     tp->echo(sb->buffer, sb->len);
     tp_free(tp, sb->buffer);
 }
