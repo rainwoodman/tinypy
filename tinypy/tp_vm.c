@@ -20,7 +20,7 @@ tp_vm * tp_create_vm(void) {
     tp->cur = 0;
     tp->jmp = 0;
 
-    for (i=0; i<256; i++) { tp->chars[i][0]=i; }
+    for (i=0; i<256; i++) { tp->chars[i][0]=i; tp->chars[i][1] = 0; }
 
     tp_gc_init(tp);
 

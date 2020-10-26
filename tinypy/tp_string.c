@@ -65,7 +65,7 @@ tp_obj tp_string_atom(TP, const char * v) {
 /*
  * Return a untracked string object from external memory.
  */
-tp_obj tp_string_from_const(TP, const char *s, int n) {
+tp_obj tp_string_from_const_nt(TP, const char *s, int n) {
     tp_obj r;
     if(n < 0) n = strlen(s);
     r.type.typeid = TP_STRING;
@@ -78,8 +78,8 @@ tp_obj tp_string_from_const(TP, const char *s, int n) {
 }
 
 /* return a tracked string object from external memory */
-tp_obj tp_string_t_from_const(TP, const char *s, int n) {
-    return tp_track(tp, tp_string_from_const(tp, s, n));
+tp_obj tp_string_from_const(TP, const char *s, int n) {
+    return tp_track(tp, tp_string_from_const_nt(tp, s, n));
 }
 
 /*
@@ -127,9 +127,13 @@ int tp_string_len(tp_obj s) {
 tp_obj tp_string_view(TP, tp_obj s, int a, int b) {
     int l = tp_string_len(s);
     a = _tp_max(0,(a<0?l+a:a)); b = _tp_min(l,(b<0?l+b:b));
-    tp_obj r = tp_string_from_const(tp, tp_string_getptr(s) + a, b - a);
-    r.string.info->base = s;
+    tp_obj r;
+    r.type.typeid = TP_STRING;
     r.type.magic = TP_STRING_VIEW;
+    r.string.info = (tpd_string*) tp_malloc(tp, sizeof(tpd_string));
+    r.string.info->base = s;
+    r.string.info->s = tp_string_getptr(s) + a;
+    r.string.info->len = b - a;
     return tp_track(tp, r);
 }
 
