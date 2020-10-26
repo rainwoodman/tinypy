@@ -46,7 +46,7 @@ int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *r, int depth) {
 
     if (meta.type.typeid == TP_DICT &&
         _tp_lookup_(tp, meta, hash, k, r, depth)) {
-        if ( r->type.typeid == TP_FUNC && 0 == (r->type.magic & TP_FUNC_MASK_STATIC)) {
+        if ( r->type.typeid == TP_FUNC && 0 == (r->type.mask & TP_FUNC_MASK_STATIC)) {
             /* object dict or string, or list */
             if ((self.type.typeid == TP_DICT && self.type.magic != TP_DICT_CLASS)
                 || self.type.typeid == TP_LIST

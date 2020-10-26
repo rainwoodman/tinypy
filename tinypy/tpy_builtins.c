@@ -73,8 +73,8 @@ tp_obj tpy_istype(TP) {
     if (tp_string_equal_atom(t, "list")) { return tp_number(v.type.typeid == TP_LIST); }
     if (tp_string_equal_atom(t, "dict")) { return tp_number(v.type.typeid == TP_DICT); }
     if (tp_string_equal_atom(t, "number")) { return tp_number(v.type.typeid == TP_NUMBER); }
-    if (tp_string_equal_atom(t, "func")) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) == 0); }
-    if (tp_string_equal_atom(t, "method")) { return tp_number(v.type.typeid == TP_FUNC && (v.type.magic& TP_FUNC_MASK_METHOD) != 0); }
+    if (tp_string_equal_atom(t, "func")) { return tp_number(v.type.typeid == TP_FUNC && (v.type.mask & TP_FUNC_MASK_METHOD) == 0); }
+    if (tp_string_equal_atom(t, "method")) { return tp_number(v.type.typeid == TP_FUNC && (v.type.mask & TP_FUNC_MASK_METHOD) != 0); }
     tp_raise(tp_None,tp_string_atom(tp, "(is_type) TypeError: ?"));
 }
 

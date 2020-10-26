@@ -49,6 +49,7 @@
 enum TP_PACKED TPTypeID {
     TP_NONE = 0,
     TP_NUMBER = 1,
+    TP_CFUNC = 2,
     TP_GC_TRACKED = 9,
     TP_FUNC = 10,
     TP_DATA = 11,
@@ -67,14 +68,19 @@ enum TP_PACKED TPTypeMagic {
     TP_STRING_ATOM,
     TP_STRING_EXTERN,
     TP_STRING_VIEW,
+};
 
+enum TP_PACKED TPTypeMask {
+    TP_OBJECT_CPTR = 1<<5,
     TP_FUNC_MASK_STATIC = 1<<6,  /* function will not automatically bind to an instance. */
     TP_FUNC_MASK_METHOD = 1<<7,  /* (bound) prepend instance to params before call. */
 };
 
+
 typedef struct TPTypeInfo {
     enum TPTypeID typeid;
     enum TPTypeMagic magic;
+    enum TPTypeMask mask;
 } TPTypeInfo;
 
 typedef double tp_num;

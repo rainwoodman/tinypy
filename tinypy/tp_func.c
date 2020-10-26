@@ -7,7 +7,7 @@ tp_obj tp_func_nt(TP, int t, void *v, tp_obj c, tp_obj s, tp_obj g) {
     info->code = c;
     info->instance = s;
     info->globals = g;
-    r.type.magic = t;
+    r.type.mask = t;
     r.func.info = info;
     r.func.cfnc = v;
     return r;
@@ -19,7 +19,7 @@ tp_obj tp_func_t(TP, int t, void *v, tp_obj c, tp_obj s, tp_obj g) {
 
 tp_obj tp_bind(TP, tp_obj function, tp_obj self) {
     return tp_func_t(tp,
-                function.type.magic | TP_FUNC_MASK_METHOD,
+                function.type.mask | TP_FUNC_MASK_METHOD,
                 function.func.cfnc,
                 function.func.info->code,
                 self,
@@ -28,7 +28,7 @@ tp_obj tp_bind(TP, tp_obj function, tp_obj self) {
 
 tp_obj tp_staticmethod(TP, tp_obj function) {
     return tp_func_t(tp,
-                function.type.magic | TP_FUNC_MASK_STATIC,
+                function.type.mask | TP_FUNC_MASK_STATIC,
                 function.func.cfnc,
                 function.func.info->code,
                 tp_None,
