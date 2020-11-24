@@ -60,7 +60,9 @@ tp_obj tpy_str_index(TP) {
 
 tp_obj tpy_chr(TP) {
     int v = TP_NUM();
-    return tp_string_atom(tp, tp->chars[(unsigned char)v]);
+    tp_obj s = tp_string_t(tp, 1);
+    s.string.info->s[0] = tp->chars[(unsigned char)v][0];
+    return s;
 }
 tp_obj tpy_ord(TP) {
     tp_obj s = TP_STR();
