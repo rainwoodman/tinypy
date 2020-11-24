@@ -23,6 +23,9 @@ TESTS_PY_FILES=$(wildcard tests/*.py)
 
 all: tpy tpvm
 
+# alias
+lib: libtpy.so
+
 modules/modules.c: $(MAKEFILE)
 	echo "#include <tinypy/tp.h>" > $@
 	for name in $(MODULES); do echo "void $${name}_init(TP);" >> $@; done
@@ -52,6 +55,11 @@ tpvm-dbg : $(VMLIB_FILES:%.c=tinypy/%.o) tinypy/vmmain.c modules/modules.a
 tpy : $(TPLIB_FILES:%.c=tinypy/%.o) tinypy/tpmain.c modules/modules.a
 	$(CC) -o $@ $^ -lm
 
+libtpy.so : CFLAGS += -fPIC
+libtpy.so : $(TPLIB_FILES:%.c=tinypy/%.o)
+	$(CC) -shared $(CFLAGS) -lm -Wl,-soname,$(@) -o $@ $^
+	#ln -s $@.1 $@
+
 test: $(TESTS_PY_FILES) tpy tpvm tpvm-dbg run-tests.sh
 	bash run-tests.sh $(TESTS_PY_FILES)
 
@@ -62,7 +70,7 @@ test-dbg: $(TESTS_PY_FILES) tpy tpvm tpvm-dbg run-tests.sh
 	bash run-tests.sh -dbg $(TESTS_PY_FILES)
 
 clean:
-	rm -rf tpy tpvm tpvm-dbg
+	rm -rf tpy tpvm tpvm-dbg libtpy.so
 	rm -rf $(RUNTIME_C_FILES)
 	rm -rf $(COMPILER_C_FILES)
 	rm -rf tinypy/*.o
