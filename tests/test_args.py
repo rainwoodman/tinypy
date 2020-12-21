@@ -11,12 +11,18 @@ class MyTest(UnitTest):
             return a, b, c
         assert func(1, 2, 3, 4) == (1, 2, (3, 4))
 
-    def failure_test_default_pos(self):
+    def test_default_pos(self):
         def func(a, b=9, c=9):
             return a, b, c
         assert func(1) == (1, 9, 9)
         assert func(1, 2) == (1, 2, 9)
         assert func(1, 2, 3) == (1, 2, 3)
+
+    # We need to fix this.
+    def known_failure_test_default_pos_mixed(self):
+        def func(a, b=9, c=9):
+            return a, b, c
+        assert func(1, b=9) == (1, 9, 9)
 
     def test_kwargs(self):
         def func(**c):
