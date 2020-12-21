@@ -54,6 +54,11 @@ class StringUnitTests(UnitTest):
         assert '0123'[None, 1] == '0'
         assert '0123'[None, 2] == '01'
 
+    def test_chr(self):
+        j = chr(0) + chr(65) + chr(66) + chr(0)
+        assert j == '\0AB\0'
+        assert len(j) == 4
+
 if __name__ == '__main__':
     tests = StringUnitTests()
     tests.run()

@@ -1,5 +1,4 @@
 
-/* FIXME: use StringBuilder. */
 tp_obj tpy_str_join(TP) {
     tp_obj delim = TP_OBJ();
     tp_obj val = TP_OBJ();
@@ -60,8 +59,9 @@ tp_obj tpy_str_index(TP) {
 
 tp_obj tpy_chr(TP) {
     int v = TP_NUM();
-    return tp_string_atom(tp, tp->chars[(unsigned char)v]);
+    return tp->chars[(unsigned char)v];
 }
+
 tp_obj tpy_ord(TP) {
     tp_obj s = TP_STR();
     if (tp_string_len(s) != 1) {

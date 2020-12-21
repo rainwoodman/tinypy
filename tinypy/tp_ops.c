@@ -192,7 +192,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
             int n = k.number.val;
             n = (n<0?l+n:n);
             if (n >= 0 && n < l) {
-                return tp_string_atom(tp, tp->chars[(unsigned char) tp_string_getptr(self)[n]]);
+                return tp->chars[(unsigned char) tp_string_getptr(self)[n]];
             }
         } else if (k.type.typeid == TP_STRING) {
             if (_tp_lookup(tp, self, k, &r)) { return r;}

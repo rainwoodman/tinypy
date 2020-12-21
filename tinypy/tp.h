@@ -247,7 +247,8 @@ typedef struct tp_vm {
     tpd_list *black;
     int steps;
     /* cached objects */
-    char chars[256][2];
+    tp_obj _chars;
+    tp_obj chars[256];
     /* sandbox */
     clock_t clocks;
     double time_elapsed;

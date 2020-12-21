@@ -20,11 +20,16 @@ tp_vm * tp_create_vm(void) {
     tp->cur = 0;
     tp->jmp = 0;
 
-    for (i=0; i<256; i++) { tp->chars[i][0]=i; tp->chars[i][1] = 0; }
-
     tp_gc_init(tp);
 
     /* gc initialized, can use tpy_ functions. */
+
+    tp->_chars = tp_list_t(tp);
+    for (i=0; i<256; i++) {
+        tp->chars[i] = tp_string_t(tp, 1);
+        *tp_string_getptr(tp->chars[i]) = i;
+        tp_set(tp, tp->_chars, tp_None, tp->chars[i]);
+    }
 
     tp->_regs = tp_list_t(tp);
     for (i=0; i < TP_REGS + 3; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
@@ -50,6 +55,7 @@ tp_vm * tp_create_vm(void) {
     for (i=0; i<TP_FRAMES; i++) { tp_set(tp, tp->_params, tp_None, tp_list_t(tp)); }
     tp->echo = tp_default_echo;
 
+    tp_gc_set_reachable(tp, tp->_chars);
     tp_gc_set_reachable(tp, tp->builtins);
     tp_gc_set_reachable(tp, tp->modules);
     tp_gc_set_reachable(tp, tp->object_class);
