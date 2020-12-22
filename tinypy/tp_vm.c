@@ -187,7 +187,7 @@ void tp_return(TP, tp_obj v) {
     tp->cur -= 1;
 }
 
-#include "tp_opcodes.h"
+#include "tinypy/tp_opcodes.h"
 
 #define VA ((int)e.regs.a)
 #define VB ((int)e.regs.b)
