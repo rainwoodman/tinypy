@@ -64,10 +64,13 @@ test: $(TESTS_PY_FILES) tpy tpvm tpvm-dbg run-tests.sh
 	bash run-tests.sh $(TESTS_PY_FILES)
 
 xtest: $(TESTS_PY_FILES) tpy tpvm tpvm-dbg run-tests.sh
-	bash run-tests.sh -xfail $(TESTS_PY_FILES)
+	bash run-tests.sh --xfail $(TESTS_PY_FILES)
 
 test-dbg: $(TESTS_PY_FILES) tpy tpvm tpvm-dbg run-tests.sh
-	bash run-tests.sh -dbg $(TESTS_PY_FILES)
+	bash run-tests.sh --backend=tpvm --debug $(TESTS_PY_FILES)
+
+test-tpy: $(TESTS_PY_FILES) tpy tpvm tpvm-dbg run-tests.sh
+	bash run-tests.sh --backend=tpy $(TESTS_PY_FILES)
 
 clean:
 	rm -rf tpy tpvm tpvm-dbg libtpy.so
