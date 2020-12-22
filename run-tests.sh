@@ -12,16 +12,24 @@ fi
 
 TESTS=$@
 
+# `TPY=1 make test` to run with tpy
+TPY=${TPY:-0}
+
 function run {
     tpc=${1//.py/.tpc}
     if [[ "${tpc}" == "$1" ]]; then
         echo $1 does not end with .py
         exit 1
     fi
-    echo "./tpc -o ${tpc} $1"
-    echo "${TPVM} ${tpc}"
-    ./tpc -o ${tpc} $1 || return 1
-    "${TPVM}" ${tpc} || return 1
+    if [[ "${TPY}" == "0" ]]; then
+        echo "./tpc -o ${tpc} $1"
+        echo "${TPVM} ${tpc}"
+        ./tpc -o ${tpc} $1 || return 1
+        "${TPVM}" ${tpc} || return 1
+    else
+        echo "./tpy $1"
+        ./tpy $1 || return 1
+    fi
 }
 
 st=0

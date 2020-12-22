@@ -10,6 +10,10 @@ class Token:
     def __repr__(self):
         return self._format()
 
+    def update(self, other):
+        for k in other:
+            self[k] = other[k]
+
 def u_error(ctx,s,i):
     y,x = i
     line = s.split('\n')[y-1]

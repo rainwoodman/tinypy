@@ -553,7 +553,7 @@ def do_class(t):
     free_reg(kls)
     # As class block is run immediately (unlike function), we shall not create tags or
     # end the frame.
-    D.end(eof=False)
+    D.end(False)    # eof = False
 
 
 def do_while(t):
