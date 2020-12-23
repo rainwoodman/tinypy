@@ -4,6 +4,12 @@ python:
   - "2.7"
   - "3.8"
 
+env:
+  - TEST_TARGET=test
+  - TEST_TARGET=test-dbg
+  - TEST_TARGET=test-shared
+  - TEST_TARGET=test-tpy
+
 os:
   - linux
 
@@ -13,4 +19,4 @@ install:
     - make
 
 script:
-    - make test-dbg
+    - make $TEST_TARGET
