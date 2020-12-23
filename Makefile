@@ -1,20 +1,31 @@
 TINYPYC=./tpc
 
-RUNTIME_FILES=types.py testing.py
-COMPILER_FILES=boot.py encode.py parse.py py2bc.py tokenize.py opcodes.py
+GENERATED_SOURCE_FILES=
+
+RUNTIME_FILES=tinypy/runtime/types.py \
+              tinypy/runtime/testing.py
+GENERATED_SOURCE_FILES+=$(RUNTIME_FILES:%.py=%.c)
+
+COMPILER_FILES=tinypy/compiler/boot.py \
+               tinypy/compiler/encode.py \
+               tinypy/compiler/encode.py \
+               tinypy/compiler/parse.py \
+               tinypy/compiler/py2bc.py \
+               tinypy/compiler/tokenize.py \
+               tinypy/compiler/opcodes.py
+GENERATED_SOURCE_FILES+=$(COMPILER_FILES:%.py=%.c)
+
 
 TPY_DEP_FILES=tinypy/tp.c \
             tinypy/tp*.c tinypy/tp*.h \
-            .cgen/tinypy/tp_opcodes.h \
+            tinypy/tp_opcodes.h \
             tinypy/printf/*.c tinypy/printf/*.h
 
 COMPILER_DEP_FILES = tinypy/compiler.c
-COMPILER_DEP_FILES+= tinypy/*.h \
-                   $(COMPILER_FILES:%.py=.cgen/tinypy/compiler/%.c)
+COMPILER_DEP_FILES+= tinypy/*.h $(COMPILER_FILES:%.py=%.c)
 
 RUNTIME_DEP_FILES = tinypy/runtime.c
-RUNTIME_DEP_FILES+= tinypy/*.h \
-                  $(RUNTIME_FILES:%.py=.cgen/tinypy/runtime/%.c)
+RUNTIME_DEP_FILES+= tinypy/*.h $(RUNTIME_FILES:%.py=%.c)
 
 VMLIB_FILES=tp.c dummy-compiler.c runtime.c
 TPLIB_FILES=tp.c compiler.c runtime.c
@@ -26,19 +37,20 @@ MODULES_C_FILES=$(MODULES:%=modules/%/init.c)
 TESTS_PY_FILES=$(wildcard tests/*.py)
 
 # rule to compile python scripts to bytecodes as c source code.
-.cgen/%.c : %.py
+%.c : %.py
 	@mkdir -p $(dir $@)
 	$(TINYPYC) -co $@ $^
 
 # rule to make objects for static linkage
 .objs/%.o : %.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -g -O0 -I . -I .cgen/ -c -o $@ $<
+	$(CC) $(CFLAGS) -g -O0 -I . -c -o $@ $<
 
 # rule to make objects for dynamic linkage
 .dynobjs/%.o : %.c
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -fPIC -g -O0 -I . -I .cgen/ -c -o $@ $<
+	$(CC) $(CFLAGS) -fPIC -g -O0 -I . -c -o $@ $<
+
 
 all: tpy tpvm
 
@@ -54,18 +66,16 @@ modules/modules.c: $(MAKEFILE)
 	echo "void _tp_import_modules(TP) {" >> $@
 	for name in $(MODULES); do echo "$${name}_init(tp);" >> $@; done
 	echo "}" >> $@
+GENERATED_SOURCE_FILES+=modules/modules.c
 
 modules/modules.a: .objs/modules/modules.o \
 			$(MODULES_C_FILES:%.c=.objs/%.o)
 	$(AR) rcu $@ $^
 
-modules/modules.dyn.a: .dynobjs/modules/modules.o \
-			$(MODULES_C_FILES:%.c=.dynobjs/%.o)
-	$(AR) rcu $@ $^
-
-.cgen/tinypy/tp_opcodes.h: tinypy/compiler/opcodes.py
+tinypy/tp_opcodes.h: tinypy/compiler/opcodes.py
 	@mkdir -p $(dir $@)
 	$(TINYPYC) -x -o $@
+GENERATED_SOURCE_FILES+=tinypy/tp_opcodes.h
 
 # extra dependencies
 .objs/tinypy/tp.o    : $(TPY_DEP_FILES)
@@ -114,9 +124,7 @@ test-shared: $(TESTS_PY_FILES) tpy-shared run-tests.sh
 
 clean:
 	rm -rf tpy tpvm tpvm-dbg libtpy.so
+	rm -rf $(GENERATED_SOURCE_FILES)
 	rm -rf .objs/
 	rm -rf .dynobjs/
-	rm -rf .cgen/
-	rm -rf tinypy/tp_opcodes.h
 	rm -rf modules/*.a
-	rm -rf modules/modules.c
