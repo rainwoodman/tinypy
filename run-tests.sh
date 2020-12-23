@@ -52,7 +52,7 @@ function run {
         "${TPC}" -o ${tpc} $1 || return 1
         "./${BACKEND}" ${tpc} || return 1
     else
-        echo "${BACKEND} $1"
+        echo "./${BACKEND} $1"
         "./${BACKEND}" $1 || return 1
     fi
 }
