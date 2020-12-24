@@ -64,10 +64,10 @@ enum TP_PACKED TPTypeMagic {
     TP_DICT_CLASS, /* do not bind func members */
     TP_DICT_OBJECT, /* bind func members */
 
-    TP_STRING_NONE,
-    TP_STRING_ATOM,
-    TP_STRING_EXTERN,
-    TP_STRING_VIEW,
+    TP_STRING_NORMAL,   /* normal string, managed memory. */
+    TP_STRING_ATOM,   /* Nul terminated string, unmanaged memory. */
+    TP_STRING_EXTERN, /* unmanaged external string */
+    TP_STRING_VIEW,   /* reference to a section of another string */
 };
 
 enum TP_PACKED TPTypeMask {

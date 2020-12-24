@@ -27,9 +27,14 @@
 void tp_grey(TP, tp_obj v) {
     if (v.type.typeid < TP_GC_TRACKED || (!v.gc.gci) || *v.gc.gci) { return; }
     if (v.type.typeid == TP_STRING && v.type.magic == TP_STRING_ATOM) { return; }
+    if (v.type.typeid == TP_STRING && v.type.magic == TP_STRING_EXTERN) { return; }
     *v.gc.gci = 1; /* keep-alive */
     if (v.type.typeid == TP_DATA) {
         /* terminal types, no need to follow */
+        tpd_list_appendx(tp, tp->black, v);
+        return;
+    }
+    if (v.type.typeid == TP_STRING) {
         tpd_list_appendx(tp, tp->black, v);
         return;
     }
@@ -88,8 +93,8 @@ void tp_delete(TP, tp_obj v) {
         tpd_dict_free(tp, v.dict.val);
         return;
     } else if (type == TP_STRING) {
-        if(v.type.magic == TP_STRING_NONE) {
-            tp_free(tp, v.string.info->s); 
+        if(v.type.magic == TP_STRING_NORMAL) {
+            tp_free(tp, v.string.info->s);
         }
         tp_free(tp, v.string.info);
         return;
@@ -127,35 +132,29 @@ void tp_collect(TP) {
      * black shall be empty and will capture newly produced reachable objects */
 }
 
-void _tp_gcinc(TP) {
-    tp_obj v;
-    if (!tp->grey->len) {
-        return;
+void tp_scan_grey(TP) {
+    while (tp->grey->len) {
+        tp_obj v;
+        v = tpd_list_pop(tp, tp->grey, tp->grey->len-1, "_tp_gcinc");
+        tp_follow(tp,v);
+        tpd_list_appendx(tp, tp->black, v);
     }
-    v = tpd_list_pop(tp, tp->grey, tp->grey->len-1, "_tp_gcinc");
-    tp_follow(tp,v);
-    tpd_list_appendx(tp, tp->black, v);
 }
 
 void tp_full(TP) {
-    while (tp->grey->len) {
-        _tp_gcinc(tp);
-    }
+    tp_scan_grey(tp);
     tp_collect(tp);
     tp_follow(tp, tp->root);
 }
 
 void tp_gcinc(TP) {
-    tp->steps += 1;
-
-    if (tp->steps < tp->gcmax && tp->grey->len > 0) {
-        /* follow two objects every one new object is tracked */
-        _tp_gcinc(tp);
-        _tp_gcinc(tp);
+    if (tp->steps >= tp->gcmax) {
+        tp_full(tp);
+        tp->steps = 0;
         return;
     }
-    tp->steps = 0;
-    tp_full(tp);
+    tp->steps += 1;
+    tp_scan_grey(tp);
 }
 
 tp_obj tp_track(TP,tp_obj v) {

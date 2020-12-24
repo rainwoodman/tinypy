@@ -44,7 +44,7 @@ void string_builder_echo(StringBuilder * sb, tp_obj o)
 tp_obj tp_string_t(TP, int n) {
     tp_obj r;
     r.type.typeid = TP_STRING;
-    r.type.magic = TP_STRING_NONE;
+    r.type.magic = TP_STRING_NORMAL;
     r.string.info = (tpd_string*)tp_malloc(tp, sizeof(tpd_string));
     r.string.info->len = n;
     r.string.info->s = tp_malloc(tp, n);
@@ -96,7 +96,7 @@ tp_obj tp_string_steal_from_builder(TP, StringBuilder * sb)
 {
     tp_obj r;
     r.type.typeid = TP_STRING;
-    r.type.magic = TP_STRING_NONE;
+    r.type.magic = TP_STRING_NORMAL;
     r.string.info = (tpd_string*)tp_malloc(tp, sizeof(tpd_string));
     r.string.info->len = sb->len;
     r.string.info->s = sb->buffer;
