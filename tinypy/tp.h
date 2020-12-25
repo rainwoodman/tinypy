@@ -83,6 +83,15 @@ typedef struct TPTypeInfo {
     enum TPTypeMask mask;
 } TPTypeInfo;
 
+typedef union {
+    struct {
+        unsigned int grey : 1;
+        unsigned int black : 1;
+        unsigned int visited: 1;
+    };
+    int i;
+    } TPGCMask;
+
 typedef double tp_num;
 
 /* Type: tp_obj
@@ -109,7 +118,7 @@ typedef double tp_num;
  */
 typedef union tp_obj {
     TPTypeInfo type;
-    struct { TPTypeInfo type; int * gci; } gc;
+    struct { TPTypeInfo type; TPGCMask * gci; } gc;
     struct { TPTypeInfo type; tp_num val; } number;
     struct { TPTypeInfo type; struct tpd_func *info; void *cfnc; } func;
     struct { TPTypeInfo type; struct tpd_data *info; void *val; } data;
@@ -121,18 +130,18 @@ typedef union tp_obj {
 } tp_obj;
 
 typedef struct tpd_obj {
-    int gci;
+    TPGCMask gci;
 } tpd_obj;
 
 typedef struct tpd_string {
-    int gci;
+    TPGCMask gci;
     tp_obj base;
     char * s;
     int len;
 } tpd_string;
 
 typedef struct tpd_list {
-    int gci;
+    TPGCMask gci;
     tp_obj *items;
     int len;
     int alloc;
@@ -146,7 +155,7 @@ typedef struct tpd_item {
 } tpd_item;
 
 typedef struct tpd_dict {
-    int gci;
+    TPGCMask gci;
     tp_obj meta;
     tpd_item *items;
     int len;
@@ -157,7 +166,7 @@ typedef struct tpd_dict {
 } tpd_dict;
 
 typedef struct tpd_func {
-    int gci;
+    TPGCMask gci;
     tp_obj instance;
     tp_obj globals;
     tp_obj code;
@@ -262,7 +271,7 @@ typedef struct tp_vm {
 
 #define TP tp_vm *tp
 typedef struct tpd_data {
-    int gci;
+    TPGCMask gci;
     void (*free)(TP,tp_obj);
 } tpd_data;
 

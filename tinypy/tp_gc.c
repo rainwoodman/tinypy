@@ -15,6 +15,7 @@
  *
  * Invariant: No black object reference white objects.
  * Therefore if grey is empty, white objects are all unreachable.
+ *
  **/
 
 /* tp_obj tp_track(TP,tp_obj v) { return v; }
@@ -27,20 +28,26 @@
 /* tp_grey: ensure an object to the grey list, if the object is already
  * marked grey, then do nothing. */
 void tp_grey(TP, tp_obj v) {
-    if (v.type.typeid < TP_GC_TRACKED || (!v.gc.gci) || *v.gc.gci) { return; }
+    if (v.type.typeid < TP_GC_TRACKED || (!v.gc.gci)) { return; }
+    if (v.gc.gci->grey) { return; }
     if (v.type.typeid == TP_STRING && v.type.magic == TP_STRING_ATOM) { return; }
     if (v.type.typeid == TP_STRING && v.type.magic == TP_STRING_EXTERN) { return; }
-    *v.gc.gci = 1; /* keep-alive */
+    int i;
+    v.gc.gci->grey = 1;
+    v.gc.gci->black = 0;
+    v.gc.gci->visited = 0;
+    /* terminal types, no need to follow */
     if (v.type.typeid == TP_DATA) {
-        /* terminal types, no need to follow */
+        v.gc.gci->black = 1;
         tpd_list_appendx(tp, tp->black, v);
         return;
     }
     if (v.type.typeid == TP_STRING) {
+        v.gc.gci->black = 1;
         tpd_list_appendx(tp, tp->black, v);
         return;
     }
-    /* need to follow the referents */
+
     tpd_list_appendx(tp, tp->grey, v);
 }
 
@@ -78,7 +85,11 @@ void tp_gc_init(TP) {
     tp->grey = tpd_list_new(tp);
     tp->black = tpd_list_new(tp);
     tp->steps = 0;
+    #ifdef TPVM_DEBUG
+    tp->gcmax = 0;
+    #else
     tp->gcmax = 16384;
+    #endif
 }
 
 /* Add a reachable object to the gc root. */
@@ -87,6 +98,12 @@ void tp_gc_set_reachable(TP, tp_obj v) {
 }
 
 void tp_delete(TP, tp_obj v) {
+    printf("deleting object %p: black %d grey %d visited %d\n",
+        v.gc.gci,
+        v.gc.gci->black,
+        v.gc.gci->grey,
+        v.gc.gci->visited);
+
     int type = v.type.typeid;
     if (type == TP_LIST) {
         tpd_list_free(tp, v.list.val);
@@ -115,38 +132,103 @@ void tp_delete(TP, tp_obj v) {
 
 void tp_collect(TP) {
     int n;
-    tpd_list *tmp;
+
     for (n=0; n<tp->white->len; n++) {
         tp_obj r = tp->white->items[n];
-        if (*r.gc.gci) { continue; }
+        if (r.gc.gci->black) { continue; }
         tp_delete(tp,r);
     }
     tp->white->len = 0;
 
+    /* put all objects to the white list, without duplicates. */
     for (n=0; n<tp->black->len; n++) {
-        *tp->black->items[n].gc.gci = 0;
+        tp->black->items[n].gc.gci->visited = 0;
     }
-    tmp = tp->white;
-    tp->white = tp->black;
-    tp->black = tmp;
-    /* if called after a sweep, at this point */
-    /* white is the list of reachable objects;
-     * black shall be empty and will capture newly produced reachable objects */
+    for (n=0; n<tp->black->len; n++) {
+        tp_obj v = tp->black->items[n];
+        if(v.gc.gci->visited) {
+            continue;
+        }
+        tpd_list_appendx(tp, tp->white, v);
+        v.gc.gci->black = 0;
+        v.gc.gci->grey = 0;
+        v.gc.gci->visited = 1;
+    }
+    tp->black->len = 0;
 }
 
 void tp_scan_grey(TP) {
     while (tp->grey->len) {
         tp_obj v;
+        /* pick a grey object */
         v = tpd_list_pop(tp, tp->grey, tp->grey->len-1, "_tp_gcinc");
-        tp_follow(tp,v);
+        if(v.gc.gci->black) {
+            abort();
+        }
+        /* color it as black. */
+        v.gc.gci->black = 1;
+        v.gc.gci->grey = 1;
+        v.gc.gci->visited = 0;
         tpd_list_appendx(tp, tp->black, v);
+
+        /* put children to grey. */
+        tp_follow(tp,v);
     }
 }
 
+void tp_gcdump(TP) {
+    int i;
+    printf("====== black %d ======\n", tp->black->len);
+    for(i = 0; i < tp->black->len; i ++) {
+        tp_obj v = tp->black->items[i];
+        printf("%08p : %d%d%d%c", v.gc.gci,
+        v.gc.gci->black,
+        v.gc.gci->grey,
+        v.gc.gci->visited,
+        (i + 1) % 8 == 0?'\n':' '
+        );
+    }
+    printf("\n");
+    printf("====== white %d ======\n", tp->white->len);
+    for(i = 0; i < tp->white->len; i ++) {
+        tp_obj v = tp->white->items[i];
+        printf("%08p : %d%d%d%c", v.gc.gci,
+        v.gc.gci->black,
+        v.gc.gci->grey,
+        v.gc.gci->visited,
+        (i + 1) % 8 == 0?'\n':' '
+        );
+    }
+    printf("\n");
+    printf("====== grey %d ======\n", tp->grey->len);
+    for(i = 0; i < tp->grey->len; i ++) {
+        tp_obj v = tp->grey->items[i];
+        printf("%08p : %d%d%d%c", v.gc.gci,
+        v.gc.gci->black,
+        v.gc.gci->grey,
+        v.gc.gci->visited,
+        (i + 1) % 8 == 0?'\n':' '
+        );
+    }
+    printf("\n");
+}
+
 void tp_full(TP) {
+    #ifdef TPVM_DEBUG
+    printf("running full gc %d %d\n", tp->steps, tp->gcmax);
+    #endif
     tp_scan_grey(tp);
+    #ifdef TPVM_DEBUG
+    printf("after grey\n"); tp_gcdump(tp);
+    #endif
     tp_collect(tp);
+    #ifdef TPVM_DEBUG
+    printf("after collect\n"); tp_gcdump(tp);
+    #endif
     tp_follow(tp, tp->root);
+    #ifdef TPVM_DEBUG
+    printf("after follow\n"); tp_gcdump(tp);
+    #endif
 }
 
 void tp_gcinc(TP) {
@@ -164,7 +246,9 @@ void tp_gcinc(TP) {
 tp_obj tp_track(TP,tp_obj v) {
     /* force greying the object */
     if (v.type.typeid >= TP_GC_TRACKED && v.gc.gci) {
-        *v.gc.gci = 0;
+        v.gc.gci->grey = 0;
+        v.gc.gci->black = 0;
+        v.gc.gci->visited = 0;
     }
     tp_grey(tp,v);
     return v;
