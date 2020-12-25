@@ -24,6 +24,8 @@
    void tp_gc_deinit(TP) { }
    void tp_delete(TP,tp_obj v) { }*/
 
+/* tp_grey: ensure an object to the grey list, if the object is already
+ * marked grey, then do nothing. */
 void tp_grey(TP, tp_obj v) {
     if (v.type.typeid < TP_GC_TRACKED || (!v.gc.gci) || *v.gc.gci) { return; }
     if (v.type.typeid == TP_STRING && v.type.magic == TP_STRING_ATOM) { return; }
@@ -157,7 +159,13 @@ void tp_gcinc(TP) {
     tp_scan_grey(tp);
 }
 
+/* tp_track: put an object to the grey list.
+ * Use tp_track if the object is definitely new.*/
 tp_obj tp_track(TP,tp_obj v) {
+    /* force greying the object */
+    if (v.type.typeid >= TP_GC_TRACKED && v.gc.gci) {
+        *v.gc.gci = 0;
+    }
     tp_grey(tp,v);
     return v;
 }

@@ -21,14 +21,13 @@ tp_obj tp_list_from_items(TP, int n, tp_obj *argv) {
 tp_obj tp_list_copy(TP, tp_obj rr) {
     tp_check_type(tp, TP_LIST, rr);
 
-    tp_obj val = {TP_LIST};
+    tp_obj val = tp_list_nt(tp);
     tpd_list *o = rr.list.val;
-    tpd_list *r = tpd_list_new(tp);
-    *r = *o; r->gci = 0;
+    tpd_list *r = val.list.val;
+    *r = *o;
     r->alloc = o->len;
     r->items = (tp_obj*)tp_malloc(tp, sizeof(tp_obj)*o->len);
     memcpy(r->items,o->items,sizeof(tp_obj)*o->len);
-    val.list.val = r;
     return tp_track(tp, val);
 }
 

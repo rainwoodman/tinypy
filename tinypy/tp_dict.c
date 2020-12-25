@@ -94,16 +94,14 @@ void tp_dict_set(TP, tp_obj self, tp_obj k, tp_obj v) {
 }
 
 tp_obj tp_dict_copy(TP, tp_obj rr) {
-    tp_obj obj = {TP_DICT};
+    tp_obj obj = tp_dict_nt(tp);
     tpd_dict *o = rr.dict.val;
-    tpd_dict *r = tpd_dict_new(tp);
+    tpd_dict *r = obj.dict.val;
+    obj.type = rr.type;
     *r = *o;
-    r->gci = 0;
     r->items = (tpd_item*) tp_malloc(tp, sizeof(tpd_item)*o->alloc);
     memcpy(r->items, o->items, sizeof(tpd_item)*o->alloc);
-    obj.dict.val = r;
-    obj.type.magic = TP_DICT_CLASS;
-    return obj;
+    return tp_track(tp, obj);
 }
 
 int tp_dict_equal(TP, tp_obj a, tp_obj b) {

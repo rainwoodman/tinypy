@@ -443,7 +443,6 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
 
             tp_obj (* cfunc)(tp_vm *);
             cfunc = self.func.cfnc;
-
             tp_obj r = cfunc(tp);
             tp_grey(tp, r);
             return r;
