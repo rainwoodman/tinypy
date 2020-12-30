@@ -42,7 +42,7 @@ void tp_grey(TP, tp_obj v) {
         tpd_list_appendx(tp, tp->black, v);
         return;
     }
-    if (v.type.typeid == TP_STRING) {
+    if (v.type.typeid == TP_STRING && v.type.magic != TP_STRING_VIEW) {
         v.gc.gci->black = 1;
         tpd_list_appendx(tp, tp->black, v);
         return;
@@ -248,6 +248,7 @@ tp_obj tp_track(TP,tp_obj v) {
     /* force greying the object */
     if (v.type.typeid >= TP_GC_TRACKED && v.gc.gci) {
         v.gc.gci->grey = 0;
+        /* NOTE(rainwoodman): I don't think we need to set the following flags */
         v.gc.gci->black = 0;
         v.gc.gci->visited = 0;
     }
