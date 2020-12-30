@@ -58,6 +58,8 @@ TESTS_PY_FILES=$(wildcard tests/*.py)
 
 all: tpy tpvm
 
+debug: tpy-dbg tpvm-dbg
+
 # do not link libtpy.so by default.
 shared: tpy-shared
 
