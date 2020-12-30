@@ -98,12 +98,13 @@ void tp_gc_set_reachable(TP, tp_obj v) {
 }
 
 void tp_delete(TP, tp_obj v) {
+    #if 0 && defined(TPVM_DEBUG)
     printf("deleting object %p: black %d grey %d visited %d\n",
         v.gc.gci,
         v.gc.gci->black,
         v.gc.gci->grey,
         v.gc.gci->visited);
-
+    #endif
     int type = v.type.typeid;
     if (type == TP_LIST) {
         tpd_list_free(tp, v.list.val);
@@ -214,19 +215,19 @@ void tp_gcdump(TP) {
 }
 
 void tp_full(TP) {
-    #ifdef TPVM_DEBUG
+    #if 0 && defined(TPVM_DEBUG)
     printf("running full gc %d %d\n", tp->steps, tp->gcmax);
     #endif
     tp_scan_grey(tp);
-    #ifdef TPVM_DEBUG
+    #if 0 && defined(TPVM_DEBUG)
     printf("after grey\n"); tp_gcdump(tp);
     #endif
     tp_collect(tp);
-    #ifdef TPVM_DEBUG
+    #if 0 && defined(TPVM_DEBUG)
     printf("after collect\n"); tp_gcdump(tp);
     #endif
     tp_follow(tp, tp->root);
-    #ifdef TPVM_DEBUG
+    #if 0 && defined(TPVM_DEBUG)
     printf("after follow\n"); tp_gcdump(tp);
     #endif
 }
