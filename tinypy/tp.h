@@ -87,7 +87,6 @@ typedef union {
     struct {
         unsigned int grey : 1;
         unsigned int black : 1;
-        unsigned int visited: 1;
     };
     int i;
     } TPGCMask;
