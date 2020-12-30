@@ -46,6 +46,10 @@ TESTS_PY_FILES=$(wildcard tests/*.py)
 	@mkdir -p $(dir $@)
 	$(CC) $(CFLAGS) -g -O0 -I . -c -o $@ $<
 
+.dbgobjs/%.o : %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) -DTPVM_DEBUG -g -O0 -I . -c -o $@ $<
+
 # rule to make objects for dynamic linkage
 .dynobjs/%.o : %.c
 	@mkdir -p $(dir $@)
@@ -79,18 +83,22 @@ GENERATED_SOURCE_FILES+=tinypy/tp_opcodes.h
 
 # extra dependencies
 .objs/tinypy/tp.o    : $(TPY_DEP_FILES)
+.dbgobjs/tinypy/tp.o    : $(TPY_DEP_FILES)
 .dynobjs/tinypy/tp.o : $(TPY_DEP_FILES)
 .objs/tinypy/compiler.o    : $(COMPILER_DEP_FILES)
+.dbgobjs/tinypy/compiler.o    : $(COMPILER_DEP_FILES)
 .dynobjs/tinypy/compiler.o : $(COMPILER_DEP_FILES)
 .objs/tinypy/runtime.o    : $(RUNTIME_DEP_FILES)
+.dbgobjs/tinypy/runtime.o    : $(RUNTIME_DEP_FILES)
 .dynobjs/tinypy/runtime.o : $(RUNTIME_DEP_FILES)
 
 # tpvm only takes compiled byte codes (.tpc files)
-tpvm : $(VMLIB_FILES:%.c=.objs/tinypy/%.o) tinypy/vmmain.c modules/modules.a
-	$(CC) -o $@ $^ -lm
-
-tpvm-dbg : $(VMLIB_FILES:%.c=.objs/tinypy/%.o) tinypy/vmmain.c modules/modules.a
-	$(CC) -D TPVM_DEBUG -o $@ $^ -lm
+tpvm : $(VMLIB_FILES:%.c=.objs/tinypy/%.o) .objs/tinypy/vmmain.o modules/modules.a
+	$(CC) -g -O0 -o $@ $^ -lm
+#
+# tpvm only takes compiled byte codes (.tpc files)
+tpvm-dbg : $(VMLIB_FILES:%.c=.dbgobjs/tinypy/%.o) .dbgobjs/tinypy/vmmain.o modules/modules.a
+	$(CC) -g -O0 -o $@ $^ -lm
 
 # tpy takes .py files
 tpy : $(TPLIB_FILES:%.c=.objs/tinypy/%.o) tinypy/tpmain.c modules/modules.a
@@ -126,5 +134,6 @@ clean:
 	rm -rf tpy tpvm tpvm-dbg libtpy.so
 	rm -rf $(GENERATED_SOURCE_FILES)
 	rm -rf .objs/
+	rm -rf .dbgobjs/
 	rm -rf .dynobjs/
 	rm -rf modules/*.a
