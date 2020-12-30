@@ -101,7 +101,11 @@ tpvm-dbg : $(VMLIB_FILES:%.c=.dbgobjs/tinypy/%.o) .dbgobjs/tinypy/vmmain.o modul
 	$(CC) -g -O0 -o $@ $^ -lm
 
 # tpy takes .py files
-tpy : $(TPLIB_FILES:%.c=.objs/tinypy/%.o) tinypy/tpmain.c modules/modules.a
+tpy : $(TPLIB_FILES:%.c=.objs/tinypy/%.o) .objs/tinypy/tpmain.o modules/modules.a
+	$(CC) -o $@ $^ -lm
+
+# tpy takes .py files
+tpy-dbg : $(TPLIB_FILES:%.c=.dbgobjs/tinypy/%.o) .dbgobjs/tinypy/tpmain.o modules/modules.a
 	$(CC) -o $@ $^ -lm
 
 # rule for making a shared object. This is not universal and shall be adapted.
