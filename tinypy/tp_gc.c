@@ -35,7 +35,6 @@ void tp_grey(TP, tp_obj v) {
     int i;
     v.gc.gci->grey = 1;
     v.gc.gci->black = 0;
-    v.gc.gci->visited = 0;
     /* terminal types, no need to follow */
     if (v.type.typeid == TP_DATA) {
         v.gc.gci->black = 1;
@@ -99,11 +98,11 @@ void tp_gc_set_reachable(TP, tp_obj v) {
 
 void tp_delete(TP, tp_obj v) {
     #if 0 && defined(TPVM_DEBUG)
-    printf("deleting object %p: black %d grey %d visited %d\n",
+    printf("deleting object %p: black %d grey %d\n",
         v.gc.gci,
         v.gc.gci->black,
-        v.gc.gci->grey,
-        v.gc.gci->visited);
+        v.gc.gci->grey
+        );
     #endif
     int type = v.type.typeid;
     if (type == TP_LIST) {
@@ -143,17 +142,16 @@ void tp_collect(TP) {
 
     /* put all objects to the white list, without duplicates. */
     for (n=0; n<tp->black->len; n++) {
-        tp->black->items[n].gc.gci->visited = 0;
+        tp->black->items[n].gc.gci->black = 1;
     }
     for (n=0; n<tp->black->len; n++) {
         tp_obj v = tp->black->items[n];
-        if(v.gc.gci->visited) {
-            continue;
+        if(v.gc.gci->black == 0) {
+            abort();
         }
         tpd_list_appendx(tp, tp->white, v);
         v.gc.gci->black = 0;
         v.gc.gci->grey = 0;
-        v.gc.gci->visited = 1;
     }
     tp->black->len = 0;
 }
@@ -169,7 +167,6 @@ void tp_scan_grey(TP) {
         /* color it as black. */
         v.gc.gci->black = 1;
         v.gc.gci->grey = 1;
-        v.gc.gci->visited = 0;
         tpd_list_appendx(tp, tp->black, v);
 
         /* put children to grey. */
@@ -182,10 +179,9 @@ void tp_gcdump(TP) {
     printf("====== black %d ======\n", tp->black->len);
     for(i = 0; i < tp->black->len; i ++) {
         tp_obj v = tp->black->items[i];
-        printf("%08p : %d%d%d%c", v.gc.gci,
+        printf("%08p : %d%d%c", v.gc.gci,
         v.gc.gci->black,
         v.gc.gci->grey,
-        v.gc.gci->visited,
         (i + 1) % 8 == 0?'\n':' '
         );
     }
@@ -193,10 +189,9 @@ void tp_gcdump(TP) {
     printf("====== white %d ======\n", tp->white->len);
     for(i = 0; i < tp->white->len; i ++) {
         tp_obj v = tp->white->items[i];
-        printf("%08p : %d%d%d%c", v.gc.gci,
+        printf("%08p : %d%d%c", v.gc.gci,
         v.gc.gci->black,
         v.gc.gci->grey,
-        v.gc.gci->visited,
         (i + 1) % 8 == 0?'\n':' '
         );
     }
@@ -204,10 +199,9 @@ void tp_gcdump(TP) {
     printf("====== grey %d ======\n", tp->grey->len);
     for(i = 0; i < tp->grey->len; i ++) {
         tp_obj v = tp->grey->items[i];
-        printf("%08p : %d%d%d%c", v.gc.gci,
+        printf("%08p : %d%d%c", v.gc.gci,
         v.gc.gci->black,
         v.gc.gci->grey,
-        v.gc.gci->visited,
         (i + 1) % 8 == 0?'\n':' '
         );
     }
@@ -250,7 +244,6 @@ tp_obj tp_track(TP,tp_obj v) {
         v.gc.gci->grey = 0;
         /* NOTE(rainwoodman): I don't think we need to set the following flags */
         v.gc.gci->black = 0;
-        v.gc.gci->visited = 0;
     }
     tp_grey(tp,v);
     return v;
