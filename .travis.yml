@@ -1,14 +1,18 @@
 language: python
 
+addons:
+  apt:
+    packages: valgrind
+
 python:
   - "2.7"
   - "3.8"
 
 env:
-  - TEST_TARGET=test
-  - TEST_TARGET=test-dbg
-  - TEST_TARGET=test-shared
-  - TEST_TARGET=test-tpy
+  - BACKEND=tpy ARGS=--memcheck
+  - BACKEND=tpy-shared
+  - BACKEND=tpvm
+  - BACKEND=tpvm-dbg ARGS=--memcheck
 
 os:
   - linux
@@ -19,4 +23,7 @@ install:
     - make
 
 script:
-    - make $TEST_TARGET
+    - make all
+    - make shared
+    - make debug
+    - bash run-tests.sh --backend=${BACKEND} ${ARGS} tests/*.py

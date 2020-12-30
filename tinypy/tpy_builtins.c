@@ -34,13 +34,7 @@ tp_obj tpy_max(TP) {
 
 tp_obj tpy_copy(TP) {
     tp_obj r = TP_OBJ();
-    int type = r.type.typeid;
-    if (type == TP_LIST) {
-        return tp_list_copy(tp,r);
-    } else if (type == TP_DICT) {
-        return tp_dict_copy(tp,r);
-    }
-    tp_raise(tp_None,tp_string_atom(tp, "(tp_copy) TypeError: ?"));
+    return tp_copy(tp, r);
 }
 
 

@@ -1,9 +1,9 @@
 BACKEND=tpvm
 XFAIL=0
-DEBUG=0
+MEMCHECK=
 
 # Call getopt to validate the provided input. 
-OPT=$(getopt -oxB: -l xfail,backend: -- "$@")
+OPT=$(getopt -omxB: -l memcheck,xfail,backend: -- "$@")
 
 if [[ $? -ne 0 ]] ; then
     echo "Incorrect options provided"
@@ -14,14 +14,17 @@ eval set -- "$OPT"
 
 while true; do
     case "$1" in
+    -m | --memcheck)
+        MEMCHECK="valgrind --error-exitcode=1"
+        ;;
     -x | --xfail)
         XFAIL=1
         ;;
     -B | --backend)
         shift; # The arg is next in position args
         BACKEND=$1
-        if [[ ! ${BACKEND} =~ tpy|tpvm|tpvm-dbg|tpy-shared ]]; then
-            echo "Incorrect options provided. Use tpy, tpvm, tpvm-dbg, or tpy-shared"
+        if [[ ! ${BACKEND} =~ tpy|tpy-dbg|tpvm|tpvm-dbg|tpy-shared ]]; then
+            echo "Incorrect options provided. Use tpy, tpy-dbg, tpvm, tpvm-dbg, or tpy-shared"
             exit 1
         fi
         ;;
@@ -50,10 +53,10 @@ function run {
         echo "${TPC} -o ${tpc} $1"
         echo "./${BACKEND} ${tpc}"
         "${TPC}" -o ${tpc} $1 || return 1
-        "./${BACKEND}" ${tpc} || return 1
+        ${MEMCHECK} "./${BACKEND}" ${tpc} || return 1
     else
         echo "./${BACKEND} $1"
-        "./${BACKEND}" $1 || return 1
+        ${MEMCHECK} "./${BACKEND}" $1 || return 1
     fi
 }
 
