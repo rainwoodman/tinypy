@@ -116,7 +116,7 @@ tp_obj tpy_str_replace(TP) {
     rr = tp_string_t(tp, l);
     r = tp_string_getptr(rr);
     d = r;
-    z = p = s;
+    z = p;
     while ((i = tp_str_index(p,k)) != -1) {
         p.string.info->s += i;
         p.string.info->len -= i;
