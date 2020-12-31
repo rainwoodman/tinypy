@@ -188,7 +188,7 @@ void tp_return(TP, tp_obj v) {
     if (dest) { *dest = v; tp_grey(tp,v); }
 /*     memset(f->regs,0,TP_REGS_PER_FRAME*sizeof(tp_obj));
        fprintf(stderr,"regs:%d\n",(f->.cregs+1));*/
-    memset(f->regs-TP_REGS_EXTRA,0,(TP_REGS_EXTRA+f->cregs)*sizeof(tp_obj));
+    memset(f->regs,0,(f->cregs)*sizeof(tp_obj));
     tp->cur -= 1;
 }
 
@@ -208,7 +208,7 @@ void tp_return(TP, tp_obj v) {
 
 int tp_step(TP) {
     tpd_frame *f = tp->frames[tp->cur].frame.info;
-    tp_obj *regs = f->regs;
+    tp_obj *regs = &f->regs[TP_REGS_START];
     tpd_code *cur = f->cur;
     while(1) {
     #ifdef TP_SANDBOX
@@ -338,7 +338,12 @@ int tp_step(TP) {
             /* Watch out: crash if continue. */
             break;
         }
-        case TP_IREGS: f->cregs = VA; break;
+        case TP_IREGS: 
+            f->cregs = TP_REGS_START + VA;
+            if (f->cregs > f->nregs) {
+                tp_raise_printf(0, "(tp_step) RuntimeError: register overrun, requesting %d registers, frame has %d.", f->cregs, f->nregs);
+            }
+            break;
         default:
             tp_raise(0,tp_string_atom(tp, "(tp_step) RuntimeError: invalid instruction"));
             break;
