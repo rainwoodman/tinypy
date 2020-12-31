@@ -189,9 +189,9 @@ typedef struct tpd_frame {
     tpd_code *jmp;
     tp_obj *regs;
     tp_obj *ret_dest;
-    tp_obj *fname;
-    tp_obj *name;
-    tp_obj *line;
+    tp_obj fname;
+    tp_obj name;
+    tp_obj line;
     tp_obj globals;
     int lineno;
     int cregs;

@@ -16,9 +16,6 @@ void tpd_frame_reset(TP, tpd_frame * f, tp_obj params, tp_obj globals, tp_obj co
 
     f->regs[0] = f->globals;
     f->regs[1] = f->code;
-    f->line = &f->regs[2];
-    f->name = &f->regs[3];
-    f->fname = &f->regs[4];
     f->regs += TP_REGS_EXTRA;
 
     if (f->regs+(256+TP_REGS_EXTRA) >= tp->regs+TP_REGS || tp->cur >= TP_FRAMES-1) {
@@ -27,9 +24,9 @@ void tpd_frame_reset(TP, tpd_frame * f, tp_obj params, tp_obj globals, tp_obj co
 
     f->ret_dest = ret_dest;
     f->lineno = 0;
-    *f->line = tp_string_atom(tp, "");
-    *f->name = tp_string_atom(tp, "?");
-    *f->fname = tp_string_atom(tp, "?");
+    f->line = tp_string_atom(tp, "");
+    f->name = tp_string_atom(tp, "?");
+    f->fname = tp_string_atom(tp, "?");
     f->cregs = 0;
     /* calling convention AX = params. who picks this up? */
     f->regs[0] = params;
