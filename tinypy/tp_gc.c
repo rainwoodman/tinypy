@@ -210,15 +210,15 @@ void tp_full(TP) {
     printf("running full gc %d %d\n", tp->steps, tp->gcmax);
     #endif
     tp_scan_grey(tp);
-    #if 1 && defined(TPVM_DEBUG)
+    #if 0 && defined(TPVM_DEBUG)
     tp_gcdump(tp, 'M');
     #endif
     tp_collect(tp);
-    #if 1 && defined(TPVM_DEBUG)
+    #if 0 && defined(TPVM_DEBUG)
     tp_gcdump(tp, 'C');
     #endif
-    tp_follow_nr(tp, tp->root);
-    #if 1 && defined(TPVM_DEBUG)
+    tp_follow(tp, tp->root);
+    #if 0 && defined(TPVM_DEBUG)
     tp_gcdump(tp, 'F');
     #endif
 }

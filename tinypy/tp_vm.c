@@ -164,7 +164,6 @@ void tp_continue_frame(TP, int cur) {
     }
     /* keep runing till the frame drops back (aka function returns) */
     while (tp->cur >= cur) {
-        tp_gcinc(tp);
         if (tp_step(tp) == -1) break;
     }
 
@@ -209,6 +208,7 @@ int tp_step(TP) {
     #ifdef TP_SANDBOX
     tp_bounds(tp,cur,1);
     #endif
+    tp_gcinc(tp);
     tpd_code e = *cur;
     tpd_code *base = (tpd_code*)f->code.string.info->s;
     /* FIXME: convert this to a flag */
