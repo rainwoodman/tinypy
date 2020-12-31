@@ -87,7 +87,7 @@ void tp_gc_init(TP) {
     #ifdef TPVM_DEBUG
     tp->gcmax = 0;
     #else
-    tp->gcmax = 16384;
+    tp->gcmax = 8;
     #endif
 }
 
@@ -156,8 +156,8 @@ void tp_collect(TP) {
     tp->black->len = 0;
 }
 
-void tp_scan_grey(TP) {
-    while (tp->grey->len) {
+void tp_mark(TP, int max) {
+    while (tp->grey->len && max > 0) {
         tp_obj v;
         /* pick a grey object */
         v = tpd_list_pop(tp, tp->grey, tp->grey->len-1, "_tp_gcinc");
@@ -171,15 +171,20 @@ void tp_scan_grey(TP) {
 
         /* put children to grey. */
         tp_follow(tp,v);
+        if(max > 0) max--;
     }
 }
 
-void tp_gcdump(TP, int mark) {
+void tp_gc_dump(TP, tpd_list * l, int name, int mark) {
+    /* FIXME: add tp_string_builder_printf, and write to a string builder. */
+    #if ! (0 && defined(TPVM_DEBUG))
+        return;
+    #endif
     int i;
     char step[20];
-    sprintf(step, "%c[%06d]W", mark, tp->steps);
-    for(i = 0; i < tp->white->len; i ++) {
-        tp_obj v = tp->white->items[i];
+    sprintf(step, "%c[%06d]%c", mark, tp->steps, name);
+    for(i = 0; i < l->len; i ++) {
+        tp_obj v = l->items[i];
         printf("%s%p:%d%d%c",
         i % 6 == 0?step:"",
         v.gc.gci,
@@ -190,47 +195,26 @@ void tp_gcdump(TP, int mark) {
     }
     printf("\n");
     fflush(stdout);
-    sprintf(step, "%c[%06d]G", mark, tp->steps);
-    for(i = 0; i < tp->grey->len; i ++) {
-        tp_obj v = tp->grey->items[i];
-        printf("%s%p:%d%d%c", 
-        i % 6 == 0?step:"",
-        v.gc.gci,
-        v.gc.gci->black,
-        v.gc.gci->grey,
-        (i + 1) % 6 == 0?'\n':' '
-        );
+}
+
+void tp_gc_run(TP, int full) {
+    if (full || tp->gcmax == 0 || (tp->steps % tp->gcmax == 0)) {
+        tp_mark(tp, -1);
+    } else {
+        /* mark 2 items from the grey list every step */
+        tp_mark(tp, 2);
     }
-    printf("\n");
-    fflush(stdout);
-}
 
-void tp_full(TP) {
-    #if 0 && defined(TPVM_DEBUG)
-    printf("running full gc %d %d\n", tp->steps, tp->gcmax);
-    #endif
-    tp_scan_grey(tp);
-    #if 0 && defined(TPVM_DEBUG)
-    tp_gcdump(tp, 'M');
-    #endif
-    tp_collect(tp);
-    #if 0 && defined(TPVM_DEBUG)
-    tp_gcdump(tp, 'C');
-    #endif
-    tp_follow(tp, tp->root);
-    #if 0 && defined(TPVM_DEBUG)
-    tp_gcdump(tp, 'F');
-    #endif
-}
-
-void tp_gcinc(TP) {
-    if (tp->gcmax == 0 || (tp->steps % tp->gcmax == 0)) {
-        tp_full(tp);
-        tp->steps += 1;
-        return;
+    /* grey list is empty, we can run a collection */
+    if(tp->grey->len == 0) {
+        tp_gc_dump(tp, tp->white, 'W', 'M');
+        /*FIXME: should we do this every time grey drops to zero? */
+        tp_collect(tp);
+        tp_gc_dump(tp, tp->white, 'W', 'C');
+        tp_follow(tp, tp->root);
+        tp_gc_dump(tp, tp->grey, 'G', 'F');
     }
     tp->steps += 1;
-    tp_scan_grey(tp);
 }
 
 /* tp_track: put an object to the grey list.
@@ -250,7 +234,7 @@ void tp_gc_deinit(TP) {
     while (tp->root.list.val->len) {
         tpd_list_pop(tp, tp->root.list.val, 0, "tp_deinit");
     }
-    tp_full(tp); tp_full(tp);
+    tp_gc_run(tp, 1);
     tp_delete(tp, tp->root);
     tpd_list_free(tp, tp->white);
     tpd_list_free(tp, tp->grey);
