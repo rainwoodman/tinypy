@@ -53,6 +53,7 @@ enum TP_PACKED TPTypeID {
     TP_GC_TRACKED = 9,
     TP_FUNC = 10,
     TP_DATA = 11,
+    TP_FRAME = 12,
 
     TP_STRING = 100,
     TP_DICT = 101,
@@ -121,6 +122,7 @@ typedef union tp_obj {
     struct { TPTypeInfo type; tp_num val; } number;
     struct { TPTypeInfo type; struct tpd_func *info; void *cfnc; } func;
     struct { TPTypeInfo type; struct tpd_data *info; void *val; } data;
+    struct { TPTypeInfo type; struct tpd_frame *info; } frame;
 
     struct { TPTypeInfo type; struct tpd_obj *info; } obj;
     struct { TPTypeInfo type; struct tpd_list *val; } list;
@@ -181,6 +183,7 @@ typedef union tpd_code {
 
 typedef struct tpd_frame {
 /*    tpd_code *codes; */
+    TPGCMask gci;
     tp_obj code;
     tpd_code *cur;
     tpd_code *jmp;
@@ -230,7 +233,7 @@ typedef struct tp_vm {
 
     /* call */
     int cur;
-    tpd_frame frames[TP_FRAMES];
+    tp_obj frames[TP_FRAMES];
     tp_obj _params;
     tp_obj params;
     tp_obj _regs;

@@ -300,7 +300,7 @@ tp_obj tpy_eval(TP) {
 }
 
 tp_obj tpy_globals(TP) {
-    return tp->frames[tp->cur].globals;
+    return tp->frames[tp->cur].frame.info->globals;
 }
 
 
