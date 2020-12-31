@@ -449,10 +449,9 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
         } else {
             /* compiled Python function */
             tp_obj dest = tp_None;
-            tp_enter_frame(tp, self.func.info->globals,
+            tp_enter_frame(tp, params, self.func.info->globals,
                                self.func.info->code,
                               &dest);
-            tp->frames[tp->cur].regs[0] = params;
             tp_run_frame(tp);
             return dest;
         }

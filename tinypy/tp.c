@@ -16,9 +16,9 @@ tp_obj tp_None = {TP_NONE};
 #include "tp_string.c"
 
 #include "tp_meta.c"
-#include "tp_frame.c"
 #include "tp_data.c"
 #include "tp_func.c"
+#include "tp_frame.c"
 
 #include "tp_repr.c"
 

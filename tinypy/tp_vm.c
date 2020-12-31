@@ -54,6 +54,10 @@ tp_vm * tp_create_vm(void) {
 
     for (i=0; i<TP_FRAMES; i++) { tp_set(tp, tp->_params, tp_None, tp_list_t(tp)); }
     tp->echo = tp_default_echo;
+    for (i=0; i<TP_FRAMES; i++) {
+        tp->frames[i] = tp_frame_t(tp);
+        tp_gc_set_reachable(tp, tp->frames[i]);
+    }
 
     tp_gc_set_reachable(tp, tp->_chars);
     tp_gc_set_reachable(tp, tp->builtins);
@@ -71,11 +75,9 @@ tp_vm * tp_create_vm(void) {
     return tp;
 }
 
-void tp_enter_frame(TP, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
-    tpd_frame f = tp_frame_nt(tp, globals, code, ret_dest);
-
+void tp_enter_frame(TP, tp_obj params, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
+    tpd_frame_reset(tp, tp->frames[tp->cur+1].frame.info, params, globals, code, ret_dest);
     tp->cur += 1;
-    tp->frames[tp->cur] = f;
 }
 
 void _tp_raise(TP, tp_obj e) {
@@ -105,14 +107,15 @@ void tp_format_stack_internal(TP, StringBuilder * sb)
     string_builder_write(sb, "\n", -1);
 
     for (i=0; i<=tp->cur; i++) {
-        if (!tp->frames[i].lineno) { continue; }
+        tpd_frame * f = tp->frames[i].frame.info;
+        if (!f->lineno) { continue; }
         string_builder_write(sb, "File \"", -1);
-        string_builder_echo(sb, *tp->frames[i].fname);
+        string_builder_echo(sb, *f->fname);
         string_builder_write(sb, "\", ", -1);
-        string_builder_echo(sb, tp_printf(tp, "line %d, in ", tp->frames[i].lineno));
-        string_builder_echo(sb, *tp->frames[i].name);
+        string_builder_echo(sb, tp_printf(tp, "line %d, in ", f->lineno));
+        string_builder_echo(sb, *f->name);
         string_builder_write(sb, "\n ", -1);
-        string_builder_echo(sb, *tp->frames[i].line);
+        string_builder_echo(sb, *f->line);
         string_builder_write(sb, "\n", -1);
     }
 }
@@ -137,12 +140,14 @@ void tp_print_exc(TP) {
 void tp_handle(TP) {
     int i;
     for (i=tp->cur; i>=0; i--) {
-        if (tp->frames[i].jmp) { break; }
+        tpd_frame * f = tp->frames[i].frame.info;
+        if (f->jmp) { break; }
     }
     if (i >= 0) {
+        tpd_frame * f = tp->frames[i].frame.info;
         tp->cur = i;
-        tp->frames[i].cur = tp->frames[i].jmp;
-        tp->frames[i].jmp = 0;
+        f->cur = f->jmp;
+        f->jmp = 0;
         return;
     }
 #ifndef CPYTHON_MOD
@@ -178,11 +183,12 @@ void tp_run_frame(TP) {
 
 
 void tp_return(TP, tp_obj v) {
-    tp_obj *dest = tp->frames[tp->cur].ret_dest;
+    tpd_frame * f = tp->frames[tp->cur].frame.info;
+    tp_obj *dest = f->ret_dest;
     if (dest) { *dest = v; tp_grey(tp,v); }
-/*     memset(tp->frames[tp->cur].regs,0,TP_REGS_PER_FRAME*sizeof(tp_obj));
-       fprintf(stderr,"regs:%d\n",(tp->frames[tp->cur].cregs+1));*/
-    memset(tp->frames[tp->cur].regs-TP_REGS_EXTRA,0,(TP_REGS_EXTRA+tp->frames[tp->cur].cregs)*sizeof(tp_obj));
+/*     memset(f->regs,0,TP_REGS_PER_FRAME*sizeof(tp_obj));
+       fprintf(stderr,"regs:%d\n",(f->.cregs+1));*/
+    memset(f->regs-TP_REGS_EXTRA,0,(TP_REGS_EXTRA+f->cregs)*sizeof(tp_obj));
     tp->cur -= 1;
 }
 
@@ -201,7 +207,7 @@ void tp_return(TP, tp_obj v) {
 
 
 int tp_step(TP) {
-    tpd_frame *f = &tp->frames[tp->cur];
+    tpd_frame *f = tp->frames[tp->cur].frame.info;
     tp_obj *regs = f->regs;
     tpd_code *cur = f->cur;
     while(1) {
@@ -353,7 +359,7 @@ int tp_step(TP) {
  */
 tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
     tp_obj r = tp_None;
-    tp_enter_frame(tp, globals, code, &r);
+    tp_enter_frame(tp, tp_None, globals, code, &r);
     tp_run_frame(tp);
     return r;
 }

@@ -126,6 +126,8 @@ void tp_delete(TP, tp_obj v) {
     } else if (type == TP_FUNC) {
         tp_free(tp, v.func.info);
         return;
+    } else if (type == TP_FRAME) {
+        tp_free(tp, v.frame.info);
     }
     tp_raise(, tp_string_atom(tp, "(tp_delete) TypeError: ?"));
 }

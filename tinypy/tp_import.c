@@ -11,7 +11,7 @@ tp_obj tp_import(TP, tp_obj name, tp_obj code, tp_obj fname) {
 
     /* an older versoin of the code does not run frame of jmp == 0. Why?*/
     /*
-     tp_enter_frame(tp, globals, code, &r);
+     tp_enter_frame(tp, tp_None, globals, code, &r);
      if (!tp->jmp) {
          tp_run_frame(tp);
      } 
