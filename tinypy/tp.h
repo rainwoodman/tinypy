@@ -238,7 +238,6 @@ typedef struct tp_vm {
     tp_obj _params;
     tp_obj params;
     tp_obj _regs;
-    tp_obj *regs;
     tp_obj *last_result;
 
     /* exception */
