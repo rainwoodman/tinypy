@@ -37,7 +37,6 @@ tp_vm * tp_create_vm(void) {
     tp->last_result = tp->_regs.list.val->items + 0;
     tp->exc = tp->_regs.list.val->items + 1;
     tp->exc_stack = tp->_regs.list.val->items + 2;
-    tp->regs = tp->_regs.list.val->items + 3;
 
     tp_obj object_class = tp_object(tp);
     object_class.type.magic = TP_DICT_CLASS;
