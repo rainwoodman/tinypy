@@ -67,7 +67,7 @@ tp_vm * tp_create_vm(void) {
     tp_gc_set_reachable(tp, tp->string_class);
 
     *tp->last_result = tp_None;
-    tp_full(tp);
+    tp_gc_run(tp, 1);
     return tp;
 }
 
@@ -208,7 +208,7 @@ int tp_step(TP) {
     #ifdef TP_SANDBOX
     tp_bounds(tp,cur,1);
     #endif
-    tp_gcinc(tp);
+    tp_gc_run(tp, 0);
     tpd_code e = *cur;
     tpd_code *base = (tpd_code*)f->code.string.info->s;
     /* FIXME: convert this to a flag */
