@@ -110,12 +110,12 @@ void tp_format_stack_internal(TP, StringBuilder * sb)
         tpd_frame * f = tp->frames[i].frame.info;
         if (!f->lineno) { continue; }
         string_builder_write(sb, "File \"", -1);
-        string_builder_echo(sb, *f->fname);
+        string_builder_echo(sb, f->fname);
         string_builder_write(sb, "\", ", -1);
         string_builder_echo(sb, tp_printf(tp, "line %d, in ", f->lineno));
-        string_builder_echo(sb, *f->name);
+        string_builder_echo(sb, f->name);
         string_builder_write(sb, "\n ", -1);
-        string_builder_echo(sb, *f->line);
+        string_builder_echo(sb, f->line);
         string_builder_write(sb, "\n", -1);
     }
 }
@@ -327,12 +327,12 @@ int tp_step(TP) {
             ;
             int a = (*(cur+1)).string.val - tp_string_getptr(f->code);
             if(tp_string_getptr(f->code)[a] == ';') abort();
-            *f->line = tp_string_view(tp, f->code, a, a+VA*4-1);
+            f->line = tp_string_view(tp, f->code, a, a+VA*4-1);
             cur += VA; f->lineno = UVBC;
             }
             break;
-        case TP_IFILE: *f->fname = RA; break;
-        case TP_INAME: *f->name = RA; break;
+        case TP_IFILE: f->fname = RA; break;
+        case TP_INAME: f->name = RA; break;
         case TP_IVAR: {
             cur += (UVBC/4) + 1;
             /* Watch out: crash if continue. */
