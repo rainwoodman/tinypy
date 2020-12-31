@@ -174,38 +174,35 @@ void tp_scan_grey(TP) {
     }
 }
 
-void tp_gcdump(TP) {
+void tp_gcdump(TP, int mark) {
     int i;
-    printf("====== black %d ======\n", tp->black->len);
-    for(i = 0; i < tp->black->len; i ++) {
-        tp_obj v = tp->black->items[i];
-        printf("%08p : %d%d%c", v.gc.gci,
-        v.gc.gci->black,
-        v.gc.gci->grey,
-        (i + 1) % 8 == 0?'\n':' '
-        );
-    }
-    printf("\n");
-    printf("====== white %d ======\n", tp->white->len);
+    char step[20];
+    sprintf(step, "%c[%06d]W", mark, tp->steps);
     for(i = 0; i < tp->white->len; i ++) {
         tp_obj v = tp->white->items[i];
-        printf("%08p : %d%d%c", v.gc.gci,
+        printf("%s%p:%d%d%c",
+        i % 6 == 0?step:"",
+        v.gc.gci,
         v.gc.gci->black,
         v.gc.gci->grey,
-        (i + 1) % 8 == 0?'\n':' '
+        (i + 1) % 6 == 0?'\n':' '
         );
     }
     printf("\n");
-    printf("====== grey %d ======\n", tp->grey->len);
+    fflush(stdout);
+    sprintf(step, "%c[%06d]G", mark, tp->steps);
     for(i = 0; i < tp->grey->len; i ++) {
         tp_obj v = tp->grey->items[i];
-        printf("%08p : %d%d%c", v.gc.gci,
+        printf("%s%p:%d%d%c", 
+        i % 6 == 0?step:"",
+        v.gc.gci,
         v.gc.gci->black,
         v.gc.gci->grey,
-        (i + 1) % 8 == 0?'\n':' '
+        (i + 1) % 6 == 0?'\n':' '
         );
     }
     printf("\n");
+    fflush(stdout);
 }
 
 void tp_full(TP) {
@@ -213,23 +210,23 @@ void tp_full(TP) {
     printf("running full gc %d %d\n", tp->steps, tp->gcmax);
     #endif
     tp_scan_grey(tp);
-    #if 0 && defined(TPVM_DEBUG)
-    printf("after grey\n"); tp_gcdump(tp);
+    #if 1 && defined(TPVM_DEBUG)
+    tp_gcdump(tp, 'M');
     #endif
     tp_collect(tp);
-    #if 0 && defined(TPVM_DEBUG)
-    printf("after collect\n"); tp_gcdump(tp);
+    #if 1 && defined(TPVM_DEBUG)
+    tp_gcdump(tp, 'C');
     #endif
-    tp_follow(tp, tp->root);
-    #if 0 && defined(TPVM_DEBUG)
-    printf("after follow\n"); tp_gcdump(tp);
+    tp_follow_nr(tp, tp->root);
+    #if 1 && defined(TPVM_DEBUG)
+    tp_gcdump(tp, 'F');
     #endif
 }
 
 void tp_gcinc(TP) {
-    if (tp->steps >= tp->gcmax) {
+    if (tp->gcmax == 0 || (tp->steps % tp->gcmax == 0)) {
         tp_full(tp);
-        tp->steps = 0;
+        tp->steps += 1;
         return;
     }
     tp->steps += 1;
