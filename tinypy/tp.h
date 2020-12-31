@@ -195,10 +195,11 @@ typedef struct tpd_frame {
     tp_obj globals;
     int lineno;
     int cregs;
+    int nregs;
 } tpd_frame;
 
 #define TP_FRAMES 256
-#define TP_REGS_EXTRA 5
+#define TP_REGS_START 5
 /* #define TP_REGS_PER_FRAME 256*/
 #define TP_REGS 16384
 
