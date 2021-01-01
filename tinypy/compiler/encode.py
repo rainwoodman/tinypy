@@ -473,7 +473,7 @@ def do_def(tok):
 
     D.begin()
     setpos(tok.pos)
-    r = do_local(Token(tok.pos,'name','__params__'))
+    r = do_local(Token(tok.pos,'name','__params__'))  # assigns regs[0] to __params__.
     do_info(items[0].val)
     a,b,c,d = p_filter(items[1].items)
     for p in a:

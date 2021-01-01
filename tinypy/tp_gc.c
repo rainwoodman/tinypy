@@ -86,6 +86,7 @@ void tp_follow(TP,tp_obj v) {
         tp_grey(tp, v.frame.info->fname);
         tp_grey(tp, v.frame.info->code);
         tp_grey(tp, v.frame.info->globals);
+        tp_grey(tp, v.frame.info->args);
     }
 }
 

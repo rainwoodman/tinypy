@@ -75,8 +75,8 @@ tp_vm * tp_create_vm(void) {
 }
 
 void tp_enter_frame(TP, tp_obj params, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
-    tpd_frame_reset(tp, tp->frames[tp->cur+1].frame.info, params, globals, code, ret_dest);
     tp->cur += 1;
+    tpd_frame_reset(tp, tp_get_cur_frame(tp), params, globals, code, ret_dest);
 }
 
 void _tp_raise(TP, tp_obj e) {
@@ -180,9 +180,8 @@ void tp_run_frame(TP) {
     tp_continue_frame(tp, tp->cur);
 }
 
-
 void tp_return(TP, tp_obj v) {
-    tpd_frame * f = tp->frames[tp->cur].frame.info;
+    tpd_frame * f = tp_get_cur_frame(tp);
     tp_obj *dest = f->ret_dest;
     if (dest) { *dest = v; tp_grey(tp,v); }
 /*     memset(f->regs,0,TP_REGS_PER_FRAME*sizeof(tp_obj));
@@ -206,7 +205,7 @@ void tp_return(TP, tp_obj v) {
 
 
 int tp_step(TP) {
-    tpd_frame *f = tp->frames[tp->cur].frame.info;
+    tpd_frame *f = tp_get_cur_frame(tp);
     tp_obj *regs = &f->regs[TP_REGS_START];
     tpd_code *cur = f->cur;
     while(1) {
@@ -337,11 +336,8 @@ int tp_step(TP) {
             /* Watch out: crash if continue. */
             break;
         }
-        case TP_IREGS: 
-            f->cregs = TP_REGS_START + VA;
-            if (f->cregs > f->nregs) {
-                tp_raise_printf(0, "(tp_step) RuntimeError: register overrun, requesting %d registers, frame has %d.", f->cregs, f->nregs);
-            }
+        case TP_IREGS: /* allocate regs for the frame. must be in the preamble of the function body. */
+            tpd_frame_alloc(tp, tp_get_cur_frame(tp), VA);
             break;
         default:
             tp_raise(0,tp_string_atom(tp, "(tp_step) RuntimeError: invalid instruction"));
