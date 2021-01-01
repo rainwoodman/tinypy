@@ -200,8 +200,7 @@ typedef struct tpd_frame {
 
 #define TP_FRAMES 256
 #define TP_REGS_START 5
-/* #define TP_REGS_PER_FRAME 256*/
-#define TP_REGS 16384
+#define TP_REGS_PER_FRAME 256
 
 /* Type: tp_vm
  * Representation of a tinypy virtual machine instance.

@@ -32,7 +32,7 @@ tp_vm * tp_create_vm(void) {
     }
 
     tp->_regs = tp_list_t(tp);
-    for (i=0; i < TP_REGS + 3; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
+    for (i=0; i < 3; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
 
     tp->last_result = tp->_regs.list.val->items + 0;
     tp->exc = tp->_regs.list.val->items + 1;

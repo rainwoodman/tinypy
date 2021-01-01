@@ -2,8 +2,7 @@ tp_obj tp_frame_t(TP) {
     tp_obj r = {TP_FRAME};
     r.frame.info = tp_malloc(tp, sizeof(tpd_frame));
     tpd_frame * f = r.frame.info;
-    /* FIXME: number of regs per frame, make this a parameter. */
-    f->nregs = 256;
+    f->nregs = TP_REGS_PER_FRAME;
     f->regs = tp_malloc(tp, sizeof(tp_obj) * f->nregs);
 
     return r;
