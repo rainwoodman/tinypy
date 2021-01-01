@@ -199,8 +199,6 @@ typedef struct tpd_frame {
 } tpd_frame;
 
 #define TP_FRAMES 256
-#define TP_REGS_START 5
-#define TP_REGS_PER_FRAME 256
 #define TP_STACK_MAX 4096
 
 /* Type: tp_vm
