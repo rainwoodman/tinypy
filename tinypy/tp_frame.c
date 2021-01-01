@@ -2,8 +2,6 @@ tp_obj tp_frame_t(TP) {
     tp_obj r = {TP_FRAME};
     r.frame.info = tp_malloc(tp, sizeof(tpd_frame));
     tpd_frame * f = r.frame.info;
-    f->nregs = TP_REGS_PER_FRAME;
-    f->regs = tp_malloc(tp, sizeof(tp_obj) * f->nregs);
 
     return r;
 }
@@ -14,26 +12,22 @@ void tpd_frame_reset(TP, tpd_frame * f, tp_obj params, tp_obj globals, tp_obj co
     f->code = code;
     f->cur = (tpd_code*) tp_string_getptr(f->code);
     f->jmp = 0;
-    f->regs[0] = f->globals;
-    f->regs[1] = f->code;
     f->ret_dest = ret_dest;
     f->lineno = 0;
     f->args = params;
     f->line = tp_string_atom(tp, "");
     f->name = tp_string_atom(tp, "?");
     f->fname = tp_string_atom(tp, "?");
-    f->cregs = TP_REGS_START;
+    f->cregs = 0;
 }
 
-void tpd_frame_alloc(TP, tpd_frame * f, int cregs) {
+void tpd_frame_alloc(TP, tpd_frame * f, tp_obj * regs, int cregs) {
     /*  call convention requires 1 reg for __params__.*/
     if(cregs < 1) {
         abort();
     }
-    /* calling convention AX = params. who picks this up? */
-    f->regs[TP_REGS_START] = f->args;
-    f->cregs = TP_REGS_START + cregs;
-    if (f->cregs > f->nregs) {
-        tp_raise_printf(, "(tp_step) RuntimeError: register overrun, requesting %d registers, frame has %d.", f->cregs, f->nregs);
-    }
+    f->regs = regs;
+    /* calling convention local #0 = params. */
+    f->regs[0] = f->args;
+    f->cregs = cregs;
 }
