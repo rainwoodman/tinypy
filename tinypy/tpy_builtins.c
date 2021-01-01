@@ -46,7 +46,7 @@ tp_obj tpy_len(TP) {
 tp_obj tpy_range(TP) {
     int a,b,c,i;
     tp_obj r = tp_list_t(tp);
-    switch (tp->params.list.val->len) {
+    switch (tp->params->list.val->len) {
         case 1: a = 0; b = TP_NUM(); c = 1; break;
         case 2:
         case 3: a = TP_NUM(); b = TP_NUM(); c = TP_DEFAULT(tp_number(1)).number.val; break;
@@ -179,7 +179,7 @@ tp_obj tpy_object_new(TP) {
     tp_obj self = tp_object(tp);
     self.dict.val->meta = klass;
     TP_META_BEGIN(self, __init__);
-        tp_call(tp, __init__, tp->params);
+        tp_call(tp, __init__, *tp->params);
     TP_META_END;
     return self;
 }

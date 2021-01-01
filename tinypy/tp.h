@@ -234,8 +234,7 @@ typedef struct tp_vm {
 
     /* call */
     tpd_list * frames;
-    tp_obj _params;
-    tp_obj params;
+    tp_obj * params;
     tp_obj *last_result;
 
     /* exception */
@@ -255,7 +254,6 @@ typedef struct tp_vm {
     tpd_list *black;
     int steps;
     /* cached objects */
-    tp_obj _chars;
     tp_obj chars[256];
     /* sandbox */
     clock_t clocks;
@@ -358,11 +356,11 @@ tp_obj tp_check_type(TP, int t, tp_obj v) {
  * function scope.
  * */
 #define TP_NO_LIMIT 0
-#define TP_OBJ() (tp_get(tp, tp->params, tp_None))
+#define TP_OBJ() (tp_get(tp, *tp->params, tp_None))
 #define TP_TYPE(t) tp_check_type(tp, t, TP_OBJ())
 #define TP_NUM() (TP_TYPE(TP_NUMBER).number.val)
 #define TP_STR() (TP_TYPE(TP_STRING))
-#define TP_DEFAULT(d) (tp->params.list.val->len?tp_get(tp, tp->params, tp_None):(d))
+#define TP_DEFAULT(d) (tp->params->list.val->len?tp_get(tp, *tp->params, tp_None):(d))
 
 /* Macro: TP_LOOP
  * Macro to iterate over all remaining arguments.
@@ -383,9 +381,9 @@ tp_obj tp_check_type(TP, int t, tp_obj v) {
  */
 tp_obj tpd_list_get(TP, tpd_list *self, int k, const char *error);
 #define TP_LOOP(e) \
-    int __l = tp->params.list.val->len; \
+    int __l = tp->params->list.val->len; \
     int __i; for (__i=0; __i<__l; __i++) { \
-        (e) = tpd_list_get(tp, tp->params.list.val, __i, "TP_LOOP");
+        (e) = tpd_list_get(tp, tp->params->list.val, __i, "TP_LOOP");
 #define TP_END \
     }
 

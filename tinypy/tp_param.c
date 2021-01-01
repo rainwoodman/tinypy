@@ -4,13 +4,13 @@
  * When you are calling a tinypy function, you can use this to initialize the
  * list of parameters getting passed to it. Usually, you may want to use
  * <tp_params_n> or <tp_params_v>.
+ *
+ * In a C-API function, always finish 'parsing' the params before calling other
+ * tpy functions or tp_exec (which may eventually call other tpy functions).
  */
 tp_obj tp_params(TP) {
-    tp_obj r;
-    tp->params = tp->_params.list.val->items[tp->frames->len];
-    r = tp->_params.list.val->items[tp->frames->len];
-    r.list.val->len = 0;
-    return r;
+    *tp->params = tp_list_t(tp);
+    return *tp->params;
 }
 
 /* Function: tp_params_n
