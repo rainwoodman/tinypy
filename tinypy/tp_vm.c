@@ -10,6 +10,7 @@ tp_obj * tp_stack_alloc(TP, int n) {
     if(tp->stack->len > TP_STACK_MAX) {
         tp_raise(NULL, tp_string_atom(tp, "(tp_stack_alloc) out of stack space"));
     }
+    memset(r, 0, sizeof(tp_obj) * n);
     return r;
 }
 
@@ -233,7 +234,7 @@ int tp_step(TP) {
     tpd_code e = *cur;
     tpd_code *base = (tpd_code*)f->code.string.info->s;
     /* FIXME: convert this to a flag */
-//     fprintf(stdout,"%2d.%4d: %-6s %3d %3d %3d\n",tp->frames->len - 1, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
+    // fprintf(stdout,"[%04d] %2d.%4d: %-6s %3d %3d %3d\n",tp->steps, tp->frames->len - 1, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
 //       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(f->regs[i])); }
    
 //    tp_obj tpy_print(TP);
