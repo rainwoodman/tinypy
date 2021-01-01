@@ -55,6 +55,7 @@ tp_vm * tp_create_vm(void) {
     tp->stack->len = 0;
     tp_gc_set_reachable(tp, stack);
 
+    tp->params = tp_stack_alloc(tp, 1);
     tp->last_result = tp_stack_alloc(tp, 1);
     tp->exc = tp_stack_alloc(tp, 1);
     tp->exc_stack = tp_stack_alloc(tp, 1);
@@ -70,9 +71,6 @@ tp_vm * tp_create_vm(void) {
     tp->builtins = tp_dict_t(tp);
     tp->modules = tp_dict_t(tp);
 
-    tp->_params = tp_list_t(tp);
-
-    for (i=0; i<TP_FRAMES; i++) { tp_set(tp, tp->_params, tp_None, tp_list_t(tp)); }
     tp->echo = tp_default_echo;
 
     tp_obj frames = tp_list_t(tp);
@@ -86,7 +84,6 @@ tp_vm * tp_create_vm(void) {
     tp_gc_set_reachable(tp, tp->builtins);
     tp_gc_set_reachable(tp, tp->modules);
     tp_gc_set_reachable(tp, tp->object_class);
-    tp_gc_set_reachable(tp, tp->_params);
 
     tp_gc_set_reachable(tp, tp->list_class);
     tp_gc_set_reachable(tp, tp->dict_class);
