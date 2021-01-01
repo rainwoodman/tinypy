@@ -10,7 +10,6 @@ tp_obj tp_frame_t(TP) {
 
 void tpd_frame_reset(TP, tpd_frame * f, tp_obj params, tp_obj globals, tp_obj code, tp_obj * ret_dest)
 {
-    tpd_frame * bf = tp->frames[tp->cur].frame.info;
     f->globals = globals;
     f->code = code;
     f->cur = (tpd_code*) tp_string_getptr(f->code);
@@ -19,10 +18,22 @@ void tpd_frame_reset(TP, tpd_frame * f, tp_obj params, tp_obj globals, tp_obj co
     f->regs[1] = f->code;
     f->ret_dest = ret_dest;
     f->lineno = 0;
+    f->args = params;
     f->line = tp_string_atom(tp, "");
     f->name = tp_string_atom(tp, "?");
     f->fname = tp_string_atom(tp, "?");
-    f->cregs = TP_REGS_START + 1;
+    f->cregs = TP_REGS_START;
+}
+
+void tpd_frame_alloc(TP, tpd_frame * f, int cregs) {
+    /*  call convention requires 1 reg for __params__.*/
+    if(cregs < 1) {
+        abort();
+    }
     /* calling convention AX = params. who picks this up? */
-    f->regs[TP_REGS_START] = params;
+    f->regs[TP_REGS_START] = f->args;
+    f->cregs = TP_REGS_START + cregs;
+    if (f->cregs > f->nregs) {
+        tp_raise_printf(, "(tp_step) RuntimeError: register overrun, requesting %d registers, frame has %d.", f->cregs, f->nregs);
+    }
 }

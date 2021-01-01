@@ -193,6 +193,7 @@ typedef struct tpd_frame {
     tp_obj name;
     tp_obj line;
     tp_obj globals;
+    tp_obj args;
     int lineno;
     int cregs;
     int nregs;
