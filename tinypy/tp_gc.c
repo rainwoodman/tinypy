@@ -140,6 +140,7 @@ void tp_delete(TP, tp_obj v) {
         return;
     } else if (type == TP_FRAME) {
         tp_free(tp, v.frame.info);
+        return;
     }
     tp_raise(, tp_string_atom(tp, "(tp_delete) TypeError: ?"));
 }
