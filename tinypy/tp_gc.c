@@ -78,7 +78,7 @@ void tp_follow(TP,tp_obj v) {
     }
     if (type == TP_FRAME) {
         int i;
-        for(i = 0; i < v.frame.info->nregs; i ++) {
+        for(i = 0; i < v.frame.info->cregs; i ++) {
             tp_grey(tp, v.frame.info->regs[i]);
         }
         tp_grey(tp, v.frame.info->line);
