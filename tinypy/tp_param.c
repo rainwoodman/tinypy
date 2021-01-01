@@ -7,8 +7,8 @@
  */
 tp_obj tp_params(TP) {
     tp_obj r;
-    tp->params = tp->_params.list.val->items[tp->cur];
-    r = tp->_params.list.val->items[tp->cur];
+    tp->params = tp->_params.list.val->items[tp->frames->len];
+    r = tp->_params.list.val->items[tp->frames->len];
     r.list.val->len = 0;
     return r;
 }

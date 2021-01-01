@@ -33,7 +33,6 @@ tp_vm * tp_create_vm(void) {
     tp->mem_limit = TP_NO_LIMIT;
     tp->mem_exceeded = 0;
     tp->mem_used = sizeof(tp_vm);
-    tp->cur = 0;
     tp->jmp = 0;
 
     tp_gc_init(tp);
@@ -75,10 +74,14 @@ tp_vm * tp_create_vm(void) {
 
     for (i=0; i<TP_FRAMES; i++) { tp_set(tp, tp->_params, tp_None, tp_list_t(tp)); }
     tp->echo = tp_default_echo;
+
+    tp_obj frames = tp_list_t(tp);
+    tp_gc_set_reachable(tp, frames);
     for (i=0; i<TP_FRAMES; i++) {
-        tp->frames[i] = tp_frame_t(tp);
-        tp_gc_set_reachable(tp, tp->frames[i]);
+        tp_set(tp, frames, tp_None, tp_None);
     }
+    tp->frames = frames.list.val;
+    tp->frames->len = 0;
 
     tp_gc_set_reachable(tp, tp->builtins);
     tp_gc_set_reachable(tp, tp->modules);
@@ -95,8 +98,7 @@ tp_vm * tp_create_vm(void) {
 }
 
 void tp_enter_frame(TP, tp_obj params, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
-    tp->cur += 1;
-    tpd_frame_reset(tp, tp_get_cur_frame(tp), params, globals, code, ret_dest);
+    tpd_list_appendx(tp, tp->frames, tp_frame_t(tp, params, globals, code, ret_dest));
 }
 
 void _tp_raise(TP, tp_obj e) {
@@ -125,8 +127,8 @@ void tp_format_stack_internal(TP, StringBuilder * sb)
     int i;
     string_builder_write(sb, "\n", -1);
 
-    for (i=0; i<=tp->cur; i++) {
-        tpd_frame * f = tp->frames[i].frame.info;
+    for (i=0; i< tp->frames->len; i++) {
+        tpd_frame * f = tp_get_frame(tp, i);
         if (!f->lineno) { continue; }
         string_builder_write(sb, "File \"", -1);
         string_builder_echo(sb, f->fname);
@@ -158,13 +160,13 @@ void tp_print_exc(TP) {
 
 void tp_handle(TP) {
     int i;
-    for (i=tp->cur; i>=0; i--) {
-        tpd_frame * f = tp->frames[i].frame.info;
+    for (i=tp->frames->len - 1; i>=0; i--) {
+        tpd_frame * f = tp_get_frame(tp, i);
         if (f->jmp) { break; }
     }
     if (i >= 0) {
-        tpd_frame * f = tp->frames[i].frame.info;
-        tp->cur = i;
+        tpd_frame * f = tp_get_frame(tp, i);
+        tp->frames->len = i + 1;
         f->cur = f->jmp;
         f->jmp = 0;
         return;
@@ -187,7 +189,7 @@ void tp_continue_frame(TP, int cur) {
         tp_handle(tp);
     }
     /* keep runing till the frame drops back (aka function returns) */
-    while (tp->cur >= cur) {
+    while (tp->frames->len - 1 >= cur) {
         if (tp_step(tp) == -1) break;
     }
 
@@ -197,7 +199,7 @@ void tp_continue_frame(TP, int cur) {
 
 /* run the current frame till it returns */
 void tp_run_frame(TP) {
-    tp_continue_frame(tp, tp->cur);
+    tp_continue_frame(tp, tp->frames->len - 1);
 }
 
 void tp_return(TP, tp_obj v) {
@@ -206,7 +208,7 @@ void tp_return(TP, tp_obj v) {
     if (dest) { *dest = v; tp_grey(tp,v); }
     memset(f->regs,0,(f->cregs)*sizeof(tp_obj));
     tp_stack_free(tp, f->cregs);
-    tp->cur -= 1;
+    tp->frames->len -= 1;
 }
 
 #include "tinypy/tp_opcodes.h"
@@ -234,7 +236,7 @@ int tp_step(TP) {
     tpd_code e = *cur;
     tpd_code *base = (tpd_code*)f->code.string.info->s;
     /* FIXME: convert this to a flag */
-//     fprintf(stdout,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
+//     fprintf(stdout,"%2d.%4d: %-6s %3d %3d %3d\n",tp->frames->len - 1, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
 //       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(f->regs[i])); }
    
 //    tp_obj tpy_print(TP);
@@ -356,7 +358,7 @@ int tp_step(TP) {
         }
         case TP_IREGS: /* allocate regs for the frame. must be in the preamble of the function body. */
         {
-            tpd_frame_alloc(tp, tp_get_cur_frame(tp), 
+            tpd_frame_alloc(tp, tp_get_cur_frame(tp),
                 tp_stack_alloc(tp, VA), VA);
             break;
         }

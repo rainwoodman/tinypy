@@ -216,8 +216,7 @@ typedef struct tpd_frame {
  * builtins - A dictionary containing all builtin objects.
  * modules - A dictionary with all loaded modules.
  * params - A list of parameters for the current function call.
- * frames - A list of all call frames.
- * cur - The index of the currently executing call frame.
+ * frames - A list of all call frames. list frame is the current frame.
  * frames[n].globals - A dictionary of global sybmols in callframe n.
  */
 typedef struct tp_vm {
@@ -234,8 +233,7 @@ typedef struct tp_vm {
     tpd_list * stack;
 
     /* call */
-    int cur;
-    tp_obj frames[TP_FRAMES];
+    tpd_list * frames;
     tp_obj _params;
     tp_obj params;
     tp_obj *last_result;
