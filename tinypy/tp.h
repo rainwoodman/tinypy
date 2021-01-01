@@ -187,7 +187,7 @@ typedef struct tpd_frame {
     tp_obj code;
     tpd_code *cur;
     tpd_code *jmp;
-    tp_obj *regs;
+    tp_obj *regs;  /* regs is allocated after an IREG byte-code.*/
     tp_obj *ret_dest;
     tp_obj fname;
     tp_obj name;
@@ -196,12 +196,12 @@ typedef struct tpd_frame {
     tp_obj args;
     int lineno;
     int cregs;
-    int nregs;
 } tpd_frame;
 
 #define TP_FRAMES 256
 #define TP_REGS_START 5
 #define TP_REGS_PER_FRAME 256
+#define TP_STACK_MAX 4096
 
 /* Type: tp_vm
  * Representation of a tinypy virtual machine instance.
@@ -232,12 +232,14 @@ typedef struct tp_vm {
     tp_obj dict_class;
     tp_obj string_class;
 
+    /* stack */
+    tpd_list * stack;
+
     /* call */
     int cur;
     tp_obj frames[TP_FRAMES];
     tp_obj _params;
     tp_obj params;
-    tp_obj _regs;
     tp_obj *last_result;
 
     /* exception */
@@ -246,7 +248,6 @@ typedef struct tp_vm {
     jmp_buf nextexpr;
 #endif
     int jmp;
-    tp_obj _exc;
     tp_obj * exc;
     tp_obj * exc_stack;
 

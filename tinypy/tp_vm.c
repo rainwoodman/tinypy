@@ -4,6 +4,22 @@ void tp_default_echo(const char* string, int length) {
     fwrite(string, 1, length, stdout);
 }
 
+tp_obj * tp_stack_alloc(TP, int n) {
+    tp_obj * r = &tp->stack->items[tp->stack->len];
+    tp->stack->len += n;
+    if(tp->stack->len > TP_STACK_MAX) {
+        tp_raise(NULL, tp_string_atom(tp, "(tp_stack_alloc) out of stack space"));
+    }
+    return r;
+}
+
+void tp_stack_free(TP, int n) {
+    tp->stack->len -= n;
+    if(tp->stack->len < 0) {
+        tp_raise(, tp_string_atom(tp, "(tp_stack_alloc) extra stack free"));
+    }
+}
+
 /* File: VM
  * Functionality pertaining to the virtual machine.
  */
@@ -24,19 +40,25 @@ tp_vm * tp_create_vm(void) {
 
     /* gc initialized, can use tpy_ functions. */
 
-    tp->_chars = tp_list_t(tp);
+    tp_obj chars = tp_list_t(tp);
     for (i=0; i<256; i++) {
         tp->chars[i] = tp_string_t(tp, 1);
         *tp_string_getptr(tp->chars[i]) = i;
-        tp_set(tp, tp->_chars, tp_None, tp->chars[i]);
+        tp_set(tp, chars, tp_None, tp->chars[i]);
     }
+    tp_gc_set_reachable(tp, chars);
 
-    tp->_regs = tp_list_t(tp);
-    for (i=0; i < 3; i++) { tp_set(tp, tp->_regs, tp_None, tp_None); }
+    tp_obj stack = tp_list_t(tp);
+    for (i=0; i < TP_STACK_MAX; i++) { 
+        tp_set(tp, stack, tp_None, tp_None);
+    }
+    tp->stack = stack.list.val;
+    tp->stack->len = 0;
+    tp_gc_set_reachable(tp, stack);
 
-    tp->last_result = tp->_regs.list.val->items + 0;
-    tp->exc = tp->_regs.list.val->items + 1;
-    tp->exc_stack = tp->_regs.list.val->items + 2;
+    tp->last_result = tp_stack_alloc(tp, 1);
+    tp->exc = tp_stack_alloc(tp, 1);
+    tp->exc_stack = tp_stack_alloc(tp, 1);
 
     tp_obj object_class = tp_object(tp);
     object_class.type.magic = TP_DICT_CLASS;
@@ -58,11 +80,9 @@ tp_vm * tp_create_vm(void) {
         tp_gc_set_reachable(tp, tp->frames[i]);
     }
 
-    tp_gc_set_reachable(tp, tp->_chars);
     tp_gc_set_reachable(tp, tp->builtins);
     tp_gc_set_reachable(tp, tp->modules);
     tp_gc_set_reachable(tp, tp->object_class);
-    tp_gc_set_reachable(tp, tp->_regs);
     tp_gc_set_reachable(tp, tp->_params);
 
     tp_gc_set_reachable(tp, tp->list_class);
@@ -184,9 +204,8 @@ void tp_return(TP, tp_obj v) {
     tpd_frame * f = tp_get_cur_frame(tp);
     tp_obj *dest = f->ret_dest;
     if (dest) { *dest = v; tp_grey(tp,v); }
-/*     memset(f->regs,0,TP_REGS_PER_FRAME*sizeof(tp_obj));
-       fprintf(stderr,"regs:%d\n",(f->.cregs+1));*/
     memset(f->regs,0,(f->cregs)*sizeof(tp_obj));
+    tp_stack_free(tp, f->cregs);
     tp->cur -= 1;
 }
 
@@ -195,9 +214,9 @@ void tp_return(TP, tp_obj v) {
 #define VA ((int)e.regs.a)
 #define VB ((int)e.regs.b)
 #define VC ((int)e.regs.c)
-#define RA regs[e.regs.a]
-#define RB regs[e.regs.b]
-#define RC regs[e.regs.c]
+#define RA f->regs[e.regs.a]
+#define RB f->regs[e.regs.b]
+#define RC f->regs[e.regs.c]
 #define UVBC (unsigned short)(((VB<<8)+VC))
 #define SVBC (short)(((VB<<8)+VC))
 #define GA tp_grey(tp,RA)
@@ -206,7 +225,6 @@ void tp_return(TP, tp_obj v) {
 
 int tp_step(TP) {
     tpd_frame *f = tp_get_cur_frame(tp);
-    tp_obj *regs = &f->regs[TP_REGS_START];
     tpd_code *cur = f->cur;
     while(1) {
     #ifdef TP_SANDBOX
@@ -216,8 +234,8 @@ int tp_step(TP) {
     tpd_code e = *cur;
     tpd_code *base = (tpd_code*)f->code.string.info->s;
     /* FIXME: convert this to a flag */
-    // fprintf(stdout,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
-//       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(regs[i])); }
+//     fprintf(stdout,"%2d.%4d: %-6s %3d %3d %3d\n",tp->cur, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
+//       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(f->regs[i])); }
    
 //    tp_obj tpy_print(TP);
     switch (e.i) {
@@ -337,8 +355,11 @@ int tp_step(TP) {
             break;
         }
         case TP_IREGS: /* allocate regs for the frame. must be in the preamble of the function body. */
-            tpd_frame_alloc(tp, tp_get_cur_frame(tp), VA);
+        {
+            tpd_frame_alloc(tp, tp_get_cur_frame(tp), 
+                tp_stack_alloc(tp, VA), VA);
             break;
+        }
         default:
             tp_raise(0,tp_string_atom(tp, "(tp_step) RuntimeError: invalid instruction"));
             break;
