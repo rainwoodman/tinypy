@@ -10,9 +10,9 @@ tp_obj tp_frame_t(TP, tp_obj params, tp_obj globals, tp_obj code, tp_obj * ret_d
     f->ret_dest = ret_dest;
     f->lineno = 0;
     f->args = params;
-    f->line = tp_string_atom(tp, "");
-    f->name = tp_string_atom(tp, "?");
-    f->fname = tp_string_atom(tp, "?");
+    f->line = tp->chars['?'];
+    f->name = tp->chars['?'];
+    f->fname = tp->chars['?'];
     f->cregs = 0;
     return tp_track(tp, r);
 }
