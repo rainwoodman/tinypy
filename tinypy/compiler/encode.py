@@ -72,13 +72,13 @@ def _do_string(v,r=None):
 def do_string(t,r=None):
     return _do_string(t.val,r)
 
-def _do_number(v,r=None):
+def _do_number(i,r=None):
     r = get_tmp(r)
     code(NUMBER,r,0,0)
-    write(fpack(number(v.encode())))
+    write(fpack(i))
     return r
 def do_number(t,r=None):
-    return _do_number(t.val,r)
+    return _do_number(number(t.val.encode()),r)
 
 def get_tag():
     k = str(D._tagi)
@@ -264,9 +264,9 @@ def do_symbol(t,r=None):
     }
     if t.val == 'None': return _do_none(r)
     if t.val == 'True':
-        return _do_number('1',r)
+        return _do_number(1,r)
     if t.val == 'False':
-        return _do_number('0',r)
+        return _do_number(0,r)
     items = t.items
 
     if t.val in ['and','or']:
@@ -590,7 +590,7 @@ def do_for(tok):
 
     reg = get_tmp()
     itr = do(items[1])
-    i = _do_number('0')
+    i = _do_number(0)
 
     t = stack_tag(); tag(t,'loop'); tag(t,'continue')
     code(ITER,reg,itr,i); jump(t,'end')
