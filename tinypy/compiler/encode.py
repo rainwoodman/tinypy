@@ -351,10 +351,10 @@ def p_filter(items):
     """ split items to p, n, l, d.
 
     for example: (1, a=1, *args, **kwargs)
-        p: [1]
-        n: [a=1]
-        l: args
-        d: kwargs
+        p: [1]  (positional)
+        n: [a=1] (named)
+        l: args   (positional, by list)
+        d: kwargs  (named, by dict)
     """
     p,n,l,d = [],[],None,None
     for t in items:
@@ -386,8 +386,8 @@ def do_from(t):
     items = t.items[1]
     mod.type = 'string'
 
-    if items.type == 'args':
-        # it really shouldn't be args -- need to fix the parser.
+    if items.type == 'largs':
+        # it really shouldn't be largs -- need to fix the parser.
         if items.val == '*':
             items.type = 'string'
     elif items.type == 'name':
