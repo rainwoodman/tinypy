@@ -319,7 +319,7 @@ int tp_step(TP) {
         case TP_IDICT: RA = tp_dict_from_items(tp, VC/2, &RB); break;
         case TP_ICLASS: RA = tp_class(tp); break;
         case TP_ILIST: RA = tp_list_from_items(tp, VC, &RB); break;
-        case TP_IPARAMS: RA = tp_params_n(tp,VC,&RB); break;
+        case TP_ILPARAMS: RA = tp_params_n(tp,VC,&RB); break;
         case TP_ILEN: RA = tp_len(tp,RB); break;
         case TP_IJUMP: cur += SVBC; continue; break;
         case TP_ISETJMP: f->jmp = SVBC?cur+SVBC:0; break;
