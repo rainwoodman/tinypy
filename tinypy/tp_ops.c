@@ -155,7 +155,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
         }
         /* getter? */
         TP_META_BEGIN(self, __get__);
-            return tp_call(tp, __get__, tp_params_v(tp,1,k));
+            return tp_call(tp, __get__, tp_list_v(tp,1,k));
         TP_META_END;
 
         tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %O", &k);
@@ -260,7 +260,7 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
     if (type == TP_DICT) {
         TP_META_BEGIN(self, __set__);
             /* unhandled case returns true, and uses the default. */
-            if(tp_true(tp, tp_call(tp,__set__,tp_params_v(tp,2,k,v)))) {
+            if(tp_true(tp, tp_call(tp, __set__, tp_list_v(tp,2,k,v)))) {
                 tp_dict_set(tp, self, k, v);
             }
             return;
@@ -370,7 +370,7 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
             break;
         case TP_STRING:
             TP_META_BEGIN(a, format);
-            return tp_call(tp, format, tp_params_v(tp, 1, b));
+            return tp_call(tp, format, tp_list_v(tp, 1, b));
             TP_META_END;
     }
     tp_raise(tp_None, tp_string_atom(tp, "(tp_mod) TypeError: ?"));

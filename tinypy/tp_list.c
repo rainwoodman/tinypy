@@ -17,6 +17,18 @@ tp_obj tp_list_from_items(TP, int n, tp_obj *argv) {
     }
     return r;
 }
+
+tp_obj tp_list_v(TP,int n,...) {
+    int i;
+    tp_obj r = tp_list_t(tp);
+    va_list a; va_start(a,n);
+    for (i=0; i<n; i++) {
+        tpd_list_append(tp, r.list.val, va_arg(a, tp_obj));
+    }
+    va_end(a);
+    return r;
+}
+
 /* C API for lists */
 tp_obj tp_list_copy(TP, tp_obj rr) {
     tp_check_type(tp, TP_LIST, rr);
