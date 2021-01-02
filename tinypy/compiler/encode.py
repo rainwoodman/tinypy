@@ -441,7 +441,7 @@ def do_call(t,r=None):
     # FIXME: for CPython compat we shall change the convention
     # to always set the two last PARAMS to * and **,
     # then on the caller side unpack the args.
-    manage_seq(PARAMS,r,p)
+    manage_seq(LPARAMS,r,p)
     if l != None:
         t2 = do(l.items[0])
         code(ADD,r,r,t2)
