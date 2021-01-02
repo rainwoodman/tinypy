@@ -373,14 +373,14 @@ def prefix_neg(t):
         return r
     t.items = [Token(t.pos,'number','0'),r]
     return t
-def vargs_nud(t):
+def largs_nud(t):
     r = prefix_nud(t)
-    t.type = 'args'
+    t.type = 'largs'
     t.val = '*'
     return t
-def nargs_nud(t):
+def dargs_nud(t):
     r = prefix_nud(t)
-    t.type = 'nargs'
+    t.type = 'dargs'
     t.val = '**'
     return t
 
@@ -393,9 +393,9 @@ base_dmap = {
     'not':{'lbp':35,'nud':prefix_nud,'bp':35,
         'bp':35,'led':infix_not },
     '%':{'lbp':60,'bp':60,'led':infix_led},
-    '*':{'lbp':60,'nud':vargs_nud,
+    '*':{'lbp':60,'nud':largs_nud,
         'bp':60,'led':infix_led,},
-    '**': {'lbp':65,'nud':nargs_nud,
+    '**': {'lbp':65,'nud':dargs_nud,
         'bp':65,'led':infix_led,},
     '/':{'lbp':60,'bp':60,'led':infix_led},
     '(':{'lbp':70,'nud':paren_nud,

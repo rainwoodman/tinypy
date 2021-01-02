@@ -348,13 +348,21 @@ def manage_seq(i,a,items,sav=0):
     return tmps[0]
 
 def p_filter(items):
-    a,b,c,d = [],[],None,None
+    """ split items to p, n, l, d.
+
+    for example: (1, a=1, *args, **kwargs)
+        p: [1]
+        n: [a=1]
+        l: args
+        d: kwargs
+    """
+    p,n,l,d = [],[],None,None
     for t in items:
-        if t.type == 'symbol' and t.val == '=': b.append(t)
-        elif t.type == 'args': c = t
-        elif t.type == 'nargs': d = t
-        else: a.append(t)
-    return a,b,c,d
+        if t.type == 'symbol' and t.val == '=': n.append(t)
+        elif t.type == 'largs': l = t
+        elif t.type == 'dargs': d = t
+        else: p.append(t)
+    return p,n,l,d
 
 def do_import(t):
     if len(t.items) == 1:
@@ -417,13 +425,13 @@ def do_call(t,r=None):
     r = get_tmp(r)
     items = t.items
     fnc = do(items[0])
-    a,b,c,d = p_filter(t.items[1:])
+    p,n,l,d = p_filter(t.items[1:])
     e = None
-    if len(b) != 0 or d != None:
+    if len(n) != 0 or d != None:
         e = do(Token(t.pos,'dict',None,[])); un_tmp(e);
-        for p in b:
-            p.items[0].type = 'string'
-            t1,t2 = do(p.items[0]),do(p.items[1])
+        for i in n:
+            i.items[0].type = 'string'
+            t1,t2 = do(i.items[0]),do(i.items[1])
             code(SET,e,t1,t2)
             free_tmp(t1); free_tmp(t2) #REG
         if d: 
@@ -433,9 +441,9 @@ def do_call(t,r=None):
     # FIXME: for CPython compat we shall change the convention
     # to always set the two last PARAMS to * and **,
     # then on the caller side unpack the args.
-    manage_seq(PARAMS,r,a)
-    if c != None:
-        t2 = do(c.items[0])
+    manage_seq(PARAMS,r,p)
+    if l != None:
+        t2 = do(l.items[0])
         code(ADD,r,r,t2)
         free_tmp(t1); free_tmp(t2) #REG
     if e != None:
@@ -475,20 +483,20 @@ def do_def(tok):
     setpos(tok.pos)
     r = do_local(Token(tok.pos,'name','__params__'))  # assigns regs[0] to __params__.
     do_info(items[0].val)
-    a,b,c,d = p_filter(items[1].items)
-    for p in a:
-        v = do_local(p)
+    p,n,l,d = p_filter(items[1].items)
+    for i in p:
+        v = do_local(i)
         tmp = _do_none()
         code(GET,v,r,tmp)
         free_tmp(tmp) #REG
-    for p in b:
-        v = do_local(p.items[0])
-        do(p.items[1],v)
+    for i in n:
+        v = do_local(i.items[0])
+        do(i.items[1],v)
         tmp = _do_none()
         code(IGET,v,r,tmp)
         free_tmp(tmp) #REG
-    if c != None:
-        v = do_local(c.items[0])
+    if l != None:
+        v = do_local(l.items[0])
         tmp = _do_string('*')
         code(GET,v,r,tmp)
         free_tmp(tmp) #REG
