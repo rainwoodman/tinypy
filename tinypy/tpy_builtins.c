@@ -46,7 +46,7 @@ tp_obj tpy_len(TP) {
 tp_obj tpy_range(TP) {
     int a,b,c,i;
     tp_obj r = tp_list_t(tp);
-    switch (tp->lparams->list.val->len) {
+    switch (TP_NPARAMS()) {
         case 1: a = 0; b = TP_NUM(); c = 1; break;
         case 2:
         case 3: a = TP_NUM(); b = TP_NUM(); c = TP_DEFAULT(tp_number(1)).number.val; break;
@@ -345,7 +345,7 @@ tp_obj tpy_module(TP) {
 
 tp_obj tpy_dict(TP) {
     tp_obj r;
-    if(tp->lparams->list.val->len == 0) {
+    if(TP_NPARAMS() == 0) {
         r = tp_dict_t(tp);
     } else {
         r = tp_dict_copy(tp, TP_TYPE(TP_DICT));

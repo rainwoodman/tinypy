@@ -358,11 +358,12 @@ tp_obj tp_check_type(TP, int t, tp_obj v) {
  * function scope.
  * */
 #define TP_NO_LIMIT 0
+#define TP_NPARAMS() (tp->lparams->list.val->len)
 #define TP_OBJ() (tp_get(tp, *tp->lparams, tp_None))
 #define TP_TYPE(t) tp_check_type(tp, t, TP_OBJ())
 #define TP_NUM() (TP_TYPE(TP_NUMBER).number.val)
 #define TP_STR() (TP_TYPE(TP_STRING))
-#define TP_DEFAULT(d) (tp->lparams->list.val->len?tp_get(tp, *tp->lparams, tp_None):(d))
+#define TP_DEFAULT(d) (tp->lparams->list.val->len?TP_OBJ():(d))
 
 /* Macro: TP_LOOP
  * Macro to iterate over all remaining arguments.
