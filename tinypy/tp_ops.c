@@ -155,7 +155,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
         }
         /* getter? */
         TP_META_BEGIN(self, __get__);
-            return tp_call(tp, __get__, tp_list_v(tp,1,k));
+            return tp_call(tp, __get__, tp_list_v(tp,1,k), tp_None);
         TP_META_END;
 
         tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %O", &k);
@@ -260,7 +260,7 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
     if (type == TP_DICT) {
         TP_META_BEGIN(self, __set__);
             /* unhandled case returns true, and uses the default. */
-            if(tp_true(tp, tp_call(tp, __set__, tp_list_v(tp,2,k,v)))) {
+            if(tp_true(tp, tp_call(tp, __set__, tp_list_v(tp,2,k,v), tp_None))) {
                 tp_dict_set(tp, self, k, v);
             }
             return;
@@ -370,7 +370,7 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
             break;
         case TP_STRING:
             TP_META_BEGIN(a, format);
-            return tp_call(tp, format, tp_list_v(tp, 1, b));
+            return tp_call(tp, format, tp_list_v(tp, 1, b), tp_None);
             TP_META_END;
     }
     tp_raise(tp_None, tp_string_atom(tp, "(tp_mod) TypeError: ?"));
@@ -418,28 +418,32 @@ tp_obj tp_bitwise_not(TP, tp_obj a) {
  * This will look for a global function named "foo", then call it with a single
  * positional parameter containing the string "hello".
  */
-tp_obj tp_call(TP, tp_obj self, tp_obj params) {
+tp_obj tp_call(TP, tp_obj self, tp_obj lparams, tp_obj dparams) {
     if (self.type.typeid == TP_DICT) {
         if (self.type.magic == TP_DICT_CLASS) {
             TP_META_BEGIN_CLASS(self, __new__)
-                tpd_list_insert(tp, params.list.val, 0, self);
-                return tp_call(tp, __new__, params);
+                tpd_list_insert(tp, lparams.list.val, 0, self);
+                return tp_call(tp, __new__, lparams, dparams);
             TP_META_END_CLASS;
         } else if (self.type.magic == TP_DICT_OBJECT) {
             TP_META_BEGIN(self, __call__);
-                return tp_call(tp, __call__, params);
+                return tp_call(tp, __call__, lparams, dparams);
             TP_META_END;
         }
     }
 
     if (self.type.typeid == TP_FUNC) {
         if (self.type.mask & TP_FUNC_MASK_METHOD) {
+            if (lparams.type.typeid == TP_NONE) {
+                lparams = tp_list_t(tp);
+            }
             /* method, add instance */
-            tpd_list_insert(tp, params.list.val, 0, self.func.info->instance);
+            tpd_list_insert(tp, lparams.list.val, 0, self.func.info->instance);
         }
         if(self.func.cfnc != NULL) {
-            /* C func, set tp->params for the CAPI calling convention. */
-            *tp->lparams = params;
+            /* C func, set tp->lparams for the CAPI calling convention. */
+            *tp->lparams = lparams;
+            *tp->dparams = dparams;
 
             tp_obj (* cfunc)(tp_vm *);
             cfunc = self.func.cfnc;
@@ -449,7 +453,7 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
         } else {
             /* compiled Python function */
             tp_obj dest = tp_None;
-            tp_enter_frame(tp, params, self.func.info->globals,
+            tp_enter_frame(tp, lparams, self.func.info->globals,
                                self.func.info->code,
                               &dest);
             tp_run_frame(tp);

@@ -235,7 +235,7 @@ typedef struct tp_vm {
     /* call */
     tpd_list * frames;
     tp_obj * lparams;
-    tp_obj * kparams;
+    tp_obj * dparams;
     tp_obj * last_result;
 
     /* exception */

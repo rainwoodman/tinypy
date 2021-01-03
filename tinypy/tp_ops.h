@@ -6,7 +6,7 @@ tp_obj tp_mget(TP, tp_obj, tp_obj);
 tp_obj tp_get(TP, tp_obj, tp_obj);
 tp_obj tp_has(TP, tp_obj self, tp_obj k);
 tp_obj tp_len(TP, tp_obj);
-tp_obj tp_call(TP, tp_obj func, tp_obj params);
+tp_obj tp_call(TP, tp_obj func, tp_obj lparams, tp_obj dparams);
 tp_obj tp_iter(TP, tp_obj self, tp_obj k);
 
 void   tp_del(TP, tp_obj, tp_obj);
