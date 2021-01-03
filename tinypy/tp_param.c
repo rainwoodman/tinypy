@@ -9,8 +9,8 @@
  * tpy functions or tp_exec (which may eventually call other tpy functions).
  */
 tp_obj tp_params(TP) {
-    *tp->params = tp_list_t(tp);
-    return *tp->params;
+    *tp->lparams = tp_list_t(tp);
+    return *tp->lparams;
 }
 
 /* Function: tp_params_n
