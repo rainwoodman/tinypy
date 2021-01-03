@@ -130,7 +130,12 @@ static void tp_slice_get_indices(TP, tp_obj slice, tp_obj obj, int * start, int 
     if (tmp.type.typeid == TP_NUMBER) { b = tmp.number.val; }
     else if(tmp.type.typeid == TP_NONE) { b = l; }
     else { tp_raise_printf(, "(tp_get) TypeError: indices must be numbers"); }
-    a = _tp_max(0,(a<0?l+a:a)); b = _tp_min(l,(b<0?l+b:b));
+
+    a = a<0?l+a:a;
+    a = a>l?l:a;
+
+    b = b<0?l+b:b;
+    b = b>l?l:b;
     *start = a;
     *stop = b;
 }
@@ -182,6 +187,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
         } else if (k.type.typeid == TP_LIST) {
             int a, b;
             tp_slice_get_indices(tp, k, self, &a, &b);
+            /* FIXME: Unlike CPython, I think indexing shall return a view like numpy. */
             return tp_list_from_items(tp,b-a,&self.list.val->items[a]);
         } else if (k.type.typeid == TP_NONE) {
             return tpd_list_pop(tp, self.list.val, 0, "tp_get");
@@ -229,11 +235,9 @@ tp_obj tp_copy(TP, tp_obj self) {
 }
 
 /* Function: tp_iget
- * Failsafe attribute lookup.
  *
- * This is like <tp_get>, except it will return false if the attribute lookup
- * failed. Otherwise, it will return true, and the object will be returned
- * over the reference parameter r.
+ * This is used in argument resolution. Therefore we only support
+ * list and dict.
  */
 int tp_iget(TP, tp_obj *r, tp_obj self, tp_obj k) {
     /* Getting item from None always fails.
@@ -250,9 +254,20 @@ int tp_iget(TP, tp_obj *r, tp_obj self, tp_obj k) {
         tp_grey(tp,*r);
         return 1;
     }
-    if (self.type.typeid == TP_LIST && !self.list.val->len) { return 0; }
-    *r = tp_get(tp,self,k); tp_grey(tp,*r);
-    return 1;
+    if (self.type.typeid == TP_LIST) {
+        if (k.type.typeid == TP_NUMBER) {
+            int l = self.list.val->len;
+            int n = k.number.val;
+            if(n >=0 && n < l) {
+                *r = tpd_list_get(tp, self.list.val, n, "tp_iget");
+                tp_grey(tp, *r);
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+    }
+    tp_raise(1, tp_string_atom(tp, "(tp_iget) TypeError: object type not supported"));
 }
 
 /* Function: tp_set

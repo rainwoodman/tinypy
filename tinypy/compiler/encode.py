@@ -490,29 +490,39 @@ def do_def(tok):
     dparams = do_local(Token(tok.pos, 'name', '__dparams__'))  # assigns regs[1] to __dparams__.
     do_info(items[0].val)
     p,n,l,d = p_filter(items[1].items)
+    ind = 0
     for i in p:
         v = do_local(i)
         tmp = do_string(i)
         code(IGET, v, dparams, tmp)
         free_tmp(tmp) #REG
-        tmp = _do_none()
+        tmp = _do_number(ind)
         code(IGET, v, lparams, tmp)
         free_tmp(tmp) #REG
+        ind = ind + 1
     for i in n:
         v = do_local(i.items[0])
         do(i.items[1], v)
-        tmp = _do_none()
+        tmp = _do_number(ind)
         code(IGET, v, lparams, tmp)
         free_tmp(tmp) #REG
         tmp = do_string(i.items[0])
         code(IGET, v, dparams, tmp)
         free_tmp(tmp) #REG
+        ind = ind + 1
     if l != None:
+        # args = __lparams__[ind:None]
         v = do_local(l.items[0])
-        tmp = _do_string('*')
+        tmp, tmp1, tmp2 = get_tmps(3)
+        _do_number(ind, tmp1)
+        _do_none(tmp2)
+        code(LIST, tmp, tmp1, 2)
         code(GET, v, lparams, tmp)
+        free_tmp(tmp2) #REG
+        free_tmp(tmp1) #REG
         free_tmp(tmp) #REG
     if d != None:
+        # kwargs = __dparams__
         e = do_local(d.items[0])
         code(MOVE, e, dparams)
     free_tmp(do(items[2])) #REG
