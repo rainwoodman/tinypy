@@ -266,6 +266,14 @@ int tp_iget(TP, tp_obj *r, tp_obj self, tp_obj k) {
                 return 0;
             }
         }
+        if (k.type.typeid == TP_NONE) {
+            if(self.list.val->len > 0) {
+                *r = tpd_list_pop(tp, self.list.val, 0, "tp_get");
+                tp_grey(tp, *r);
+                return 1;
+            }
+            return 0;
+        }
     }
     tp_raise(1, tp_string_atom(tp, "(tp_iget) TypeError: object type not supported"));
 }
