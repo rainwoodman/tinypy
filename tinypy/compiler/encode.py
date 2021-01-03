@@ -508,9 +508,8 @@ def do_def(tok):
 
     free_tmp(rf)
 
-def do_class(t):
-    tok = t
-    items = t.items
+def do_class(tok):
+    items = tok.items
     parent = None
     if items[0].type == 'name':
         name = items[0].val
@@ -532,12 +531,15 @@ def do_class(t):
         parent])))
     free_reg(kls) #REG
 
-    # We really only want to run the class block and then merge the local scope with
-    # the kls.
-    # FIXME: This is not ideal; we shall cleanup begin / end to make this better.
+    # define a function for the class body, and call it.
+    t = get_tag()
+    rf = fnc(t,'end')
+
     D.begin()
+    setpos(tok.pos)
     # Run the class body.
     free_tmp(do(items[1])) #REG
+    # merge the local variables to the class:
 
     # we must refetch the kls object, because after begin() the kls reg is
     # invalidated.
@@ -551,10 +553,14 @@ def do_class(t):
         code(SET,kls, ts, get_reg(val))
         free_tmp(ts) #REG
     free_reg(kls)
-    # As class block is run immediately (unlike function), we shall not create tags or
-    # end the frame.
-    D.end(False)    # eof = False
+    D.end()
 
+    tag(t,'end')
+
+    tmp = _do_none()
+    code(CALL, tmp, rf, tmp)
+    free_tmp(rf)
+    free_tmp(tmp)
 
 def do_while(t):
     items = t.items

@@ -34,7 +34,7 @@ void tp_grey(TP, tp_obj v) {
     if (v.type.typeid == TP_DATA) {
         v.gc.gci->black = 1;
         #if TP_GC_TRACE
-        printf("adding to black, %p\n", v.gc.gci);
+        printf("[%04d] adding to black, %p\n", tp->steps, v.gc.gci);
         #endif
         tpd_list_appendx(tp, tp->black, v);
         return;
@@ -42,21 +42,21 @@ void tp_grey(TP, tp_obj v) {
     if (v.type.typeid == TP_STRING && v.type.magic != TP_STRING_VIEW) {
         v.gc.gci->black = 1;
         #if TP_GC_TRACE
-        printf("adding to black, %p\n", v.gc.gci);
+        printf("[%04d] adding to black, %p\n", tp->steps, v.gc.gci);
         #endif
         tpd_list_appendx(tp, tp->black, v);
         return;
     }
 
     #if TP_GC_TRACE
-    printf("adding to grey, %p\n", v.gc.gci);
+    printf("[%04d] adding to grey, %p\n", tp->steps, v.gc.gci);
     #endif
     tpd_list_appendx(tp, tp->grey, v);
 }
 
 static void tp_grey_trace(TP, tp_obj p, tp_obj v, char * tag) {
     #if TP_GC_TRACE
-    printf("follow %p (%d) %s -> %p (%d)\n", p.gc.gci, p.type.typeid, tag, v.gc.gci, v.type.typeid);
+    printf("[%04d] follow %p (%d) %s -> %p (%d)\n", tp->steps, p.gc.gci, p.type.typeid, tag, v.gc.gci, v.type.typeid);
     #endif
     tp_grey(tp, v);
 }
@@ -109,7 +109,7 @@ void tp_gc_init(TP) {
     #ifdef TPVM_DEBUG
     tp->gcmax = 0;
     #else
-    tp->gcmax = 8;
+    tp->gcmax = 4096;
     #endif
 }
 
@@ -120,7 +120,7 @@ void tp_gc_set_reachable(TP, tp_obj v) {
 
 void tp_delete(TP, tp_obj v) {
     #if TP_GC_TRACE
-    printf("deleting object %p\n", v.gc.gci);
+    printf("[%04d] deleting object %p\n", tp->steps, v.gc.gci);
     #endif
     int type = v.type.typeid;
     if (type == TP_LIST) {
@@ -177,7 +177,7 @@ void tp_collect(TP) {
             abort();
         }
         #if TP_GC_TRACE
-        printf("adding to white, %p\n", v.gc.gci);
+        printf("[%04d] adding to white, %p\n", tp->steps, v.gc.gci);
         #endif
         tpd_list_appendx(tp, tp->white, v);
         v.gc.gci->black = 0;
@@ -198,7 +198,7 @@ void tp_mark(TP, int max) {
         v.gc.gci->black = 1;
         v.gc.gci->grey = 1;
         #if TP_GC_TRACE
-        printf("adding to black, %p\n", v.gc.gci);
+        printf("[%04d] adding to black, %p\n", tp->steps, v.gc.gci);
         #endif
         tpd_list_appendx(tp, tp->black, v);
 
@@ -235,7 +235,7 @@ void tp_gc_run(TP, int full) {
         tp_mark(tp, -1);
     } else {
         /* mark 2 items from the grey list every step */
-        tp_mark(tp, 2);
+        tp_mark(tp, 8);
     }
 
     /* grey list is empty, we can run a collection */

@@ -211,12 +211,13 @@ void tp_return(TP, tp_obj v) {
 
 #include "tinypy/tp_opcodes.h"
 
+#define BOUND(x) (x)<f->cregs?(x):(abort(), 0)
 #define VA ((int)e.regs.a)
 #define VB ((int)e.regs.b)
 #define VC ((int)e.regs.c)
-#define RA f->regs[e.regs.a]
-#define RB f->regs[e.regs.b]
-#define RC f->regs[e.regs.c]
+#define RA f->regs[BOUND(e.regs.a)]
+#define RB f->regs[BOUND(e.regs.b)]
+#define RC f->regs[BOUND(e.regs.c)]
 #define UVBC (unsigned short)(((VB<<8)+VC))
 #define SVBC (short)(((VB<<8)+VC))
 #define GA tp_grey(tp,RA)
@@ -234,11 +235,28 @@ int tp_step(TP) {
     tpd_code e = *cur;
     tpd_code *base = (tpd_code*)f->code.string.info->s;
     /* FIXME: convert this to a flag */
-    // fprintf(stdout,"[%04d] %2d.%4d: %-6s %3d %3d %3d\n",tp->steps, tp->frames->len - 1, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
+//    fprintf(stdout,"[%04d] %2d.%4d: %-6s %3d %3d %3d\n",tp->steps, tp->frames->len - 1, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
 //       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(f->regs[i])); }
    
 //    tp_obj tpy_print(TP);
     switch (e.i) {
+        case TP_ILINE: {
+            #ifdef TP_SANDBOX
+            tp_bounds(tp,cur,VA);
+            #endif
+            ;
+            int a = (*(cur+1)).string.val - tp_string_getptr(f->code);
+            if(tp_string_getptr(f->code)[a] == ';') abort();
+            f->line = tp_string_view(tp, f->code, a, a+VA*4-1);
+            cur += VA; f->lineno = UVBC;
+            }
+            break;
+        case TP_IREGS: /* allocate regs for the frame. must be in the preamble of the function body. */
+        {
+            tpd_frame_alloc(tp, tp_get_cur_frame(tp),
+                tp_stack_alloc(tp, VA), VA);
+            break;
+        }
         case TP_IEOF: *tp->last_result = RA; tp_return(tp,tp_None); SR(0); break;
         case TP_IADD: RA = tp_add(tp,RB,RC); break;
         case TP_ISUB: RA = tp_sub(tp,RB,RC); break;
@@ -336,28 +354,11 @@ int tp_step(TP) {
             tp_assert(tp, RA, RB, RC);
             break;
         case TP_INONE: RA = tp_None; break;
-        case TP_ILINE: {
-            #ifdef TP_SANDBOX
-            tp_bounds(tp,cur,VA);
-            #endif
-            ;
-            int a = (*(cur+1)).string.val - tp_string_getptr(f->code);
-            if(tp_string_getptr(f->code)[a] == ';') abort();
-            f->line = tp_string_view(tp, f->code, a, a+VA*4-1);
-            cur += VA; f->lineno = UVBC;
-            }
-            break;
         case TP_IFILE: f->fname = RA; break;
         case TP_INAME: f->name = RA; break;
         case TP_IVAR: {
             cur += (UVBC/4) + 1;
             /* Watch out: crash if continue. */
-            break;
-        }
-        case TP_IREGS: /* allocate regs for the frame. must be in the preamble of the function body. */
-        {
-            tpd_frame_alloc(tp, tp_get_cur_frame(tp),
-                tp_stack_alloc(tp, VA), VA);
             break;
         }
         default:
