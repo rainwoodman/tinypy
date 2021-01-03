@@ -96,7 +96,8 @@ void tp_follow(TP,tp_obj v) {
         tp_grey_trace(tp, v, v.frame.info->fname, "fname");
         tp_grey_trace(tp, v, v.frame.info->code, "code");
         tp_grey_trace(tp, v, v.frame.info->globals, "globals");
-        tp_grey_trace(tp, v, v.frame.info->args, "args");
+        tp_grey_trace(tp, v, v.frame.info->lparams, "lparams");
+        tp_grey_trace(tp, v, v.frame.info->dparams, "dparams");
     }
 }
 

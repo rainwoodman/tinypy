@@ -422,7 +422,6 @@ def do_del(tt):
         free_tmp(r); free_tmp(r2) #REG
 
 def do_call(t,r=None):
-    r = get_tmp(r)
     items = t.items
     fnc = do(items[0])
     p,n,l,d = p_filter(t.items[1:])
@@ -438,20 +437,29 @@ def do_call(t,r=None):
             f = do(d.items[0])
             un_tmp(f)
             code(MERGE,e,f)
+
+    lparams, dparams = get_tmps(2)
     # FIXME: for CPython compat we shall change the convention
     # to always set the two last PARAMS to * and **,
     # then on the caller side unpack the args.
-    manage_seq(LPARAMS,r,p)
+    manage_seq(LIST, lparams, p)
     if l != None:
         t2 = do(l.items[0])
-        code(ADD,r,r,t2)
+        code(ADD, lparams, lparams, t2)
         free_tmp(t1); free_tmp(t2) #REG
     if e != None:
         t1 = _do_none()
-        code(SET,r,t1,e)
+        code(SET,lparams,t1,e)
         free_tmp(t1) #REG
-    code(CALL,r,fnc,r)
+        code(MOVE, dparams, e)
+    else:
+        _do_none(dparams)
+
+    # CALL consumes two registers starting from lparams
+    r = get_tmp(r)
+    code(CALL, r, fnc, lparams)
     free_tmp(fnc) #REG
+    free_tmps([lparams, dparams]) #REG
     return r
 
 def do_name(t,r=None):
