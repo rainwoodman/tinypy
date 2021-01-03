@@ -344,7 +344,16 @@ tp_obj tpy_module(TP) {
 }
 
 tp_obj tpy_dict(TP) {
-    return tp_dict_copy(tp, TP_TYPE(TP_DICT));
+    tp_obj r;
+    if(tp->lparams->list.val->len == 0) {
+        r = tp_dict_t(tp);
+    } else {
+        r = tp_dict_copy(tp, TP_TYPE(TP_DICT));
+    }
+    if(tp->dparams->type.typeid != TP_NONE) {
+        tp_dict_update(tp, r, *tp->dparams);
+    }
+    return r;
 }
 
 tp_obj tpy_dict_update(TP) {

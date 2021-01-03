@@ -448,15 +448,12 @@ def do_call(t,r=None):
         code(ADD, lparams, lparams, t2)
         free_tmp(t1); free_tmp(t2) #REG
     if e != None:
-        t1 = _do_none()
-        code(SET,lparams,t1,e)
-        free_tmp(t1) #REG
         code(MOVE, dparams, e)
     else:
         _do_none(dparams)
 
-    # CALL consumes two registers starting from lparams
     r = get_tmp(r)
+    # CALL consumes two registers starting from lparams
     code(CALL, r, fnc, lparams)
     free_tmp(fnc) #REG
     free_tmps([lparams, dparams]) #REG
@@ -489,38 +486,39 @@ def do_def(tok):
 
     D.begin()
     setpos(tok.pos)
-    r = do_local(Token(tok.pos,'name','__params__'))  # assigns regs[0] to __params__.
+    lparams = do_local(Token(tok.pos, 'name', '__lparams__'))  # assigns regs[0] to __lparams__.
+    dparams = do_local(Token(tok.pos, 'name', '__dparams__'))  # assigns regs[1] to __dparams__.
     do_info(items[0].val)
     p,n,l,d = p_filter(items[1].items)
     for i in p:
         v = do_local(i)
         tmp = _do_none()
-        code(GET,v,r,tmp)
+        code(GET, v, lparams, tmp)
         free_tmp(tmp) #REG
     for i in n:
         v = do_local(i.items[0])
         do(i.items[1],v)
         tmp = _do_none()
-        code(IGET,v,r,tmp)
+        code(IGET, v, lparams, tmp)
+        free_tmp(tmp) #REG
+        tmp = do_string(i.items[0])
+        code(IGET, v, dparams, tmp)
         free_tmp(tmp) #REG
     if l != None:
         v = do_local(l.items[0])
         tmp = _do_string('*')
-        code(GET,v,r,tmp)
+        code(GET, v, lparams, tmp)
         free_tmp(tmp) #REG
     if d != None:
         e = do_local(d.items[0])
-        code(DICT,e,0,0)
-        tmp = _do_none()
-        code(IGET,e,r,tmp)
-        free_tmp(tmp) #REG
+        code(MOVE, e, dparams)
     free_tmp(do(items[2])) #REG
     D.end()
 
     tag(t,'end')
 
     if D._globals: do_globals(Token(tok.pos,0,0,[items[0]]))
-    r = do_set_ctx(items[0],Token(tok.pos,'reg',rf))
+    free_tmp(do_set_ctx(items[0],Token(tok.pos,'reg',rf)))
 
     free_tmp(rf)
 

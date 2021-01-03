@@ -105,7 +105,7 @@ void _tp_raise(TP, tp_obj e) {
     if (!tp || !tp->jmp) {
 #ifndef CPYTHON_MOD
         tp->echo("\nException:\n", -1); tp_echo(tp,e); tp->echo("\n", -1);
-        abort(); \
+        abort();
         exit(-1);
 #else
         *(tp->exc) = e;
@@ -172,6 +172,7 @@ void tp_handle(TP) {
     }
 #ifndef CPYTHON_MOD
     tp_print_exc(tp);
+    abort();
     exit(-1);
 #else
     longjmp(tp->nextexpr,1);
@@ -236,7 +237,7 @@ int tp_step(TP) {
     tpd_code e = *cur;
     tpd_code *base = (tpd_code*)f->code.string.info->s;
     /* FIXME: convert this to a flag */
-//    fprintf(stdout,"[%04d] %2d.%4d: %-6s %3d %3d %3d\n",tp->steps, tp->frames->len - 1, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
+    // fprintf(stdout,"[%04d] %2d.%4d: %-6s %3d %3d %3d\n",tp->steps, tp->frames->len - 1, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
 //       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(f->regs[i])); }
    
 //    tp_obj tpy_print(TP);
