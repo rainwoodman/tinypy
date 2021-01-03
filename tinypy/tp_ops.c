@@ -235,7 +235,14 @@ tp_obj tp_copy(TP, tp_obj self) {
  * failed. Otherwise, it will return true, and the object will be returned
  * over the reference parameter r.
  */
-int tp_iget(TP,tp_obj *r, tp_obj self, tp_obj k) {
+int tp_iget(TP, tp_obj *r, tp_obj self, tp_obj k) {
+    /* Getting item from None always fails.
+     * This is used by param default value handling.
+     * TODO(rainwoodman): maybe we can avoid this hack.
+     * */
+    if (self.type.typeid == TP_NONE) {
+        return 0;
+    }
     if (self.type.typeid == TP_DICT) {
         int n = tpd_dict_hashfind(tp, self.dict.val, tp_hash(tp, k), k);
         if (n == -1) { return 0; }
