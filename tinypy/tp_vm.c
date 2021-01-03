@@ -57,7 +57,7 @@ tp_vm * tp_create_vm(void) {
     tp_gc_set_reachable(tp, stack);
 
     tp->lparams = tp_stack_alloc(tp, 1);
-    tp->kparams = tp_stack_alloc(tp, 1);
+    tp->dparams = tp_stack_alloc(tp, 1);
     tp->last_result = tp_stack_alloc(tp, 1);
     tp->exc = tp_stack_alloc(tp, 1);
     tp->exc_stack = tp_stack_alloc(tp, 1);
@@ -328,7 +328,7 @@ int tp_step(TP) {
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,1);
             #endif
-            f->cur = cur + 1;  RA = tp_call(tp,RB,RC); GA;
+            f->cur = cur + 1;  RA = tp_call(tp, RB, RC, tp_None); GA;
             return 0; break;
         case TP_IGGET:
             if (!tp_iget(tp,&RA,f->globals,RB)) {

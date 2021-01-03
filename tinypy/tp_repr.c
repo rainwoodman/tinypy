@@ -28,13 +28,13 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
     /* if the class has __str__ or __repr__ use those */
     if(mode != 0) { /* str mode */
         TP_META_BEGIN(self, __str__);
-            tp_obj obj = tp_call(tp, __str__, tp_list_t(tp));
+            tp_obj obj = tp_call(tp, __str__, tp_list_t(tp), tp_None);
             string_builder_write(sb, tp_string_getptr(obj), tp_string_len(obj));
             return;
         TP_META_END;
     }
     TP_META_BEGIN(self, __repr__);
-        tp_obj obj = tp_call(tp, __repr__, tp_list_t(tp));
+        tp_obj obj = tp_call(tp, __repr__, tp_list_t(tp), tp_None);
         string_builder_write(sb, tp_string_getptr(obj), tp_string_len(obj));
         return;
     TP_META_END;

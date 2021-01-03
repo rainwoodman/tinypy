@@ -345,10 +345,10 @@ static tp_obj match_obj_group(TP)
 	 * if no group index provided, supply default group index 0; else
 	 * fill in indices[] with provided group index list.
 	 */
-	if (tp->params->list.val->len == 0) {
+	if (tp->lparams->list.val->len == 0) {
 		indices[0] = 0;
 		single = 1;
-	} else if (tp->params->list.val->len == 1) {
+	} else if (tp->lparams->list.val->len == 1) {
 		indices[0] = (int)TP_NUM();
 		single = 1;
 	} else {

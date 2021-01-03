@@ -179,7 +179,10 @@ tp_obj tpy_object_new(TP) {
     tp_obj self = tp_object(tp);
     self.dict.val->meta = klass;
     TP_META_BEGIN(self, __init__);
-        tp_call(tp, __init__, *tp->lparams);
+        /* we have removed the klass instance from lparams.
+         * __init__ is a bound method, therefore we automatically prepend
+         * the self instance before the call occurs. */
+        tp_call(tp, __init__, *tp->lparams, *tp->dparams);
     TP_META_END;
     return self;
 }
