@@ -18,8 +18,7 @@ class MyTest(UnitTest):
         assert func(1, 2) == (1, 2, 9)
         assert func(1, 2, 3) == (1, 2, 3)
 
-    # We need to fix this.
-    def known_failure_test_default_pos_mixed(self):
+    def test_default_pos_mixed(self):
         def func(a, b=9, c=9):
             return a, b, c
         assert func(1, b=9) == (1, 9, 9)
@@ -37,29 +36,52 @@ class MyTest(UnitTest):
         c = func(1, 2)
         assert c == [1, 2]
 
-    # these tests require a change of calling convention
-    # in encode.py and tp_call() to fix.
-    def known_failure_test_mix_kw_default(self):
+    def test_mix_kw_default(self):
         def func(a, b=9, c=9):
             return a, b, c
         assert func(1, 2, c=3) == (1, 2, 3)
         assert func(1, b=2, c=3) == (1, 2, 3)
         assert func(a=1, b=2, c=3) == (1, 2, 3)
 
-    def known_failure_test_args_and_kwargs(self):
+    def test_args_and_kwargs(self):
         def func(*args, **kwargs):
             return args, kwargs
         c, d = func(1, 2, d=1)
         assert c == [1, 2]
         assert d == {'d': 1}
 
-    def known_failure_test_pos_kwargs(self):
+    def test_pos_kwargs(self):
         def func(a, **kwargs):
             return a, kwargs
-        a = func(1, d1=2, d2=3)
+        a, d = func(1, d1=2, d2=3)
         assert a == 1
         assert d['d1'] == 2
         assert d['d2'] == 3
+
+    def test_lparams_overwrites_dparams(self):
+        def func(a, b):
+            return a, b
+        # unlikely CPython, we use positional argument
+        # if dparams conflicts with positional argument.
+        a, b = func(1, **{'a':2, 'b':3})
+        assert a == 1
+        assert b == 3
+
+    def test_dparams_overwrites_default(self):
+        def func(a, b=1):
+            return a, b
+        # dparams overwrites default value.
+        a, b = func(**dict(a=2, b=3))
+        assert a == 2
+        assert b == 3
+
+    def test_lparams_overwrites_default(self):
+        def func(a, b=2):
+            return a, b
+        # lparams overwrites default value.
+        a, b = func(*[2, 3])
+        assert a == 2
+        assert b == 3
 
 t = MyTest()
 
