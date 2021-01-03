@@ -436,7 +436,7 @@ def do_call(t,r=None):
         if d: 
             f = do(d.items[0])
             un_tmp(f)
-            code(MERGE,e,f)
+            code(UPDATE,e,f)
 
     lparams, dparams = get_tmps(2)
     # FIXME: for CPython compat we shall change the convention
@@ -446,7 +446,7 @@ def do_call(t,r=None):
     if l != None:
         t2 = do(l.items[0])
         code(ADD, lparams, lparams, t2)
-        free_tmp(t1); free_tmp(t2) #REG
+        free_tmp(t2) #REG
     if e != None:
         code(MOVE, dparams, e)
     else:
@@ -492,12 +492,15 @@ def do_def(tok):
     p,n,l,d = p_filter(items[1].items)
     for i in p:
         v = do_local(i)
+        tmp = do_string(i)
+        code(IGET, v, dparams, tmp)
+        free_tmp(tmp) #REG
         tmp = _do_none()
-        code(GET, v, lparams, tmp)
+        code(IGET, v, lparams, tmp)
         free_tmp(tmp) #REG
     for i in n:
         v = do_local(i.items[0])
-        do(i.items[1],v)
+        do(i.items[1], v)
         tmp = _do_none()
         code(IGET, v, lparams, tmp)
         free_tmp(tmp) #REG
