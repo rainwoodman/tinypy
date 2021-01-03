@@ -439,7 +439,7 @@ tp_obj tp_call(TP, tp_obj self, tp_obj params) {
         }
         if(self.func.cfnc != NULL) {
             /* C func, set tp->params for the CAPI calling convention. */
-            *tp->params = params;
+            *tp->lparams = params;
 
             tp_obj (* cfunc)(tp_vm *);
             cfunc = self.func.cfnc;

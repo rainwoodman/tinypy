@@ -56,7 +56,8 @@ tp_vm * tp_create_vm(void) {
     tp->stack->len = 0;
     tp_gc_set_reachable(tp, stack);
 
-    tp->params = tp_stack_alloc(tp, 1);
+    tp->lparams = tp_stack_alloc(tp, 1);
+    tp->kparams = tp_stack_alloc(tp, 1);
     tp->last_result = tp_stack_alloc(tp, 1);
     tp->exc = tp_stack_alloc(tp, 1);
     tp->exc_stack = tp_stack_alloc(tp, 1);
