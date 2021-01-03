@@ -96,8 +96,8 @@ tp_vm * tp_create_vm(void) {
     return tp;
 }
 
-void tp_enter_frame(TP, tp_obj params, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
-    tpd_list_appendx(tp, tp->frames, tp_frame_t(tp, params, globals, code, ret_dest));
+void tp_enter_frame(TP, tp_obj lparams, tp_obj dparams, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
+    tpd_list_appendx(tp, tp->frames, tp_frame_t(tp, lparams, dparams, globals, code, ret_dest));
 }
 
 void _tp_raise(TP, tp_obj e) {
@@ -320,7 +320,6 @@ int tp_step(TP) {
         case TP_IDICT: RA = tp_dict_from_items(tp, VC/2, &RB); break;
         case TP_ICLASS: RA = tp_class(tp); break;
         case TP_ILIST: RA = tp_list_from_items(tp, VC, &RB); break;
-        case TP_ILPARAMS: RA = tp_params_n(tp,VC,&RB); break;
         case TP_ILEN: RA = tp_len(tp,RB); break;
         case TP_IJUMP: cur += SVBC; continue; break;
         case TP_ISETJMP: f->jmp = SVBC?cur+SVBC:0; break;
@@ -328,7 +327,9 @@ int tp_step(TP) {
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,1);
             #endif
-            f->cur = cur + 1;  RA = tp_call(tp, RB, RC, tp_None); GA;
+            f->cur = cur + 1;
+            RA = tp_call(tp, RB, RC, *(&RC+1));
+            GA;
             return 0; break;
         case TP_IGGET:
             if (!tp_iget(tp,&RA,f->globals,RB)) {
@@ -382,7 +383,7 @@ int tp_step(TP) {
  */
 tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
     tp_obj r = tp_None;
-    tp_enter_frame(tp, tp_None, globals, code, &r);
+    tp_enter_frame(tp, tp_None, tp_None, globals, code, &r);
     tp_run_frame(tp);
     return r;
 }
