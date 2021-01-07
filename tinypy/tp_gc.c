@@ -19,6 +19,7 @@
  **/
 
 #define TP_GC_TRACE 0
+#undef TP_GC_ASSERT_LISTS_ARE_DISJOINT     /* Assert no white object is on the black list. Very slow. */
 
 /* tp_grey: ensure an object to the grey list, if the object is already
  * marked grey, then do nothing. */
@@ -158,12 +159,14 @@ void tp_collect(TP) {
     for (n=0; n<tp->white->len; n++) {
         tp_obj r = tp->white->items[n];
         if (r.gc.gci->black) { continue; }
+        #ifdef TP_GC_ASSERT_LISTS_ARE_DISJOINT
         int i;
         for (i = 0; i < tp->black->len; i ++) {
             if(tp->black->items[i].gc.gci == r.gc.gci) {
                 abort();
             }
         }
+        #endif
         tp_delete(tp,r);
     }
     tp->white->len = 0;
