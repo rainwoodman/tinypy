@@ -76,6 +76,7 @@ GENERATED_SOURCE_FILES+=modules/modules.c
 
 modules/modules.a: .objs/modules/modules.o \
 			$(MODULES_C_FILES:%.c=.objs/%.o)
+	rm -f $@
 	$(AR) rcu $@ $^
 
 tinypy/tp_opcodes.h: tinypy/compiler/opcodes.py
