@@ -2,7 +2,7 @@ Tinypy
 ======
 
 .. image:: https://github.com/rainwoodman/tinypy/workflows/main/badge.svg
-    :target: https://github.com/rainwoodman/tinypy/workflows/main
+    :target: https://github.com/rainwoodman/tinypy/actions?query=workflow%3Amain
 
 This is a refactored version of tinypy.
 
