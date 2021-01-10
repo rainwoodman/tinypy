@@ -1,8 +1,8 @@
 Tinypy
 ======
 
-.. image:: https://travis-ci.com/rainwoodman/tinypy.svg?branch=master
-    :target: https://travis-ci.com/rainwoodman/tinypy
+.. image:: https://github.com/rainwoodman/tinypy/workflows/main/badge.svg
+    :target: https://github.com/rainwoodman/tinypy/workflows/main
 
 This is a refactored version of tinypy.
 
