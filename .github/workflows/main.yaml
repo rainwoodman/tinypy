@@ -1,0 +1,48 @@
+# main test workflow; ported from .travis.yaml
+
+name: main workflow
+
+on:
+  push:
+    branches: [ '*', $default-branch ]
+  pull_request:
+    branches: [ $default-branch ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { python-version: 3.8, backend: "tpy", args: "--memcheck" }
+          - { python-version: 3.8, backend: "tpy-shared", args: "" }
+          - { python-version: 3.8, backend: "tpvm", args: "" }
+          - { python-version: 3.8, backend: "tpvm-dbg", args: "--memcheck" }
+          - { python-version: 3.8, backend: "tpy", args: "" }
+          # add a 2.7 basic test, mostly for compiling the compiler with py-2.7
+          - { python-version: 2.7, backend: "tpy", args: "" }
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@v2
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Valgrind
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y valgrind
+      if: contains(matrix.args, '--memcheck')
+
+    - name: Build
+      run: |
+        make all
+        make shared
+        make debug
+
+    - name: Test
+      run: |
+        bash run-tests.sh --backend=${{ matrix.backend }} ${{ matrix.args }} tests/*.py
