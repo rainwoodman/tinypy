@@ -104,7 +104,7 @@ tp_obj tpy_float(TP) {
         char s[32]; memset(s,0,tp_string_len(v)+1);
         memcpy(s, tp_string_getptr(v), tp_string_len(v));
         if (strchr(s,'.')) { return tp_number(atof(s)); }
-        return(tp_number(strtol(s,0,ord)));
+        return(tp_number(strtoul(s,0,ord)));
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tpy_float) TypeError: ?"));
 }
