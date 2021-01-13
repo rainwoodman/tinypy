@@ -101,10 +101,23 @@ tp_obj tpy_float(TP) {
     int type = v.type.typeid;
     if (type == TP_NUMBER) { return v; }
     if (type == TP_STRING && tp_string_len(v) < 32) {
-        char s[32]; memset(s,0,tp_string_len(v)+1);
-        memcpy(s, tp_string_getptr(v), tp_string_len(v));
-        if (strchr(s,'.')) { return tp_number(atof(s)); }
-        return(tp_number(strtoul(s,0,ord)));
+        tp_obj r;
+        char s[32];
+        int len = tp_string_len(v);
+        memset(s,0, (len + 1) > 32 ? 32 : len + 1);
+        memcpy(s, tp_string_getptr(v), len);
+        char *end = NULL;
+        if (strchr(s, '.')) {
+            r = tp_number(strtod(s, &end));
+        } else if (strchr(s, '-')) {
+            r = tp_number(strtol(s, &end, ord));
+        } else {
+            r = tp_number(strtoul(s, &end, ord));
+        }
+        if((end - s) != len) {
+          tp_raise_printf(tp_None, "(tpy_float) TypeError: could not parse string %s to a number", s);
+        }
+        return r;
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tpy_float) TypeError: ?"));
 }
