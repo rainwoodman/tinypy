@@ -98,35 +98,29 @@ tp_obj tpy_str_replace(TP) {
     tp_obj s = TP_OBJ();
     tp_obj k = TP_OBJ();
     tp_obj v = TP_OBJ();
-    tp_obj p = tp_string_view(tp, s, 0, tp_string_len(s));
-    int i,n = 0;
-    int c;
-    int l;
-    tp_obj rr;
-    char *r;
-    char *d;
-    tp_obj z;
-    while ((i = tp_str_index(p,k)) != -1) {
-        n += 1;
-        p.string.info->s += i + tp_string_len(k);
-        p.string.info->len -= i + tp_string_len(k);
-    }
-/*     fprintf(stderr,"ns: %d\n",n); */
-    l = tp_string_len(s) + n * (tp_string_len(v)-tp_string_len(k));
-    rr = tp_string_t(tp, l);
-    r = tp_string_getptr(rr);
-    d = r;
-    z = p;
-    while ((i = tp_str_index(p,k)) != -1) {
-        p.string.info->s += i;
-        p.string.info->len -= i;
-        memcpy(d,tp_string_getptr(z), c=(tp_string_getptr(p) - tp_string_getptr(z))); d += c;
-        p.string.info->s += tp_string_len(k);
-        p.string.info->len -= tp_string_len(k);
-        memcpy(d,tp_string_getptr(v), tp_string_len(v)); d += tp_string_len(v);
-        z = p;
-    }
-    memcpy(d, tp_string_getptr(z), (tp_string_getptr(s) + tp_string_len(s)) - tp_string_getptr(z));
+    StringBuilder sb[1] = {tp};
 
-    return rr;
+    char * ss = tp_string_getptr(s);
+    char * se = ss + tp_string_len(s);
+    char * ks = tp_string_getptr(k);
+    char * ke = ks + tp_string_len(k);
+    char * vs = tp_string_getptr(v);
+    char * ve = vs + tp_string_len(v);
+
+    char * sp, * kp;
+    kp = ks;
+    for(sp = ss; sp < se; sp++) {
+        if(*sp == *kp) {
+            kp++;
+            if(kp == ke) {
+                /* found the pattern, write the replacement */
+                string_builder_write(sb, vs, ve - vs);
+                kp = ks;
+            }
+            continue;
+        }
+        kp = ks;
+        string_builder_write(sb, sp, 1);
+    }
+    return tp_string_steal_from_builder(tp, sb);
 }

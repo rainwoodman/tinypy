@@ -9,8 +9,12 @@ class StringUnitTests(UnitTest):
         assert "abcdef\0" != "abcdef"
 
     def test_replace(self):
+        assert "".replace("a", "b") == ""
+        assert "c".replace("a", "b") == "c"
         assert "a".replace("a", "b") == "b"
+        assert "aa".replace("a", "b") == "bb"
         assert "ab".replace("ab", "b") == "b"
+        assert "aab".replace("ab", "b") == "ab"
         assert "3ab".replace("ab", "b") == "3b"
         assert "3ab1".replace("ab", "b") == "3b1"
 
