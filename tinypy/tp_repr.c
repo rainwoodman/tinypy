@@ -90,10 +90,10 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         tp_num v = self.number.val;
         if ((fabs(v-(long)v)) < 0.000001) {
             snprintf(buf, 120, "%ld", (long)v);
-            string_builder_write(sb, buf, -1);
         } else {
-            snprintf(buf, 120, "%f", v);
+            snprintf(buf, 120, "%lf", (double)v);
         }
+        string_builder_write(sb, buf, -1);
     } else if(type == TP_DICT) {
         if(self.type.magic == TP_DICT_CLASS) {
             string_builder_write(sb, "C", -1);
