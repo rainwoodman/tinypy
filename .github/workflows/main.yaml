@@ -14,19 +14,24 @@ jobs:
     strategy:
       matrix:
         include:
-          - { python-version: 3.8, backend: "tpy", args: "--memcheck" }
-          - { python-version: 3.8, backend: "tpy-shared", args: "" }
-          - { python-version: 3.8, backend: "tpvm", args: "" }
-          - { python-version: 3.8, backend: "tpvm-dbg", args: "--memcheck" }
-          - { python-version: 3.8, backend: "tpy", args: "" }
-          # add a 2.7 basic test, mostly for compiling the compiler with py-2.7
-          - { python-version: 2.7, backend: "tpy", args: "" }
+          - { python-version: 3.8, backend: "tpy-shared", }
+          - { python-version: 3.8, backend: "tpvm", }
+          - { python-version: 3.8, backend: "tpy", }
+          # memory checks
+          - { python-version: 3.8, backend: "tpy", memcheck: "--memcheck" }
+          - { python-version: 3.8, backend: "tpvm-dbg", memcheck: "--memcheck" }
+          # A 2.7 basic test, mostly for compiling the compiler with py-2.7
+          - { python-version: 2.7, backend: "tpy",  }
+          # A m32 basic test
+          - { python-version: 3.8, backend: "tpy", arch: "-m32" }
+          # A mx32 basic test
+          - { python-version: 3.8, backend: "tpy", arch: "-mx32" }
 
     steps:
     - name: Checkout source code
       uses: actions/checkout@v2
 
-    - name: Set up Python ${{ matrix.python-version }}
+    - name: Set up Bootstrap Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
@@ -35,14 +40,20 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y valgrind
-      if: contains(matrix.args, '--memcheck')
+      if: matrix.memcheck
+
+    - name: Install GCC multilib
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y gcc-multilib
+      if: matrix.arch
 
     - name: Build
       run: |
-        make all
-        make shared
-        make debug
+        make all CFLAGS=${{ matrix.arch }}
+        make shared CFLAGS=${{ matrix.arch }}
+        make debug CFLAGS=${{ matrix.arch }}
 
     - name: Test
       run: |
-        bash run-tests.sh --backend=${{ matrix.backend }} ${{ matrix.args }} tests/*.py
+        bash run-tests.sh --backend=${{ matrix.backend }} ${{ matrix.memcheck }} tests/*.py

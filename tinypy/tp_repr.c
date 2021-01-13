@@ -130,11 +130,11 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         string_builder_write(sb, "None", -1);
     } else if (type == TP_DATA) {
         char buf[128];
-        snprintf(buf, 120, "<data 0x%x>", self.data.val);
+        snprintf(buf, 120, "<data %p>", self.data.val);
         string_builder_write(sb, buf, -1);
     } else if (type == TP_FUNC) {
         char buf[128];
-        snprintf(buf, 120, "<func 0x%x>", self.func.info);
+        snprintf(buf, 120, "<func %p>", self.func.info);
         string_builder_write(sb, buf, -1);
     } else {
         string_builder_write(sb, "<?>", -1);

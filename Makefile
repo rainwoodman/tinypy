@@ -97,19 +97,19 @@ GENERATED_SOURCE_FILES+=tinypy/tp_opcodes.h
 
 # tpvm only takes compiled byte codes (.tpc files)
 tpvm : $(VMLIB_FILES:%.c=.objs/tinypy/%.o) .objs/tinypy/vmmain.o modules/modules.a
-	$(CC) -g -O0 -o $@ $^ -lm
+	$(CC) $(CFLAGS) -g -O0 -o $@ $^ -lm
 #
 # tpvm only takes compiled byte codes (.tpc files)
 tpvm-dbg : $(VMLIB_FILES:%.c=.dbgobjs/tinypy/%.o) .dbgobjs/tinypy/vmmain.o modules/modules.a
-	$(CC) -g -O0 -o $@ $^ -lm
+	$(CC) $(CFLAGS) -g -O0 -o $@ $^ -lm
 
 # tpy takes .py files
 tpy : $(TPLIB_FILES:%.c=.objs/tinypy/%.o) .objs/tinypy/tpmain.o modules/modules.a
-	$(CC) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 # tpy takes .py files
 tpy-dbg : $(TPLIB_FILES:%.c=.dbgobjs/tinypy/%.o) .dbgobjs/tinypy/tpmain.o modules/modules.a
-	$(CC) -o $@ $^ -lm
+	$(CC) $(CFLAGS) -o $@ $^ -lm
 
 # rule for making a shared object. This is not universal and shall be adapted.
 libtpy.so : $(TPLIB_FILES:%.c=.dynobjs/tinypy/%.o) \
@@ -120,7 +120,7 @@ libtpy.so : $(TPLIB_FILES:%.c=.dynobjs/tinypy/%.o) \
 
 # rule for making a shared executable. This is not universal and shall be adapted.
 tpy-shared : tinypy/tpmain.c libtpy.so
-	$(CC) -o $@ $^ -lm -Wl,-rpath,'$$ORIGIN'
+	$(CC) $(CFLAGS) -o $@ $^ -lm -Wl,-rpath,'$$ORIGIN'
 
 test: $(TESTS_PY_FILES) tpvm run-tests.sh
 	bash run-tests.sh --backend=tpvm $(TESTS_PY_FILES)
