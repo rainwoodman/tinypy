@@ -8,6 +8,12 @@ class StringUnitTests(UnitTest):
         assert "abcdef" == "abcdef"
         assert "abcdef\0" != "abcdef"
 
+    def test_replace(self):
+        assert "a".replace("a", "b") == "b"
+        assert "ab".replace("ab", "b") == "b"
+        assert "3ab".replace("ab", "b") == "3b"
+        assert "3ab1".replace("ab", "b") == "3b1"
+
     def test_startswith(self):
         a = "012345"
         assert a.startswith("0")
