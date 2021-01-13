@@ -22,6 +22,7 @@ jobs:
           # add a 2.7 basic test, mostly for compiling the compiler with py-2.7
           - { python-version: 2.7, backend: "tpy",  }
           - { python-version: 3.8, backend: "tpy", arch: "-m32" }
+          - { python-version: 3.8, backend: "tpy", arch: "-mx32" }
 
     steps:
     - name: Checkout source code
