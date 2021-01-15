@@ -391,7 +391,8 @@ tp_obj tp_check_type(TP, int t, tp_obj v) {
 #define TP_NPARAMS() (TPD_LIST(*tp->lparams)->len)
 #define TP_PARAMS_OBJ() (tp_get(tp, *tp->lparams, tp_None))
 #define TP_PARAMS_TYPE(t) tp_check_type(tp, t, TP_PARAMS_OBJ())
-#define TP_PARAMS_NUM() (TP_PARAMS_TYPE(TP_NUMBER).num)
+#define TP_PARAMS_FLOAT() (TPN_AS_FLOAT(TP_PARAMS_TYPE(TP_NUMBER)))
+#define TP_PARAMS_INT() (TPN_AS_INT(TP_PARAMS_TYPE(TP_NUMBER)))
 #define TP_PARAMS_STR() (TP_PARAMS_TYPE(TP_STRING))
 #define TP_PARAMS_DEFAULT(d) (TPD_LIST(*tp->lparams)->len?TP_PARAMS_OBJ():(d))
 

@@ -17,7 +17,7 @@
  */
 #define TP_MATH_FUNC1(cfunc)                        \
     static tp_obj math_##cfunc(TP) {                \
-        double x = TP_PARAMS_NUM();                        \
+        double x = TP_PARAMS_FLOAT();                        \
         double r = 0.0;                             \
                                                     \
         errno = 0;                                  \
@@ -39,8 +39,8 @@
  */
 #define TP_MATH_FUNC2(cfunc)                        \
     static tp_obj math_##cfunc(TP) {                \
-        double x = TP_PARAMS_NUM();                        \
-        double y = TP_PARAMS_NUM();                        \
+        double x = TP_PARAMS_FLOAT();                        \
+        double y = TP_PARAMS_FLOAT();                        \
         double r = 0.0;                             \
                                                     \
         errno = 0;                                  \
@@ -177,7 +177,7 @@ TP_MATH_FUNC2(fmod)
  * if x = 0, the (r, y) = (0, 0).
  */
 static tp_obj math_frexp(TP) {
-    double x = TP_PARAMS_NUM();
+    double x = TP_PARAMS_FLOAT();
     int    y = 0;   
     double r = 0.0;
     tp_obj rList = tp_list_t(tp);
@@ -222,7 +222,7 @@ TP_MATH_FUNC2(ldexp)
  * log(x, base) = log10(x) / log10(base).
  */
 static tp_obj math_log(TP) {
-    double x = TP_PARAMS_NUM();
+    double x = TP_PARAMS_FLOAT();
     tp_obj b = TP_PARAMS_DEFAULT(tp_None);
     double y = 0.0;
     double den = 0.0;   /* denominator */
@@ -270,7 +270,7 @@ TP_MATH_FUNC1(log10)
  * the same sign as x.
  */
 static tp_obj math_modf(TP) {
-    double x = TP_PARAMS_NUM();
+    double x = TP_PARAMS_FLOAT();
     double y = 0.0; 
     double r = 0.0;
     tp_obj rList = tp_list_t(tp);
@@ -296,8 +296,8 @@ static tp_obj math_modf(TP) {
  * alternative in math module.
  */
 static tp_obj math_pow(TP) {
-    double x = TP_PARAMS_NUM();
-    double y = TP_PARAMS_NUM();
+    double x = TP_PARAMS_FLOAT();
+    double y = TP_PARAMS_FLOAT();
     double r = 0.0;
 
     errno = 0;

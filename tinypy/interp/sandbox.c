@@ -77,8 +77,8 @@ void *tp_realloc(TP, void *ptr, unsigned long bytes) {
 #endif
 
 tp_obj tp_sandbox_(TP) {
-    tp_num time = TP_PARAMS_NUM();
-    tp_num mem = TP_PARAMS_NUM();
+    tp_num time = TP_PARAMS_FLOAT();
+    tp_num mem = TP_PARAMS_FLOAT();
     tp_sandbox(tp, time, mem);
     tp_del(tp, tp->builtins, tp_string_atom(tp, "sandbox"));
     tp_del(tp, tp->builtins, tp_string_atom(tp, "mtime"));

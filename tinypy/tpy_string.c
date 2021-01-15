@@ -58,7 +58,7 @@ tp_obj tpy_str_index(TP) {
 }
 
 tp_obj tpy_chr(TP) {
-    int v = TP_PARAMS_NUM();
+    int v = TP_PARAMS_INT();
     return tp->chars[(unsigned char)v];
 }
 

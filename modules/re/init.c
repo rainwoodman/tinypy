@@ -349,7 +349,7 @@ static tp_obj match_obj_group(TP)
 		indices[0] = 0;
 		single = 1;
 	} else if (TP_NPARAMS() == 1) {
-		indices[0] = (int)TP_PARAMS_NUM();
+		indices[0] = TP_PARAMS_INT();
 		single = 1;
 	} else {
 		i = 0;

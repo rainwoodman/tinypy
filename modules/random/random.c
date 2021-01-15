@@ -292,7 +292,7 @@ static tp_obj random_setstate(TP)
  */
 static tp_obj random_jumpahead(TP)
 {
-    long n = (long)TP_PARAMS_NUM();
+    long n = TP_PARAMS_INT();
     long i, j;
     unsigned long *mt;
     unsigned long tmp;
@@ -500,7 +500,7 @@ static tp_obj random_getstate(TP)
  */
 static tp_obj random_jumpahead(TP)
 {
-    int n = (int)TP_PARAMS_NUM();
+    int n = TP_PARAMS_INT();
     long x, y, z;
 
     if (n < 0)
@@ -616,8 +616,8 @@ tp_obj random_jumpahead(TP)
  */
 tp_obj random_uniform(TP)
 {
-    double a = TP_PARAMS_NUM();
-    double b = TP_PARAMS_NUM();
+    double a = TP_PARAMS_FLOAT();
+    double b = TP_PARAMS_FLOAT();
     double r = 0.0;
     tp_obj rvo;         /* random variable object */
 
@@ -642,8 +642,8 @@ tp_obj random_uniform(TP)
  */
 tp_obj random_normalvariate(TP)
 {
-    double mu = TP_PARAMS_NUM();
-    double sigma = TP_PARAMS_NUM();
+    double mu = TP_PARAMS_FLOAT();
+    double sigma = TP_PARAMS_FLOAT();
     double NV_MAGICCONST;
     double u1, u2;
     double z, zz;
@@ -678,8 +678,8 @@ tp_obj random_normalvariate(TP)
  */
 tp_obj random_lognormvariate(TP)
 {
-    double mu = TP_PARAMS_NUM();
-    double sigma = TP_PARAMS_NUM();
+    double mu = TP_PARAMS_FLOAT();
+    double sigma = TP_PARAMS_FLOAT();
     tp_obj params;
     tp_obj normvar;     /* normal distribution variate */
     double r = 0.0;
@@ -702,7 +702,7 @@ tp_obj random_lognormvariate(TP)
  */
 tp_obj random_expovariate(TP)
 {
-    double lambda = TP_PARAMS_NUM();
+    double lambda = TP_PARAMS_FLOAT();
     double u, r;
     tp_obj rvo;
 
@@ -737,8 +737,8 @@ tp_obj random_expovariate(TP)
  */
 tp_obj random_vonmisesvariate(TP)
 {
-    double mu = TP_PARAMS_NUM();
-    double kappa = TP_PARAMS_NUM();
+    double mu = TP_PARAMS_FLOAT();
+    double kappa = TP_PARAMS_FLOAT();
     tp_obj rvo;
     double a, b, c, r;
     double u1, u2, u3, z, f;
@@ -788,8 +788,8 @@ tp_obj random_vonmisesvariate(TP)
  */
 tp_obj random_gammavariate(TP)
 {
-    double alpha = TP_PARAMS_NUM();
-    double beta  = TP_PARAMS_NUM();
+    double alpha = TP_PARAMS_FLOAT();
+    double beta  = TP_PARAMS_FLOAT();
     tp_obj rvo;
     double res;
     double LOG4 = log(4.0);
@@ -915,8 +915,8 @@ tp_obj random_gammavariate(TP)
  */
 tp_obj random_betavariate(TP)
 {
-    double alpha = TP_PARAMS_NUM();
-    double beta  = TP_PARAMS_NUM();
+    double alpha = TP_PARAMS_FLOAT();
+    double beta  = TP_PARAMS_FLOAT();
     double t;
     double r = 0.0;    
     tp_obj y;
@@ -941,7 +941,7 @@ tp_obj random_betavariate(TP)
  */
 tp_obj random_paretovariate(TP)
 {
-    double alpha = TP_PARAMS_NUM();
+    double alpha = TP_PARAMS_FLOAT();
     double u;
     double r;
     tp_obj rvo;
@@ -962,8 +962,8 @@ tp_obj random_paretovariate(TP)
  */
 tp_obj random_weibullvariate(TP)
 {
-    double alpha = TP_PARAMS_NUM();
-    double beta  = TP_PARAMS_NUM();
+    double alpha = TP_PARAMS_FLOAT();
+    double beta  = TP_PARAMS_FLOAT();
     double u;
     double r;
     tp_obj rvo;
@@ -1025,8 +1025,8 @@ tp_obj random_randrange(TP)
  */
 tp_obj random_randint(TP)
 {
-    double a = TP_PARAMS_NUM();
-    double b = TP_PARAMS_NUM();
+    double a = TP_PARAMS_FLOAT();
+    double b = TP_PARAMS_FLOAT();
     tp_obj r;
     tp_obj params;
 

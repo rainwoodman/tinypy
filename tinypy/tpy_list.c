@@ -27,7 +27,7 @@ tp_obj tpy_list_pop(TP) {
 
 tp_obj tpy_list_insert(TP) {
     tp_obj self = TP_PARAMS_OBJ();
-    int n = TP_PARAMS_NUM();
+    int n = TP_PARAMS_INT();
     tp_obj v = TP_PARAMS_OBJ();
     tpd_list_insert(tp, TPD_LIST(self), n, v);
     return tp_None;

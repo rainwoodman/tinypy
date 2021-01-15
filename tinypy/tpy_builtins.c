@@ -47,9 +47,9 @@ tp_obj tpy_range(TP) {
     int a,b,c,i;
     tp_obj r = tp_list_t(tp);
     switch (TP_NPARAMS()) {
-        case 1: a = 0; b = TP_PARAMS_NUM(); c = 1; break;
+        case 1: a = 0; b = TP_PARAMS_INT(); c = 1; break;
         case 2:
-        case 3: a = TP_PARAMS_NUM(); b = TP_PARAMS_NUM(); c = TPN_AS_INT(TP_PARAMS_DEFAULT(tp_int(1))); break;
+        case 3: a = TP_PARAMS_INT(); b = TP_PARAMS_INT(); c = TPN_AS_INT(TP_PARAMS_DEFAULT(tp_int(1))); break;
         default: return r;
     }
     if (c != 0) {
@@ -123,7 +123,7 @@ tp_obj tpy_number(TP) {
 }
 
 tp_obj tpy_fpack(TP) {
-    tp_num v = TP_PARAMS_NUM();
+    tp_num v = TP_PARAMS_FLOAT();
     tp_obj r = tp_string_t(tp,sizeof(tp_num));
     *(tp_num*) tp_string_getptr(r) = v;
     return r;
