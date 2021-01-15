@@ -104,16 +104,16 @@ static tp_obj regex_obj_search(TP)
 	int r = -2;					/* -2 indicate exception */
 	int range;
 
-	if (pos.num < 0 || pos.num > tp_string_len(str)) {
+	if (TPN_AS_INT(pos) < 0 || TPN_AS_INT(pos) > tp_string_len(str)) {
 		LastError = "search offset out of range";
 		goto exception;
 	}
-	range = tp_string_len(str) - pos.num;
+	range = tp_string_len(str) - TPN_AS_INT(pos);
 
 	re = getre(tp, self);
 	re->re_lastok = NULL;
 	r = re_search(&re->re_patbuf, (unsigned char *)TPD_STRING(str)->s, 
-			tp_string_len(str), pos.num, range, &re->re_regs);
+			tp_string_len(str), TPN_AS_INT(pos), range, &re->re_regs);
 
 	/* cannot match pattern */
 	if (r == -1)
@@ -161,7 +161,7 @@ static tp_obj regex_obj_match(TP)
 	re = getre(tp, self);
 	re->re_lastok = NULL;
 	r = re_match(&re->re_patbuf, (unsigned char *)TPD_STRING(str)->s, 
-			tp_string_len(str), pos.num, &re->re_regs);
+			tp_string_len(str), TPN_AS_INT(pos), &re->re_regs);
 
 	/* cannot match pattern */
 	if (r == -1)
@@ -206,9 +206,9 @@ static tp_obj regex_obj_split(TP)
 	int srchloc;				/* search location */
 
 	/* maxsplit == 0 means no limit */
-	if ((int)maxsplit.num == 0)
-		maxsplit.num = RE_NREGS;
-	assert(maxsplit.num > 0);
+	if (TPN_AS_INT(maxsplit) == 0)
+		maxsplit = tp_int(RE_NREGS);
+	assert(TPN_AS_INT(maxsplit) > 0);
 
 	srchloc = 0;
 	slen = strlen((char *)TPD_STRING(restr)->s);
@@ -226,7 +226,7 @@ static tp_obj regex_obj_split(TP)
 		}
 
 		/* extract fields */
-		if ((int)maxsplit.num > 0) {
+		if (TPN_AS_INT(maxsplit) > 0) {
 			int start = re->re_regs.start[0];
 			int end   = re->re_regs.end[0];
 			/*printf("%s:start(%d),end(%d)\n", __func__, start, end);*/
@@ -238,12 +238,12 @@ static tp_obj regex_obj_split(TP)
 
 			if (tp_true(tp, grpstr)) {
 				tp_set(tp, result, tp_None, grpstr);
-				maxsplit.num--;
+				maxsplit = tp_int(TPN_AS_INT(maxsplit)-1);
 			}
 
 			srchloc = end;
 		}
-	} while (srchloc < slen && (int)maxsplit.num > 0);
+	} while (srchloc < slen && TPN_AS_INT(maxsplit) > 0);
 
 	/* collect remaining string, if necessary */
 	if (srchloc < slen) {
@@ -274,7 +274,7 @@ static tp_obj regex_obj_findall(TP)
 	int	slen;					/* string length */
 	int srchloc;				/* search location */
 
-	srchloc = (int)pos.num;
+	srchloc = TPN_AS_INT(pos);
 	slen	= strlen((char *)TPD_STRING(restr)->s);
 	if (srchloc < 0 || srchloc >= slen)
 		tp_raise(tp_None, tp_string_atom(tp, "starting position out of range"));
@@ -354,9 +354,9 @@ static tp_obj match_obj_group(TP)
 	} else {
 		i = 0;
 		TP_LOOP(grpidx)
-		if (grpidx.num < 0 || grpidx.num > RE_NREGS)
+		if (TPN_AS_INT(grpidx) < 0 || TPN_AS_INT(grpidx) > RE_NREGS)
 			tp_raise(tp_None, tp_string_atom(tp, "group() grpidx out of range"));
-		indices[i++] = (int)grpidx.num;
+		indices[i++] = TPN_AS_INT(grpidx);
 		TP_END
 	}
 
@@ -433,10 +433,10 @@ static tp_obj match_obj_start(TP)
 				tp_string_atom(tp, "start() only valid after successful match/search"));
 	}
 
-	if (group.num < 0 || group.num > RE_NREGS)
+	if (TPN_AS_INT(group) < 0 || TPN_AS_INT(group) > RE_NREGS)
 		tp_raise(tp_None, tp_string_atom(tp, "IndexError: group index out of range"));
 
-	start = re->re_regs.start[(int)group.num];
+	start = re->re_regs.start[TPN_AS_INT(group)];
 
 	return (tp_int(start));
 }
@@ -460,10 +460,10 @@ static tp_obj match_obj_end(TP)
 				tp_string_atom(tp, "end() only valid after successful match/search"));
 	}
 
-	if (group.num < 0 || group.num > RE_NREGS)
+	if (TPN_AS_INT(group) < 0 || TPN_AS_INT(group) > RE_NREGS)
 		tp_raise(tp_None, tp_string_atom(tp, "IndexError: group index out of range"));
 
-	end = re->re_regs.end[(int)group.num];
+	end = re->re_regs.end[TPN_AS_INT(group)];
 
 	return (tp_int(end));
 }
@@ -489,11 +489,11 @@ static tp_obj match_obj_span(TP)
 				tp_string_atom(tp, "span() only valid after successful match/search"));
 	}
 
-	if (group.num < 0 || group.num > RE_NREGS)
+	if (TPN_AS_INT(group) < 0 || TPN_AS_INT(group) > RE_NREGS)
 		tp_raise(tp_None, tp_string_atom(tp, "IndexError: group index out of range"));
 
-	start = re->re_regs.start[(int)group.num];
-	end   = re->re_regs.end[(int)group.num];
+	start = re->re_regs.start[TPN_AS_INT(group)];
+	end   = re->re_regs.end[TPN_AS_INT(group)];
 
 	result = tp_list_t(tp);
 	tp_set(tp, result, tp_None, tp_int(start));
@@ -537,7 +537,7 @@ static tp_obj regex_compile(TP)
 	re->re_lastok = NULL;
 
 	re->re_errno = 0;
-	re->re_syntax = (int)resyn.num;
+	re->re_syntax = TPN_AS_INT(resyn);
 
 	pat = TPD_STRING(repat)->s;
 	size = tp_string_len(repat);

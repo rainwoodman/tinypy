@@ -97,7 +97,7 @@ tp_obj tpy_isinstance(TP) {
 
 tp_obj tpy_number(TP) {
     tp_obj v = TP_PARAMS_OBJ();
-    int ord = TP_PARAMS_DEFAULT(tp_float(0)).num;
+    int ord = TPN_AS_INT(TP_PARAMS_DEFAULT(tp_int(0)));
     int type = v.type.typeid;
     if (type == TP_NUMBER) { return v; }
     if (type == TP_STRING && tp_string_len(v) < 32) {

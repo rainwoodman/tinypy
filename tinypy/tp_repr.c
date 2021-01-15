@@ -87,7 +87,7 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         } 
     } else if (type == TP_NUMBER) {
         char buf[128];
-        tp_num v = self.num;
+        tp_num v = TPN_AS_FLOAT(self);
         if ((fabs(v-(long)v)) < 0.000001) {
             snprintf(buf, 120, "%ld", (long)v);
         } else {

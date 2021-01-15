@@ -283,9 +283,9 @@ int tp_step(TP) {
         case TP_IGET: RA = tp_get(tp,RB,RC); GA; break;
         case TP_IMGET: RA = tp_mget(tp,RB,RC); GA; break;
         case TP_IITER:
-            if (RC.num < tp_len(tp,RB).num) {
+            if (TPN_AS_INT(RC) < TPN_AS_INT(tp_len(tp,RB))) {
                 RA = tp_iter(tp,RB,RC); GA;
-                RC.num += 1;
+                RC = tp_int(TPN_AS_INT(RC) + 1);
                 #ifdef TP_SANDBOX
                 tp_bounds(tp,cur,1);
                 #endif

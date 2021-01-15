@@ -8,7 +8,7 @@
  */
 int tp_true(TP, tp_obj v) {
     switch(v.type.typeid) {
-        case TP_NUMBER: return v.num != 0;
+        case TP_NUMBER: return TPN_AS_FLOAT(v) != 0;
         case TP_NONE: return 0;
         case TP_STRING: return tp_string_len(v) != 0;
         case TP_LIST: return TPD_LIST(v)->len != 0;
@@ -121,13 +121,13 @@ tp_obj tp_getraw(TP, tp_obj self) {
 static void tp_slice_get_indices(TP, tp_obj slice, tp_obj obj, int * start, int * stop) {
     int a, b, l;
     tp_obj tmp;
-    l = tp_len(tp, obj).num;
+    l = TPN_AS_INT(tp_len(tp, obj));
     tmp = tp_get(tp, slice, tp_int(0));
-    if (tmp.type.typeid == TP_NUMBER) { a = tmp.num; }
+    if (tmp.type.typeid == TP_NUMBER) { a = TPN_AS_INT(tmp); }
     else if(tmp.type.typeid == TP_NONE) { a = 0; }
     else { tp_raise_printf(, "(tp_get) TypeError: indices must be numbers"); }
     tmp = tp_get(tp,slice,tp_int(1));
-    if (tmp.type.typeid == TP_NUMBER) { b = tmp.num; }
+    if (tmp.type.typeid == TP_NUMBER) { b = TPN_AS_INT(tmp); }
     else if(tmp.type.typeid == TP_NONE) { b = l; }
     else { tp_raise_printf(, "(tp_get) TypeError: indices must be numbers"); }
 
@@ -178,8 +178,8 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
         tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %O", &k);
     } else if (type == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
-            int l = tp_len(tp,self).num;
-            int n = k.num;
+            int l = TPN_AS_INT(tp_len(tp,self));
+            int n = TPN_AS_INT(k);
             n = (n<0?l+n:n);
             return tpd_list_get(tp, TPD_LIST(self), n, "tp_get");
         } else if (k.type.typeid == TP_STRING) {
@@ -195,7 +195,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
     } else if (type == TP_STRING) {
         if (k.type.typeid == TP_NUMBER) {
             int l = tp_string_len(self);
-            int n = k.num;
+            int n = TPN_AS_INT(k);
             n = (n<0?l+n:n);
             if (n >= 0 && n < l) {
                 return tp->chars[(unsigned char) tp_string_getptr(self)[n]];
@@ -257,7 +257,7 @@ int tp_iget(TP, tp_obj *r, tp_obj self, tp_obj k) {
     if (self.type.typeid == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
             int l = TPD_LIST(self)->len;
-            int n = k.num;
+            int n = TPN_AS_INT(k);
             if(n >=0 && n < l) {
                 *r = tpd_list_get(tp, TPD_LIST(self), n, "tp_iget");
                 tp_grey(tp, *r);
@@ -299,7 +299,7 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
         return;
     } else if (type == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
-            tpd_list_set(tp, TPD_LIST(self), k.num, v, "tp_set");
+            tpd_list_set(tp, TPD_LIST(self), TPN_AS_INT(k), v, "tp_set");
             return;
         } else if (k.type.typeid == TP_NONE) {
             tpd_list_append(tp, TPD_LIST(self), v);
@@ -332,11 +332,11 @@ tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
         tp_obj c = a; a = b; b = c;
     }
     if(a.type.typeid == TP_STRING && b.type.typeid == TP_NUMBER) {
-        int n = b.num;
+        int n = TPN_AS_INT(b);
         return tp_string_mul(tp, a, n);
     }
     if(a.type.typeid == TP_LIST && b.type.typeid == TP_NUMBER) {
-        int n = b.num;
+        int n = TPN_AS_INT(b);
         return tp_list_mul(tp, a, n);
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_mul) TypeError: ?"));
@@ -364,7 +364,7 @@ int tp_equal(TP, tp_obj a, tp_obj b) {
     if (a.type.typeid != b.type.typeid) { return 0;}
     switch(a.type.typeid) {
         case TP_NONE: return 1;
-        case TP_NUMBER: return a.num == b.num;
+        case TP_NUMBER: return TPN_AS_FLOAT(a) == TPN_AS_FLOAT(b);
         case TP_STRING: return tp_string_cmp(a, b) == 0;
         case TP_LIST: return tp_list_equal(tp, a, b);
         case TP_DICT: return tp_dict_equal(tp, a, b);
@@ -380,7 +380,7 @@ int tp_lessthan(TP, tp_obj a, tp_obj b) {
     }
     switch(a.type.typeid) {
         case TP_NONE: return 0;
-        case TP_NUMBER: return a.num < b.num;
+        case TP_NUMBER: return TPN_AS_FLOAT(a) < TPN_AS_FLOAT(b);
         case TP_STRING: return tp_string_cmp(a, b) < 0;
         case TP_LIST: return tp_list_lessthan(tp, a, b);
         case TP_DICT: {
