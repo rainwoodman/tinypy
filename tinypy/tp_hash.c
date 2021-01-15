@@ -13,7 +13,16 @@ int tpd_lua_hash(void const *v,int l) {
 int tp_hash(TP, tp_obj v) {
     switch (v.type.typeid) {
         case TP_NONE: return 0;
-        case TP_NUMBER: return tpd_lua_hash(&v.num, sizeof(tp_num));
+        case TP_NUMBER: {
+            switch(v.type.magic) {
+                case TP_NUMBER_INT:
+                    return tpd_lua_hash(&v.nint, sizeof(v.nint));
+                case TP_NUMBER_FLOAT:
+                    return tpd_lua_hash(&v.nfloat, sizeof(v.nfloat));
+                default:
+                    abort();
+            }
+        }
         case TP_STRING: return tpd_lua_hash(tp_string_getptr(v), tp_string_len(v));
         case TP_DICT: return tpd_lua_hash(&v.info, sizeof(void*));
         case TP_LIST: {

@@ -57,6 +57,10 @@ def disassemble(bc):
             f = funpack(text(8,ip,bc))
             line += " " + str(f)
             ip += 8
+        elif i == opcodes.INTEGER:
+            f = iunpack(text(8,ip,bc))
+            line += " " + str(f)
+            ip += 8
         asmc.append(line)
         print(line)
     asmc = "\n".join(asmc)

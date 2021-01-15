@@ -368,10 +368,13 @@ def prefix_nuds(t):
 
 def prefix_neg(t):
     r = expression(50)
-    if r.type == 'number':
+    if r.type == 'float':
         r.val = str(-float(r.val))
         return r
-    t.items = [Token(t.pos,'number','0'),r]
+    if r.type == 'integer':
+        r.val = str(-int(r.val))
+        return r
+    t.items = [Token(t.pos,'integer','0'),r]
     return t
 def largs_nud(t):
     r = prefix_nud(t)
@@ -438,7 +441,7 @@ i_infix(30,infix_led,'or','|')
 i_infix(36,infix_led,'<<','>>')
 def i_terms(*vs):
     for v in vs: base_dmap[v] = {'lbp':0,'nud':itself}
-i_terms('as', ')','}',']',';',':','nl','elif','else','True','False','None','name','string','number','indent','dedent','except')
+i_terms('as', ')','}',']',';',':','nl','elif','else','True','False','None','name','string','float','integer','indent','dedent','except')
 base_dmap['nl']['val'] = 'nl'
 
 def gmap(t,v):

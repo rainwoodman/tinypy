@@ -135,7 +135,9 @@ def do_number(s,i,l):
             c = s[i]
             if c < '0' or c > '9': break
             v,i = v+c,i+1
-    T.add('number',v)
+        T.add('float',v)
+    else:
+        T.add('integer',v)
     return i
 
 def do_name(s,i,l):

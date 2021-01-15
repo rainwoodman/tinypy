@@ -8,7 +8,16 @@
  */
 int tp_true(TP, tp_obj v) {
     switch(v.type.typeid) {
-        case TP_NUMBER: return TPN_AS_FLOAT(v) != 0;
+        case TP_NUMBER: {
+            switch(v.type.magic) {
+                case TP_NUMBER_FLOAT:
+                    return TPN_AS_FLOAT(v) != 0;
+                case TP_NUMBER_INT:
+                    return TPN_AS_INT(v) != 0;
+                default:
+                    abort();
+            }
+        }
         case TP_NONE: return 0;
         case TP_STRING: return tp_string_len(v) != 0;
         case TP_LIST: return TPD_LIST(v)->len != 0;
@@ -311,7 +320,13 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
 
 tp_obj tp_add(TP, tp_obj a, tp_obj b) {
     if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
-        return tp_float(TPN_AS_FLOAT(a) + TPN_AS_FLOAT(b));
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(TPN_AS_INT(a) + TPN_AS_INT(b));
+            case TP_NUMBER_FLOAT:
+                return tp_float(TPN_AS_FLOAT(a) + TPN_AS_FLOAT(b));
+            default: abort();
+        }
     } else if (a.type.typeid == TP_STRING && a.type.typeid == b.type.typeid) {
         return tp_string_add(tp, a, b);
     } else if (a.type.typeid == TP_LIST && a.type.typeid == b.type.typeid) {
@@ -326,10 +341,13 @@ tp_obj tp_add(TP, tp_obj a, tp_obj b) {
 
 tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
     if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
-        return tp_float(TPN_AS_FLOAT(a) * TPN_AS_FLOAT(b));
-    }
-    if(a.type.typeid == TP_NUMBER) {
-        tp_obj c = a; a = b; b = c;
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(TPN_AS_INT(a) * TPN_AS_INT(b));
+            case TP_NUMBER_FLOAT:
+                return tp_float(TPN_AS_FLOAT(a) * TPN_AS_FLOAT(b));
+            default: abort();
+        }
     }
     if(a.type.typeid == TP_STRING && b.type.typeid == TP_NUMBER) {
         int n = TPN_AS_INT(b);
@@ -340,6 +358,63 @@ tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
         return tp_list_mul(tp, a, n);
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_mul) TypeError: ?"));
+}
+
+tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
+    if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(TPN_AS_INT(a) % TPN_AS_INT(b));
+            case TP_NUMBER_FLOAT:
+                return tp_float(fmod(TPN_AS_FLOAT(a), TPN_AS_FLOAT(b)));
+            default: abort();
+        }
+    }
+    if(a.type.typeid == TP_STRING) {
+            TP_META_BEGIN(a, format);
+            return tp_call(tp, format, tp_list_v(tp, 1, b), tp_None);
+            TP_META_END;
+    }
+    tp_raise(tp_None, tp_string_atom(tp, "(tp_mod) TypeError: ?"));
+}
+
+tp_obj tp_sub(TP, tp_obj a, tp_obj b) {
+    if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(TPN_AS_INT(a) - TPN_AS_INT(b));
+            case TP_NUMBER_FLOAT:
+                return tp_float(TPN_AS_FLOAT(a) - TPN_AS_FLOAT(b));
+            default: abort();
+        }
+    }
+    tp_raise(tp_None, tp_string_atom(tp, "(tp_sub) TypeError: ?"));
+}
+
+tp_obj tp_div(TP, tp_obj a, tp_obj b) {
+    if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(TPN_AS_INT(a) / TPN_AS_INT(b));
+            case TP_NUMBER_FLOAT:
+                return tp_float(TPN_AS_FLOAT(a) / TPN_AS_FLOAT(b));
+            default: abort();
+        }
+    }
+    tp_raise(tp_None, tp_string_atom(tp, "(tp_div) TypeError: ?"));
+}
+
+tp_obj tp_pow(TP, tp_obj a, tp_obj b) {
+    if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(pow(TPN_AS_INT(a), TPN_AS_INT(b)));
+            case TP_NUMBER_FLOAT:
+                return tp_float(pow(TPN_AS_FLOAT(a), TPN_AS_FLOAT(b)));
+            default: abort();
+        }
+    }
+    tp_raise(tp_None, tp_string_atom(tp, "(tp_div) TypeError: ?"));
 }
 
 /* Function: tp_len
@@ -364,7 +439,14 @@ int tp_equal(TP, tp_obj a, tp_obj b) {
     if (a.type.typeid != b.type.typeid) { return 0;}
     switch(a.type.typeid) {
         case TP_NONE: return 1;
-        case TP_NUMBER: return TPN_AS_FLOAT(a) == TPN_AS_FLOAT(b);
+        case TP_NUMBER: 
+            switch(tp_number_upcast(tp, &a, &b)) {
+                case TP_NUMBER_INT:
+                    return TPN_AS_INT(a) == TPN_AS_INT(b);
+                case TP_NUMBER_FLOAT:
+                    return TPN_AS_FLOAT(a) == TPN_AS_FLOAT(b);
+                default: abort();
+            }
         case TP_STRING: return tp_string_cmp(a, b) == 0;
         case TP_LIST: return tp_list_equal(tp, a, b);
         case TP_DICT: return tp_dict_equal(tp, a, b);
@@ -380,7 +462,14 @@ int tp_lessthan(TP, tp_obj a, tp_obj b) {
     }
     switch(a.type.typeid) {
         case TP_NONE: return 0;
-        case TP_NUMBER: return TPN_AS_FLOAT(a) < TPN_AS_FLOAT(b);
+        case TP_NUMBER:
+            switch(tp_number_upcast(tp, &a, &b)) {
+                case TP_NUMBER_INT:
+                    return TPN_AS_INT(a) < TPN_AS_INT(b);
+                case TP_NUMBER_FLOAT:
+                    return TPN_AS_FLOAT(a) < TPN_AS_FLOAT(b);
+                default: abort();
+            }
         case TP_STRING: return tp_string_cmp(a, b) < 0;
         case TP_LIST: return tp_list_lessthan(tp, a, b);
         case TP_DICT: {
@@ -392,37 +481,21 @@ int tp_lessthan(TP, tp_obj a, tp_obj b) {
     tp_raise(0,tp_string_atom(tp, "(tp_lessthan) TypeError: Unknown types."));
 }
 
-tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
-    switch(a.type.typeid) {
-        case TP_NUMBER:
-            if(b.type.typeid == TP_NUMBER)
-                return tp_int(TPN_AS_INT(a) % TPN_AS_INT(b));
-            break;
-        case TP_STRING:
-            TP_META_BEGIN(a, format);
-            return tp_call(tp, format, tp_list_v(tp, 1, b), tp_None);
-            TP_META_END;
-    }
-    tp_raise(tp_None, tp_string_atom(tp, "(tp_mod) TypeError: ?"));
-}
 
-#define TP_OP(name, expr, type_name, cast) \
+#define TP_DEF_OP_INT(name, expr) \
     tp_obj name(TP,tp_obj _a,tp_obj _b) { \
     if (_a.type.typeid == TP_NUMBER && _b.type.typeid == TP_NUMBER) { \
-        type_name a = cast(_a); type_name b = cast(_b); \
-        return expr; \
+        long a = TPN_AS_INT(_a); long b = TPN_AS_INT(_b); \
+        return tp_int(expr); \
     } \
     tp_raise(tp_None,tp_string_atom(tp, "(" #name ") TypeError: unsupported operand type(s)")); \
 }
 
-TP_OP(tp_bitwise_and, tp_int(a & b), long, TPN_AS_INT);
-TP_OP(tp_bitwise_or, tp_int(a | b), long, TPN_AS_INT);
-TP_OP(tp_bitwise_xor, tp_int(a ^ b), long, TPN_AS_INT);
-TP_OP(tp_lsh, tp_int(a << b), long, TPN_AS_INT);
-TP_OP(tp_rsh, tp_int(a >> b), long, TPN_AS_INT);
-TP_OP(tp_sub, tp_float(a - b), tp_num, TPN_AS_FLOAT);
-TP_OP(tp_div, tp_float(a / b), tp_num, TPN_AS_FLOAT);
-TP_OP(tp_pow, tp_float(pow(a, b)), tp_num, TPN_AS_FLOAT);
+TP_DEF_OP_INT(tp_bitwise_and, a & b);
+TP_DEF_OP_INT(tp_bitwise_or, a | b);
+TP_DEF_OP_INT(tp_bitwise_xor, a ^ b);
+TP_DEF_OP_INT(tp_lsh, a << b);
+TP_DEF_OP_INT(tp_rsh, a >> b);
 
 tp_obj tp_bitwise_not(TP, tp_obj a) {
     if (a.type.typeid == TP_NUMBER) {

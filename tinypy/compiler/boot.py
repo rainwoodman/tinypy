@@ -24,9 +24,12 @@ if not "tinypy" in sys.version:
     def number(v):
         if not isinstance(v, bytes):
             raise
-        if v[0:2] == b'0x':
-            v = int(v[2:],16)
-        return float(v)
+        if b'.' in v:
+            return float(v)
+        else:
+            if v[0:2] == b'0x':
+                return int(v[2:],16)
+            return int(v)
 
     def istype(v,t):
         if t == 'string': return isinstance(v,str)
@@ -39,9 +42,17 @@ if not "tinypy" in sys.version:
         import struct
         return struct.pack('d', v)
 
+    def ipack(v):
+        import struct
+        return struct.pack('l', v)
+
     def funpack(v):
         import struct
         return struct.unpack('d', v)[0]
+
+    def iunpack(v):
+        import struct
+        return struct.unpack('l', v)[0]
 
     def load(fname):
         f = open(fname,'rb')

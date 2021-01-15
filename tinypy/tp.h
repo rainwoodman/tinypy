@@ -72,6 +72,9 @@ enum TP_PACKED TPTypeMagic {
     TP_STRING_ATOM,   /* Nul terminated string, unmanaged memory. */
     TP_STRING_EXTERN, /* unmanaged external string */
     TP_STRING_VIEW,   /* reference to a section of another string */
+
+    TP_NUMBER_INT,    /* integer */
+    TP_NUMBER_FLOAT,  /* float */
 };
 
 enum TP_PACKED TPTypeMask {
@@ -94,8 +97,6 @@ typedef union {
     };
     int i;
     } TPGCMask;
-
-typedef double tp_num;
 
 /* Type: tp_obj
  * Tinypy's object representation.
@@ -123,39 +124,15 @@ typedef struct tp_obj {
     TPTypeInfo type;
     void * info;
     union {
-        tp_num num;
+        double nfloat;
+        long nint;
         void * ptr;
     };
 } tp_obj;
 
-tp_inline static tp_obj tp_int(long v) {
-    tp_obj r = {TP_NUMBER};
-    r.num = v;
-    return r;
-}
-
-tp_inline static tp_obj tp_float(tp_num v) {
-    tp_obj r = {TP_NUMBER};
-    r.num = v;
-    return r;
-}
-
-tp_inline static long tp_number_to_int(tp_obj v) {
-    return v.num;
-}
-#define TPN_AS_INT(v) tp_number_to_int(v)
-tp_inline static tp_num tp_number_to_float(tp_obj v) {
-    return v.num;
-}
-#define TPN_AS_FLOAT(v) tp_number_to_float(v)
-
 extern tp_obj tp_None;
 extern tp_obj tp_True;
 extern tp_obj tp_False;
-
-tp_inline static tp_obj tp_bool(int v) {
-    return v?tp_True:tp_False;
-}
 
 typedef struct tpd_obj {
     TPGCMask gci;
@@ -210,7 +187,8 @@ typedef union tpd_code {
     struct { unsigned char i,a,b,c; } regs;
     struct { char val[0]; } string;
     /* ensure the struct is 0 bytes long. */
-    TP_PACKED struct { tp_num val[0]; } number;
+    TP_PACKED struct { double val[0]; } number;
+    TP_PACKED struct { long val[0]; } integer;
 } tpd_code;
 
 typedef struct tpd_frame {
@@ -469,6 +447,8 @@ void tp_module_sys_init(TP, int argc, char * argv[]);
 void tp_module_builtins_init(TP);
 void tp_module_compiler_init(TP);
 void tp_module_corelib_init(TP);
+
+#include "tp_number.h"
 
 #include "tp_ops.h"
 

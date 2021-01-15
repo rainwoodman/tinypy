@@ -123,19 +123,35 @@ tp_obj tpy_number(TP) {
 }
 
 tp_obj tpy_fpack(TP) {
-    tp_num v = TP_PARAMS_FLOAT();
-    tp_obj r = tp_string_t(tp,sizeof(tp_num));
-    *(tp_num*) tp_string_getptr(r) = v;
+    double v = TP_PARAMS_FLOAT();
+    tp_obj r = tp_string_t(tp,sizeof(double));
+    *(double*) tp_string_getptr(r) = v;
     return r;
 }
 
 tp_obj tpy_funpack(TP) {
     tp_obj v = TP_PARAMS_STR();
-    if (tp_string_len(v) != sizeof(tp_num)) {
+    if (tp_string_len(v) != sizeof(double)) {
         tp_raise(tp_None, tp_string_atom(tp, "funpack ValueError: length of string is incorrect."));
     }
-    tp_num r = *((tp_num*) tp_string_getptr(v));
+    double r = *((double*) tp_string_getptr(v));
     return tp_float(r);
+}
+
+tp_obj tpy_ipack(TP) {
+    long v = TP_PARAMS_INT();
+    tp_obj r = tp_string_t(tp,sizeof(long));
+    *(long*) tp_string_getptr(r) = v;
+    return r;
+}
+
+tp_obj tpy_iunpack(TP) {
+    tp_obj v = TP_PARAMS_STR();
+    if (tp_string_len(v) != sizeof(long)) {
+        tp_raise(tp_None, tp_string_atom(tp, "iunpack ValueError: length of string is incorrect."));
+    }
+    long r = *((long*) tp_string_getptr(v));
+    return tp_int(r);
 }
 
 tp_obj tpy_abs(TP) {
@@ -144,8 +160,8 @@ tp_obj tpy_abs(TP) {
 tp_obj tpy_int(TP) {
     return tp_int(TPN_AS_INT(tpy_number(tp)));
 }
-tp_num _roundf(tp_num v) {
-    tp_num av = fabs(v); tp_num iv = (long)av;
+double _roundf(double v) {
+    double av = fabs(v); double iv = (long)av;
     av = (av-iv < 0.5?iv:iv+1);
     return (v<0?-av:av);
 }
@@ -400,6 +416,8 @@ void tp_module_builtins_init(TP) {
     {"chr",tpy_chr}, 
     {"fpack",tpy_fpack},
     {"funpack", tpy_funpack},
+    {"ipack",tpy_ipack},
+    {"iunpack", tpy_iunpack},
     {"abs",tpy_abs},
     {"eval",tpy_eval},
     {"exec",tpy_exec},

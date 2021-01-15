@@ -50,6 +50,7 @@ IN = 37
 
 PARAMS = 32
 NUMBER = 12
+INTEGER = 53
 STRING = 13
 DICT = 27
 LIST = 28
@@ -71,6 +72,8 @@ def _make_dicts():
         if not (k[0] >= 'A' and k[0] <= 'Z'):
             continue
         names[G[k]] = k
+        if k in codes:
+            raise Exception("duplicated codes")
         codes[k] = G[k]
     return names, codes
 

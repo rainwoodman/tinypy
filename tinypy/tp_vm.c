@@ -303,11 +303,19 @@ int tp_step(TP) {
         case TP_IMOVE: RA = RB; break;
         case TP_INUMBER:
             #ifdef TP_SANDBOX
-            tp_bounds(tp,cur,sizeof(tp_num)/4);
+            tp_bounds(tp,cur,sizeof((*cur).number.val[0])/4);
             #endif
             cur++;
             RA = tp_float((*cur).number.val[0]);
-            cur+= sizeof(tp_num)/4;
+            cur+= sizeof((*cur).number.val[0])/4;
+            continue;
+        case TP_IINTEGER:
+            #ifdef TP_SANDBOX
+            tp_bounds(tp,cur,sizeof((*cur).integer.val[0])/4);
+            #endif
+            cur++;
+            RA = tp_int((*cur).integer.val[0]);
+            cur+= sizeof((*cur).integer.val[0])/4;
             continue;
         case TP_ISTRING: {
             #ifdef TP_SANDBOX

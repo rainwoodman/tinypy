@@ -87,11 +87,15 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         } 
     } else if (type == TP_NUMBER) {
         char buf[128];
-        tp_num v = TPN_AS_FLOAT(self);
-        if ((fabs(v-(long)v)) < 0.000001) {
-            snprintf(buf, 120, "%ld", (long)v);
-        } else {
-            snprintf(buf, 120, "%lf", (double)v);
+        switch (self.type.magic) {
+            case TP_NUMBER_INT:
+                snprintf(buf, 120, "%ld", TPN_AS_INT(self));
+                break;
+            case TP_NUMBER_FLOAT:
+                snprintf(buf, 120, "%lf", TPN_AS_FLOAT(self));
+                break;
+            default:
+                abort();
         }
         string_builder_write(sb, buf, -1);
     } else if(type == TP_DICT) {

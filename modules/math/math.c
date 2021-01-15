@@ -190,7 +190,7 @@ static tp_obj math_frexp(TP) {
     }
 
     tp_set(tp, rList, tp_None, tp_float(r));
-    tp_set(tp, rList, tp_None, tp_float((tp_num)y));
+    tp_set(tp, rList, tp_None, tp_int(y));
     return (rList);
 }
 
@@ -232,7 +232,7 @@ static tp_obj math_log(TP) {
     if (b.type.typeid == TP_NONE)
         y = M_E;
     else if (b.type.typeid == TP_NUMBER)
-        y = (double)b.num;
+        y = TPN_AS_FLOAT(b);
     else
         tp_raise_printf(tp_None, "%s(x, [base]): base invalid", __func__);
 

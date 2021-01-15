@@ -72,13 +72,27 @@ def _do_string(v,r=None):
 def do_string(t,r=None):
     return _do_string(t.val,r)
 
-def _do_number(i,r=None):
+def _do_integer(i,r=None):
+    r = get_tmp(r)
+    code(INTEGER,r,0,0)
+    write(ipack(i))
+    return r
+
+def _do_float(i,r=None):
     r = get_tmp(r)
     code(NUMBER,r,0,0)
     write(fpack(i))
     return r
-def do_number(t,r=None):
-    return _do_number(number(t.val.encode()),r)
+
+def do_float(t,r=None):
+    s = t.val
+    return _do_float(float(s.encode()),r)
+
+def do_integer(t,r=None):
+    s = t.val
+    if s.startswith('0x'):
+        return _do_integer(int(s[2:].encode(), 16),r)
+    return _do_integer(int(s.encode()),r)
 
 def get_tag():
     k = str(D._tagi)
@@ -264,9 +278,9 @@ def do_symbol(t,r=None):
     }
     if t.val == 'None': return _do_none(r)
     if t.val == 'True':
-        return _do_number(1,r)
+        return _do_integer(1,r)
     if t.val == 'False':
-        return _do_number(0,r)
+        return _do_integer(0,r)
     items = t.items
 
     if t.val in ['and','or']:
@@ -317,7 +331,7 @@ def do_set_ctx(k,v):
         r = do(v); un_tmp(r)
         n, tmp = 0, Token(v.pos,'reg',r)
         for tt in k.items:
-            free_tmp(do_set_ctx(tt,Token(tmp.pos,'get',None,[tmp,Token(tmp.pos,'number',str(n))]))) #REG
+            free_tmp(do_set_ctx(tt,Token(tmp.pos,'get',None,[tmp,Token(tmp.pos,'integer',str(n))]))) #REG
             n += 1
         free_reg(r)
         return
@@ -606,7 +620,7 @@ def do_for(tok):
 
     reg = get_tmp()
     itr = do(items[1])
-    i = _do_number(0)
+    i = _do_integer(0)
 
     t = stack_tag(); tag(t,'loop'); tag(t,'continue')
     code(ITER,reg,itr,i); jump(t,'end')
@@ -736,7 +750,8 @@ fmap = {
 }
 rmap = {
     'list':do_list, 'tuple':do_list, 'dict':do_dict, 'slice':do_list,
-    'comp':do_comp, 'name':do_name,'symbol':do_symbol,'number':do_number,
+    'comp':do_comp, 'name':do_name,'symbol':do_symbol,
+    'integer':do_integer, 'float':do_float,
     'string':do_string,'get':do_get, 'mget':do_mget, 'call':do_call, 'reg':do_reg,
 }
 
