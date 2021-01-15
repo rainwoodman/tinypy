@@ -29,7 +29,7 @@ tp_obj tp_params_n(TP,int n, tp_obj argv[]) {
     tp_obj r = tp_params(tp);
     int i;
     for (i=0; i<n; i++) {
-        tpd_list_append(tp, r.list.val, argv[i]);
+        tpd_list_append(tp, TPD_LIST(r), argv[i]);
     }
     return r;
 }
@@ -54,7 +54,7 @@ tp_obj tp_params_v(TP,int n,...) {
     tp_obj r = tp_params(tp);
     va_list a; va_start(a,n);
     for (i=0; i<n; i++) {
-        tpd_list_append(tp, r.list.val, va_arg(a, tp_obj));
+        tpd_list_append(tp, TPD_LIST(r), va_arg(a, tp_obj));
     }
     va_end(a);
     return r;

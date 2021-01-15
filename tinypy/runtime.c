@@ -35,7 +35,7 @@ tp_obj tp_load(TP, const char * fname) {
 
 
 tp_obj tpy_exists(TP) {
-    char * fname = tp_cstr(tp, TP_STR());
+    char * fname = tp_cstr(tp, TP_PARAMS_STR());
     struct stat stbuf;
     tp_obj r = tp_number(!stat(fname, &stbuf));
     tp_free(tp, fname);
@@ -43,15 +43,15 @@ tp_obj tpy_exists(TP) {
 }
 
 tp_obj tpy_load(TP) {
-    char * fname = tp_cstr(tp, TP_STR());
+    char * fname = tp_cstr(tp, TP_PARAMS_STR());
     tp_obj r = tp_load(tp, fname);
     tp_free(tp, fname);
     return r;
 }
 
 tp_obj tpy_save(TP) {
-    char * fname = tp_cstr(tp, TP_STR());
-    tp_obj v = TP_OBJ();
+    char * fname = tp_cstr(tp, TP_PARAMS_STR());
+    tp_obj v = TP_PARAMS_OBJ();
     tp_save(tp, fname, v);
     tp_free(tp, fname);
     return tp_None;
@@ -59,7 +59,7 @@ tp_obj tpy_save(TP) {
 
 
 tp_obj tpy_mtime(TP) {
-    char * fname = tp_cstr(tp, TP_STR());
+    char * fname = tp_cstr(tp, TP_PARAMS_STR());
     struct stat stbuf;
     tp_obj r;
     if (!stat(fname, &stbuf)) {
@@ -79,7 +79,7 @@ tp_obj tpy_mtime(TP) {
  * enables this, you better remove it before deploying your app :P
  */
 tp_obj tpy_system(TP) {
-    char * s = tp_cstr(tp, TP_STR());
+    char * s = tp_cstr(tp, TP_PARAMS_STR());
     int r = system(s);
     tp_free(tp, s);
     return tp_number(r);

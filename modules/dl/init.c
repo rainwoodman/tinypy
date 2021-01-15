@@ -145,7 +145,7 @@ tp_obj unmap_value(TP, char type, void* value) {
 
 /* handle = dl.open("library") */
 tp_obj dl_dlopen(TP) {
-    tp_obj name = TP_STR();
+    tp_obj name = TP_PARAMS_STR();
     tp_obj handle = tpy_data(tp, 0, NULL);
     handle.data.val = dlopen(name.string.info->s, RTLD_LAZY);
     if (handle.data.val == NULL) {
@@ -156,15 +156,15 @@ tp_obj dl_dlopen(TP) {
 
 /* dl.close(handle) */
 tp_obj dl_dlclose(TP) {
-    tp_obj handle = TP_TYPE(TP_DATA);
+    tp_obj handle = TP_PARAMS_TYPE(TP_DATA);
     dlclose(handle.data.val);
     return tp_None;
 }
 
 /* sym = dl.sym(handle, "name") */
 tp_obj dl_dlsym(TP) {
-    tp_obj handle = TP_TYPE(TP_DATA);
-    tp_obj name = TP_STR();
+    tp_obj handle = TP_PARAMS_TYPE(TP_DATA);
+    tp_obj name = TP_PARAMS_STR();
     tp_obj result = tpy_data(tp, 0, NULL);
     void* sym = dlsym(handle.data.val, name.string.info->s);
     result.data.val = sym;
@@ -176,7 +176,7 @@ tp_obj dl_dlsym(TP) {
 }
 
 tp_obj dl_size(TP) {
-    tp_obj signature = TP_STR();
+    tp_obj signature = TP_PARAMS_STR();
     int i;
     int size = 0;
     for(i = 0; i < tp_string_len(signature); i++) {
@@ -190,8 +190,8 @@ void dl_free_data(TP, tp_obj self) {
 }
 
 tp_obj dl_pack(TP) {
-    tp_obj signature = TP_STR();
-    tp_obj values = TP_TYPE(TP_LIST);
+    tp_obj signature = TP_PARAMS_STR();
+    tp_obj values = TP_PARAMS_TYPE(TP_LIST);
     int i = 0;
     int size = 0;
     for(i = 0; i < tp_string_len(signature); i++) {
@@ -210,8 +210,8 @@ tp_obj dl_pack(TP) {
 }
 
 tp_obj dl_unpack(TP) {
-    tp_obj signature = TP_STR();
-    tp_obj packed = TP_TYPE(TP_DATA);
+    tp_obj signature = TP_PARAMS_STR();
+    tp_obj packed = TP_PARAMS_TYPE(TP_DATA);
     int i = 0;
     int offset = 0;
     tp_obj result = tp_list(tp);
@@ -228,10 +228,10 @@ tp_obj dl_unpack(TP) {
 
 /* result = dl.call(sym, 'return_type', 'signature', [args]) */
 tp_obj dl_call(TP) {
-    tp_obj method = TP_TYPE(TP_DATA);
-    tp_obj return_type = TP_STR();
-    tp_obj signature = TP_STR();
-    tp_obj arguments = TP_TYPE(TP_LIST);
+    tp_obj method = TP_PARAMS_TYPE(TP_DATA);
+    tp_obj return_type = TP_PARAMS_STR();
+    tp_obj signature = TP_PARAMS_STR();
+    tp_obj arguments = TP_PARAMS_TYPE(TP_LIST);
 
     int num_args = tp_string_len(signature);
     ffi_type *args[num_args];
@@ -262,7 +262,7 @@ tp_obj dl_call(TP) {
 }
 
 tp_obj call_method(TP) {
-    tp_obj self = TP_OBJ();
+    tp_obj self = TP_PARAMS_OBJ();
     tp_obj args = tp_list_copy(tp, tp->params);
 
     tp_obj symbol = tp_get(tp, self, tp_string_atom(tp, "symbol"));
@@ -275,10 +275,10 @@ tp_obj call_method(TP) {
 
 /* Returns an object which calls the method */
 tp_obj dl_load(TP) {
-    tp_obj library = TP_STR();
-    tp_obj name = TP_STR();
-    tp_obj return_type = TP_STR();
-    tp_obj signature = TP_STR();
+    tp_obj library = TP_PARAMS_STR();
+    tp_obj name = TP_PARAMS_STR();
+    tp_obj return_type = TP_PARAMS_STR();
+    tp_obj signature = TP_PARAMS_STR();
 
     tp_params_v(tp, 1, library);
     tp_obj handle = dl_dlopen(tp);

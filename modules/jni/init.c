@@ -24,15 +24,15 @@ void jni_free_method(TP, tp_obj obj) {
 jvalue jNULL = {.l=NULL};
 
 tp_obj jni_find_class(TP) {
-    tp_obj class_name = TP_STR();
+    tp_obj class_name = TP_PARAMS_STR();
     jclass cls = (*env)->FindClass(env, class_name.string.info->s);
     return tpy_data(tp, 0, cls);
 }
 
 tp_obj jni_get_method_id(TP) {
-    tp_obj cls = TP_TYPE(TP_DATA);
-    tp_obj name = TP_STR();
-    tp_obj signature = TP_STR();
+    tp_obj cls = TP_PARAMS_TYPE(TP_DATA);
+    tp_obj name = TP_PARAMS_STR();
+    tp_obj signature = TP_PARAMS_STR();
 
     jmethodID id = (*env)->GetMethodID(env, cls.data.val, name.string.info->s, signature.string.info->s);
     if(id == NULL) return tp_None;
@@ -137,8 +137,8 @@ jvalue* jni_convert_args(TP, const char* signature) {
 }
 
 tp_obj jni_call_object_method(TP) {
-    tp_obj object = TP_TYPE(TP_DATA);
-    tp_obj tp_method = TP_TYPE(TP_DATA);
+    tp_obj object = TP_PARAMS_TYPE(TP_DATA);
+    tp_obj tp_method = TP_PARAMS_TYPE(TP_DATA);
     jni_method_t* method = (jni_method_t*) tp_method.data.val;
 
     jvalue* arguments = jni_convert_args(tp, method->signature);
@@ -163,8 +163,8 @@ tp_obj jni_call_object_method(TP) {
 }
 
 tp_obj jni_new_object(TP) {
-    tp_obj cls = TP_TYPE(TP_DATA);
-    tp_obj tp_constructor = TP_TYPE(TP_DATA);
+    tp_obj cls = TP_PARAMS_TYPE(TP_DATA);
+    tp_obj tp_constructor = TP_PARAMS_TYPE(TP_DATA);
     jni_method_t* constructor = (jni_method_t*) tp_constructor.data.val;
 
     jvalue* arguments = jni_convert_args(tp, constructor->signature);

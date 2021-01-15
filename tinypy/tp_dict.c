@@ -1,7 +1,7 @@
 tp_obj tp_dict_nt(TP) {
     tp_obj r = {TP_DICT};
-    r.dict.val = tpd_dict_new(tp);
     r.type.magic = TP_DICT_RAW;
+    r.info = tpd_dict_new(tp);
     return r;
 }
 
@@ -60,18 +60,18 @@ tp_obj tp_dict_from_items (TP, int n, tp_obj * argv) {
 
 tp_obj tp_dict_get(TP, tp_obj self, tp_obj k) {
     int hash = tp_hash(tp, k);
-    int n = tpd_dict_hashfind(tp, self.dict.val, hash, k);
+    int n = tpd_dict_hashfind(tp, TPD_DICT(self), hash, k);
 
     if (n < 0) {
         tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %O (%d)", &k, hash);
     }
 
-    return tpd_dict_get(tp, self.dict.val, n);
+    return tpd_dict_get(tp, TPD_DICT(self), n);
 }
 
 int tp_dict_has(TP, tp_obj self, tp_obj k) {
     int hash = tp_hash(tp, k);
-    int n = tpd_dict_hashfind(tp, self.dict.val, hash, k);
+    int n = tpd_dict_hashfind(tp, TPD_DICT(self), hash, k);
 
     if (n < 0) {
         return 0;
@@ -80,23 +80,23 @@ int tp_dict_has(TP, tp_obj self, tp_obj k) {
 }
 
 void tp_dict_del(TP, tp_obj self, tp_obj k) {
-    int n = tpd_dict_hashfind(tp, self.dict.val, tp_hash(tp, k), k);
+    int n = tpd_dict_hashfind(tp, TPD_DICT(self), tp_hash(tp, k), k);
     if (n < 0) {
         tp_raise_printf(, "(tpd_dict_del) KeyError: %O", &k);
     }
-    tpd_dict_del(tp, self.dict.val, n);
+    tpd_dict_del(tp, TPD_DICT(self), n);
 }
 
 void tp_dict_set(TP, tp_obj self, tp_obj k, tp_obj v) {
-    tpd_dict_hashsetx(tp, self.dict.val, tp_hash(tp, k), k, v);
+    tpd_dict_hashsetx(tp, TPD_DICT(self), tp_hash(tp, k), k, v);
     tp_grey(tp, k);
     tp_grey(tp, v);
 }
 
 tp_obj tp_dict_copy(TP, tp_obj rr) {
     tp_obj obj = tp_dict_nt(tp);
-    tpd_dict *o = rr.dict.val;
-    tpd_dict *r = obj.dict.val;
+    tpd_dict *o = TPD_DICT(rr);
+    tpd_dict *r = TPD_DICT(obj);
     obj.type = rr.type;
     *r = *o;
     r->items = (tpd_item*) tp_malloc(tp, sizeof(tpd_item)*o->alloc);
@@ -106,18 +106,18 @@ tp_obj tp_dict_copy(TP, tp_obj rr) {
 
 int tp_dict_equal(TP, tp_obj a, tp_obj b) {
     int i;
-    if(a.dict.val->len != b.dict.val->len) {
+    if(TPD_DICT(a)->len != TPD_DICT(b)->len) {
         return 0;
     }
-    for (i=0; i<a.dict.val->len; i++) {
-        int na = tpd_dict_next(tp, a.dict.val);
-        tp_obj key = a.dict.val->items[na].key;
-        tp_obj value = b.dict.val->items[na].val;
+    for (i=0; i<TPD_DICT(a)->len; i++) {
+        int na = tpd_dict_next(tp, TPD_DICT(a));
+        tp_obj key = TPD_DICT(a)->items[na].key;
+        tp_obj value = TPD_DICT(b)->items[na].val;
         int hash = tp_hash(tp, key);
 
-        int nb = tpd_dict_hashfind(tp, b.dict.val, hash, key);
+        int nb = tpd_dict_hashfind(tp, TPD_DICT(b), hash, key);
         if (nb < 0) return 0;
-        tp_obj bv = tpd_dict_get(tp, b.dict.val, nb);
+        tp_obj bv = tpd_dict_get(tp, TPD_DICT(b), nb);
         if(!tp_equal(tp, value, bv)) return 0;
     }
     return 1;
@@ -126,11 +126,11 @@ int tp_dict_equal(TP, tp_obj a, tp_obj b) {
 void tp_dict_update(TP, tp_obj self, tp_obj v)
 {
     int i;
-    for (i=0; i<v.dict.val->len; i++) {
-        int n = tpd_dict_next(tp, v.dict.val);
+    for (i=0; i<TPD_DICT(v)->len; i++) {
+        int n = tpd_dict_next(tp, TPD_DICT(v));
         tp_dict_set(tp,
                 self,
-                v.dict.val->items[n].key,
-                v.dict.val->items[n].val);
+                TPD_DICT(v)->items[n].key,
+                TPD_DICT(v)->items[n].val);
     }
 }

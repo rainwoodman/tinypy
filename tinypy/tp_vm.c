@@ -52,7 +52,7 @@ tp_vm * tp_create_vm(void) {
     for (i=0; i < TP_STACK_MAX; i++) { 
         tp_set(tp, stack, tp_None, tp_None);
     }
-    tp->stack = stack.list.val;
+    tp->stack = TPD_LIST(stack);
     tp->stack->len = 0;
     tp_gc_set_reachable(tp, stack);
 
@@ -80,7 +80,7 @@ tp_vm * tp_create_vm(void) {
     for (i=0; i<TP_FRAMES; i++) {
         tp_set(tp, frames, tp_None, tp_None);
     }
-    tp->frames = frames.list.val;
+    tp->frames = TPD_LIST(frames);
     tp->frames->len = 0;
 
     tp_gc_set_reachable(tp, tp->builtins);
@@ -235,7 +235,7 @@ int tp_step(TP) {
     #endif
     tp_gc_run(tp, 0);
     tpd_code e = *cur;
-    tpd_code *base = (tpd_code*)f->code.string.info->s;
+    tpd_code *base = (tpd_code*) tp_string_getptr(f->code);
     /* FIXME: convert this to a flag */
     // fprintf(stdout,"[%04d] %2d.%4d: %-6s %3d %3d %3d\n",tp->steps, tp->frames->len - 1, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
 //       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(f->regs[i])); }
@@ -283,9 +283,9 @@ int tp_step(TP) {
         case TP_IGET: RA = tp_get(tp,RB,RC); GA; break;
         case TP_IMGET: RA = tp_mget(tp,RB,RC); GA; break;
         case TP_IITER:
-            if (RC.number.val < tp_len(tp,RB).number.val) {
+            if (RC.num < tp_len(tp,RB).num) {
                 RA = tp_iter(tp,RB,RC); GA;
-                RC.number.val += 1;
+                RC.num += 1;
                 #ifdef TP_SANDBOX
                 tp_bounds(tp,cur,1);
                 #endif

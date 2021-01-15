@@ -41,7 +41,7 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
 
     int type = self.type.typeid;
     if(type == TP_DICT) {
-        tp_obj data = tp_data_nt(tp, 0, self.dict.val);
+        tp_obj data = tp_data_nt(tp, 0, TPD_DICT(self));
         /* FIXME: use tp_data_cmp */
         if(tpd_list_find(tp, visited, data, tp_equal) >= 0) {
             string_builder_write(sb, "{...}", -1);
@@ -49,7 +49,7 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         }
         tpd_list_append(tp, visited, data);
     } else if(type == TP_LIST) {
-        tp_obj data = tp_data_nt(tp, 0, self.list.val);
+        tp_obj data = tp_data_nt(tp, 0, TPD_LIST(self));
         if(tpd_list_find(tp, visited, data, tp_equal) >= 0) {
             string_builder_write(sb, "[...]", -1);
             return;
@@ -87,7 +87,7 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         } 
     } else if (type == TP_NUMBER) {
         char buf[128];
-        tp_num v = self.number.val;
+        tp_num v = self.num;
         if ((fabs(v-(long)v)) < 0.000001) {
             snprintf(buf, 120, "%ld", (long)v);
         } else {
@@ -104,12 +104,12 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         }
         string_builder_write(sb, "{", -1);
         int i, n = 0;
-        for(i = 0; i < self.dict.val->alloc; i++) {
-            if(self.dict.val->items[i].used > 0) {
-                tp_str_(tp, self.dict.val->items[i].key, visited, sb, mode);
+        for(i = 0; i < TPD_DICT(self)->alloc; i++) {
+            if(TPD_DICT(self)->items[i].used > 0) {
+                tp_str_(tp, TPD_DICT(self)->items[i].key, visited, sb, mode);
                 string_builder_write(sb, ": ", -1);
-                tp_str_(tp, self.dict.val->items[i].val, visited, sb, mode);
-                if(n < self.dict.val->len - 1) {
+                tp_str_(tp, TPD_DICT(self)->items[i].val, visited, sb, mode);
+                if(n < TPD_DICT(self)->len - 1) {
                     string_builder_write(sb, ", ", -1);
                 }
                 n += 1;
@@ -119,9 +119,9 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
     } else if(type == TP_LIST) {
         string_builder_write(sb, "[", -1);
         int i;
-        for(i = 0; i < self.list.val->len; i++) {
-            tp_str_(tp, self.list.val->items[i], visited, sb, mode);
-            if(i < self.list.val->len - 1) {
+        for(i = 0; i < TPD_LIST(self)->len; i++) {
+            tp_str_(tp, TPD_LIST(self)->items[i], visited, sb, mode);
+            if(i < TPD_LIST(self)->len - 1) {
                 string_builder_write(sb, ", ", -1);
             }
         }
@@ -130,11 +130,11 @@ void tp_str_(TP, tp_obj self, tpd_list * visited, StringBuilder * sb, int mode) 
         string_builder_write(sb, "None", -1);
     } else if (type == TP_DATA) {
         char buf[128];
-        snprintf(buf, 120, "<data %p>", self.data.val);
+        snprintf(buf, 120, "<data %p>", self.ptr);
         string_builder_write(sb, buf, -1);
     } else if (type == TP_FUNC) {
         char buf[128];
-        snprintf(buf, 120, "<func %p>", self.func.info);
+        snprintf(buf, 120, "<func %p>", TPD_FUNC(self));
         string_builder_write(sb, buf, -1);
     } else {
         string_builder_write(sb, "<?>", -1);

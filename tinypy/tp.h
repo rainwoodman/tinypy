@@ -46,6 +46,9 @@
    #define tp_realloc(x,y) GC_REALLOC(x,y)
    #define tp_free(x)*/
 
+#define TP tp_vm *tp
+typedef struct tp_vm tp_vm;
+
 enum TP_PACKED TPTypeID {
     TP_NONE = 0,
     TP_NUMBER = 1,
@@ -72,7 +75,7 @@ enum TP_PACKED TPTypeMagic {
 };
 
 enum TP_PACKED TPTypeMask {
-    TP_OBJECT_CPTR = 1<<5,
+    TP_PARAMS_OBJECT_CPTR = 1<<5,
     TP_FUNC_MASK_STATIC = 1<<6,  /* function will not automatically bind to an instance. */
     TP_FUNC_MASK_METHOD = 1<<7,  /* (bound) prepend instance to params before call. */
 };
@@ -116,23 +119,19 @@ typedef double tp_num;
  * data.val - The user-provided data pointer.
  * type.magic - The user-provided magic number for identifying the data type.
  */
-typedef union tp_obj {
+typedef struct tp_obj {
     TPTypeInfo type;
-    struct { TPTypeInfo type; TPGCMask * gci; } gc;
-    struct { TPTypeInfo type; tp_num val; } number;
-    struct { TPTypeInfo type; struct tpd_func *info; void *cfnc; } func;
-    struct { TPTypeInfo type; struct tpd_data *info; void *val; } data;
-    struct { TPTypeInfo type; struct tpd_frame *info; } frame;
-
-    struct { TPTypeInfo type; struct tpd_obj *info; } obj;
-    struct { TPTypeInfo type; struct tpd_list *val; } list;
-    struct { TPTypeInfo type; struct tpd_dict *val; } dict;
-    struct { TPTypeInfo type; struct tpd_string *info; const char * val;} string;
+    void * info;
+    union {
+        tp_num num;
+        void * ptr;
+    };
 } tp_obj;
 
 typedef struct tpd_obj {
     TPGCMask gci;
 } tpd_obj;
+#define TPD_OBJ(v) ((tpd_obj*) (v).info)
 
 typedef struct tpd_string {
     TPGCMask gci;
@@ -140,6 +139,7 @@ typedef struct tpd_string {
     char * s;
     int len;
 } tpd_string;
+#define TPD_STRING(v) ((tpd_string*) (v).info)
 
 typedef struct tpd_list {
     TPGCMask gci;
@@ -147,6 +147,7 @@ typedef struct tpd_list {
     int len;
     int alloc;
 } tpd_list;
+#define TPD_LIST(v) ((tpd_list*) (v).info)
 
 typedef struct tpd_item {
     int used;
@@ -165,6 +166,7 @@ typedef struct tpd_dict {
     int mask;
     int used;
 } tpd_dict;
+#define TPD_DICT(v) ((tpd_dict*) (v).info)
 
 typedef struct tpd_func {
     TPGCMask gci;
@@ -172,6 +174,7 @@ typedef struct tpd_func {
     tp_obj globals;
     tp_obj code;
 } tpd_func;
+#define TPD_FUNC(v) ((tpd_func*) (v).info)
 
 typedef union tpd_code {
     unsigned char i;
@@ -198,6 +201,14 @@ typedef struct tpd_frame {
     int lineno;
     int cregs;
 } tpd_frame;
+#define TPD_FRAME(v) ((tpd_frame*) (v).info)
+
+typedef struct tpd_data {
+    TPGCMask gci;
+    void (*free)(TP,tp_obj);
+} tpd_data;
+#define TPD_DATA(v) ((tpd_data*) v.info)
+
 
 #define TP_FRAMES 256
 #define TP_STACK_MAX 4096
@@ -267,12 +278,6 @@ typedef struct tp_vm {
 
     void (*echo)(const char* data, int length);
 } tp_vm;
-
-#define TP tp_vm *tp
-typedef struct tpd_data {
-    TPGCMask gci;
-    void (*free)(TP,tp_obj);
-} tpd_data;
 
 #define tp_True tp_number(1)
 #define tp_False tp_number(0)
@@ -358,12 +363,12 @@ tp_obj tp_check_type(TP, int t, tp_obj v) {
  * function scope.
  * */
 #define TP_NO_LIMIT 0
-#define TP_NPARAMS() (tp->lparams->list.val->len)
-#define TP_OBJ() (tp_get(tp, *tp->lparams, tp_None))
-#define TP_TYPE(t) tp_check_type(tp, t, TP_OBJ())
-#define TP_NUM() (TP_TYPE(TP_NUMBER).number.val)
-#define TP_STR() (TP_TYPE(TP_STRING))
-#define TP_DEFAULT(d) (tp->lparams->list.val->len?TP_OBJ():(d))
+#define TP_NPARAMS() (TPD_LIST(*tp->lparams)->len)
+#define TP_PARAMS_OBJ() (tp_get(tp, *tp->lparams, tp_None))
+#define TP_PARAMS_TYPE(t) tp_check_type(tp, t, TP_PARAMS_OBJ())
+#define TP_PARAMS_NUM() (TP_PARAMS_TYPE(TP_NUMBER).num)
+#define TP_PARAMS_STR() (TP_PARAMS_TYPE(TP_STRING))
+#define TP_PARAMS_DEFAULT(d) (TPD_LIST(*tp->lparams)->len?TP_PARAMS_OBJ():(d))
 
 /* Macro: TP_LOOP
  * Macro to iterate over all remaining arguments.
@@ -374,7 +379,7 @@ tp_obj tp_check_type(TP, int t, tp_obj v) {
  * > tp_obj *my_func(tp_vm *tp)
  * > {
  * >     // We retrieve the first argument like normal.
- * >     tp_obj first = TP_OBJ();
+ * >     tp_obj first = TP_PARAMS_OBJ();
  * >     // Then we iterate over the remaining arguments.
  * >     tp_obj arg;
  * >     TP_LOOP(arg)
@@ -384,9 +389,9 @@ tp_obj tp_check_type(TP, int t, tp_obj v) {
  */
 tp_obj tpd_list_get(TP, tpd_list *self, int k, const char *error);
 #define TP_LOOP(e) \
-    int __l = tp->lparams->list.val->len; \
+    int __l = TPD_LIST(*tp->lparams)->len; \
     int __i; for (__i=0; __i<__l; __i++) { \
-        (e) = tpd_list_get(tp, tp->lparams->list.val, __i, "TP_LOOP");
+        (e) = tpd_list_get(tp, TPD_LIST(*tp->lparams), __i, "TP_LOOP");
 #define TP_END \
     }
 
@@ -394,9 +399,9 @@ tp_obj tpd_list_get(TP, tpd_list *self, int k, const char *error);
  * Creates a new numeric object.
  */
 tp_inline static tp_obj tp_number(tp_num v) {
-    tp_obj val = {TP_NUMBER};
-    val.number.val = v;
-    return val;
+    tp_obj r = {TP_NUMBER};
+    r.num = v;
+    return r;
 }
 
 /* Function: tp_string_n

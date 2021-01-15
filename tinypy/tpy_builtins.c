@@ -4,18 +4,18 @@
 tp_obj tpy_print(TP);
 
 tp_obj tpy_bind(TP) {
-    tp_obj r = TP_TYPE(TP_FUNC);
-    tp_obj self = TP_OBJ();
+    tp_obj r = TP_PARAMS_TYPE(TP_FUNC);
+    tp_obj self = TP_PARAMS_OBJ();
     return tp_bind(tp, r, self);
 }
 
 tp_obj tpy_staticmethod(TP) {
-    tp_obj r = TP_TYPE(TP_FUNC);
+    tp_obj r = TP_PARAMS_TYPE(TP_FUNC);
     return tp_staticmethod(tp, r);
 }
 
 tp_obj tpy_min(TP) {
-    tp_obj r = TP_OBJ();
+    tp_obj r = TP_PARAMS_OBJ();
     tp_obj e;
     TP_LOOP(e)
         if (!tp_lessthan(tp,r,e)) { r = e; }
@@ -24,7 +24,7 @@ tp_obj tpy_min(TP) {
 }
 
 tp_obj tpy_max(TP) {
-    tp_obj r = TP_OBJ();
+    tp_obj r = TP_PARAMS_OBJ();
     tp_obj e;
     TP_LOOP(e)
         if (tp_lessthan(tp,r,e)) { r = e; }
@@ -33,13 +33,13 @@ tp_obj tpy_max(TP) {
 }
 
 tp_obj tpy_copy(TP) {
-    tp_obj r = TP_OBJ();
+    tp_obj r = TP_PARAMS_OBJ();
     return tp_copy(tp, r);
 }
 
 
 tp_obj tpy_len(TP) {
-    tp_obj e = TP_OBJ();
+    tp_obj e = TP_PARAMS_OBJ();
     return tp_len(tp,e);
 }
 
@@ -47,22 +47,22 @@ tp_obj tpy_range(TP) {
     int a,b,c,i;
     tp_obj r = tp_list_t(tp);
     switch (TP_NPARAMS()) {
-        case 1: a = 0; b = TP_NUM(); c = 1; break;
+        case 1: a = 0; b = TP_PARAMS_NUM(); c = 1; break;
         case 2:
-        case 3: a = TP_NUM(); b = TP_NUM(); c = TP_DEFAULT(tp_number(1)).number.val; break;
+        case 3: a = TP_PARAMS_NUM(); b = TP_PARAMS_NUM(); c = TP_PARAMS_DEFAULT(tp_number(1)).num; break;
         default: return r;
     }
     if (c != 0) {
         for (i=a; (c>0) ? i<b : i>b; i+=c) {
-            tpd_list_append(tp, r.list.val, tp_number(i));
+            tpd_list_append(tp, TPD_LIST(r), tp_number(i));
         }
     }
     return r;
 }
 
 tp_obj tpy_istype(TP) {
-    tp_obj v = TP_OBJ();
-    tp_obj t = TP_STR();
+    tp_obj v = TP_PARAMS_OBJ();
+    tp_obj t = TP_PARAMS_STR();
     if (tp_string_equal_atom(t, "string")) { return tp_number(v.type.typeid == TP_STRING); }
     if (tp_string_equal_atom(t, "list")) { return tp_number(v.type.typeid == TP_LIST); }
     if (tp_string_equal_atom(t, "dict")) { return tp_number(v.type.typeid == TP_DICT); }
@@ -73,8 +73,8 @@ tp_obj tpy_istype(TP) {
 }
 
 tp_obj tpy_isinstance(TP) {
-    tp_obj v = TP_OBJ();
-    tp_obj t = TP_OBJ();
+    tp_obj v = TP_PARAMS_OBJ();
+    tp_obj t = TP_PARAMS_OBJ();
 
     if(t.type.typeid != TP_DICT) {
         tp_raise(tp_None, tp_string_atom(tp, "isinstance TypeError: class argument must be a dictionary."));
@@ -86,7 +86,7 @@ tp_obj tpy_isinstance(TP) {
         meta = tp_get_meta(tp, p);
         if(tp_none(meta)) break;
 
-        if (meta.dict.val == t.dict.val) {
+        if (TPD_DICT(meta) == TPD_DICT(t)) {
             return tp_number(1);
         }
         p = meta;
@@ -96,8 +96,8 @@ tp_obj tpy_isinstance(TP) {
 
 
 tp_obj tpy_float(TP) {
-    tp_obj v = TP_OBJ();
-    int ord = TP_DEFAULT(tp_number(0)).number.val;
+    tp_obj v = TP_PARAMS_OBJ();
+    int ord = TP_PARAMS_DEFAULT(tp_number(0)).num;
     int type = v.type.typeid;
     if (type == TP_NUMBER) { return v; }
     if (type == TP_STRING && tp_string_len(v) < 32) {
@@ -123,14 +123,14 @@ tp_obj tpy_float(TP) {
 }
 
 tp_obj tpy_fpack(TP) {
-    tp_num v = TP_NUM();
+    tp_num v = TP_PARAMS_NUM();
     tp_obj r = tp_string_t(tp,sizeof(tp_num));
     *(tp_num*) tp_string_getptr(r) = v;
     return r;
 }
 
 tp_obj tpy_funpack(TP) {
-    tp_obj v = TP_STR();
+    tp_obj v = TP_PARAMS_STR();
     if (tp_string_len(v) != sizeof(tp_num)) {
         tp_raise(tp_None, tp_string_atom(tp, "funpack ValueError: length of string is incorrect."));
     }
@@ -139,10 +139,10 @@ tp_obj tpy_funpack(TP) {
 }
 
 tp_obj tpy_abs(TP) {
-    return tp_number(fabs(tpy_float(tp).number.val));
+    return tp_number(fabs(tpy_float(tp).num));
 }
 tp_obj tpy_int(TP) {
-    return tp_number((long)tpy_float(tp).number.val);
+    return tp_number((long)tpy_float(tp).num);
 }
 tp_num _roundf(tp_num v) {
     tp_num av = fabs(v); tp_num iv = (long)av;
@@ -150,7 +150,7 @@ tp_num _roundf(tp_num v) {
     return (v<0?-av:av);
 }
 tp_obj tpy_round(TP) {
-    return tp_number(_roundf(tpy_float(tp).number.val));
+    return tp_number(_roundf(tpy_float(tp).num));
 }
 
 /* Function: tp_setmeta
@@ -176,21 +176,21 @@ tp_obj tpy_round(TP) {
  * None
  */
 tp_obj tpy_setmeta(TP) {
-    tp_obj self = TP_OBJ();
-    tp_obj meta = TP_TYPE(TP_DICT);
+    tp_obj self = TP_PARAMS_OBJ();
+    tp_obj meta = TP_PARAMS_TYPE(TP_DICT);
     tp_set_meta(tp, self, meta);
     return tp_None;
 }
 
 tp_obj tpy_getmeta(TP) {
-    tp_obj self = TP_OBJ();
+    tp_obj self = TP_PARAMS_OBJ();
     return tp_get_meta(tp, self);
 }
 
 tp_obj tpy_object_new(TP) {
-    tp_obj klass = TP_TYPE(TP_DICT);
+    tp_obj klass = TP_PARAMS_TYPE(TP_DICT);
     tp_obj self = tp_object(tp);
-    self.dict.val->meta = klass;
+    TPD_DICT(self)->meta = klass;
     TP_META_BEGIN(self, __init__);
         /* we have removed the klass instance from lparams.
          * __init__ is a bound method, therefore we automatically prepend
@@ -209,7 +209,7 @@ tp_obj tpy_object_new(TP) {
  * dict.
  */
 tp_obj tpy_getraw(TP) {
-    tp_obj self = TP_TYPE(TP_DICT);
+    tp_obj self = TP_PARAMS_TYPE(TP_DICT);
     return tp_getraw(tp, self);
 }
 
@@ -217,7 +217,7 @@ tp_obj tpy_getraw(TP) {
  * Coerces any value to a boolean.
  */
 tp_obj tpy_bool(TP) {
-    tp_obj v = TP_OBJ();
+    tp_obj v = TP_PARAMS_OBJ();
     return (tp_number(tp_true(tp, v)));
 }
 
@@ -244,10 +244,10 @@ tp_obj tpy_bool(TP) {
  *
  * */
 tp_obj tpy_import(TP) {
-    tp_obj modname = TP_OBJ();
-    tp_obj member = TP_OBJ();
+    tp_obj modname = TP_PARAMS_OBJ();
+    tp_obj member = TP_PARAMS_OBJ();
 
-    if (!tp_has(tp, tp->modules, modname).number.val) {
+    if (!tp_has(tp, tp->modules, modname).num) {
         tp_raise(tp_None, tp_string_atom(tp, "(tpy_import) cannot import module"));
     }
 
@@ -265,9 +265,9 @@ tp_obj tpy_import(TP) {
         /* from ... import * */
         if(0 == tp_string_cmp(member, tp_string_atom(tp, "*"))) {
             int i;
-            for(i = 0; i < mod.dict.val->len; i ++) {
-                tpd_item item = mod.dict.val->items[
-                    tpd_dict_next(tp, mod.dict.val)
+            for(i = 0; i < TPD_DICT(mod)->len; i ++) {
+                tpd_item item = TPD_DICT(mod)->items[
+                    tpd_dict_next(tp, TPD_DICT(mod))
                     ];
                 tp_obj k = item.key;
                 tp_obj v = item.val;
@@ -284,8 +284,8 @@ tp_obj tpy_import(TP) {
     /* from ... import a, b, c */
     if (member.type.typeid == TP_LIST) {
         int i;
-        for (i = 0; i < member.list.val->len; i ++) {
-            tp_obj k = member.list.val->items[i];
+        for (i = 0; i < TPD_LIST(member)->len; i ++) {
+            tp_obj k = TPD_LIST(member)->items[i];
             tp_obj v = tp_mget(tp, mod, k);
             tp_dict_set(tp, ret, k, v);
         }
@@ -297,16 +297,16 @@ tp_obj tpy_import(TP) {
 }
 
 tp_obj tpy_exec(TP) {
-    tp_obj code = TP_OBJ();
-    tp_obj globals = TP_OBJ();
+    tp_obj code = TP_PARAMS_OBJ();
+    tp_obj globals = TP_PARAMS_OBJ();
     tp_obj r = tp_None;
 
     return tp_exec(tp, code, globals);
 }
 
 tp_obj tpy_eval(TP) {
-    tp_obj text = TP_STR();
-    tp_obj globals = TP_TYPE(TP_DICT);
+    tp_obj text = TP_PARAMS_STR();
+    tp_obj globals = TP_PARAMS_TYPE(TP_DICT);
 
     tp_obj code = tp_compile(tp, text, tp_string_atom(tp, "<eval>"));
 
@@ -333,25 +333,25 @@ tp_obj tpy_print(TP) {
 }
 
 tp_obj tpy_str(TP) {
-    tp_obj v = TP_OBJ();
+    tp_obj v = TP_PARAMS_OBJ();
     return tp_str(tp, v);
 }
 
 tp_obj tpy_repr(TP) {
-    tp_obj v = TP_OBJ();
+    tp_obj v = TP_PARAMS_OBJ();
     return tp_repr(tp, v);
 }
 
 tp_obj tpy_compile(TP) {
-    tp_obj text = TP_OBJ();
-    tp_obj fname = TP_OBJ();
+    tp_obj text = TP_PARAMS_OBJ();
+    tp_obj fname = TP_PARAMS_OBJ();
     return tp_compile(tp, text, fname);
 }
 
 tp_obj tpy_module(TP) {
-    tp_obj name = TP_OBJ();
-    tp_obj code = TP_OBJ();
-    tp_obj fname = TP_OBJ();
+    tp_obj name = TP_PARAMS_OBJ();
+    tp_obj code = TP_PARAMS_OBJ();
+    tp_obj fname = TP_PARAMS_OBJ();
 
     return tp_import(tp, name, code, fname);
 }
@@ -361,7 +361,7 @@ tp_obj tpy_dict(TP) {
     if(TP_NPARAMS() == 0) {
         r = tp_dict_t(tp);
     } else {
-        r = tp_dict_copy(tp, TP_TYPE(TP_DICT));
+        r = tp_dict_copy(tp, TP_PARAMS_TYPE(TP_DICT));
     }
     if(tp->dparams->type.typeid != TP_NONE) {
         tp_dict_update(tp, r, *tp->dparams);
@@ -370,8 +370,8 @@ tp_obj tpy_dict(TP) {
 }
 
 tp_obj tpy_dict_update(TP) {
-    tp_obj self = TP_OBJ();
-    tp_obj v = TP_OBJ();
+    tp_obj self = TP_PARAMS_OBJ();
+    tp_obj v = TP_PARAMS_OBJ();
     tp_dict_update(tp, self, v);
     return tp_None;
 }

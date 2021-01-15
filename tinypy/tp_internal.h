@@ -21,7 +21,7 @@
 tp_inline static int _tp_min(int a, int b) { return (a<b?a:b); }
 tp_inline static int _tp_max(int a, int b) { return (a>b?a:b); }
 tp_inline static int _tp_sign(tp_num v) { return (v<0?-1:(v>0?1:0)); }
-tp_inline static tpd_frame * tp_get_frame(TP, int i) { return tp->frames->items[i].frame.info; }
+tp_inline static tpd_frame * tp_get_frame(TP, int i) { return TPD_FRAME(tp->frames->items[i]); }
 tp_inline static tpd_frame * tp_get_cur_frame(TP) { return tp_get_frame(tp, tp->frames->len - 1); }
 
 /* Detect unintended size changes. Update as needed. */

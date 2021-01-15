@@ -1,7 +1,7 @@
 tp_obj tp_frame_t(TP, tp_obj lparams, tp_obj dparams, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
     tp_obj r = {TP_FRAME};
-    r.frame.info = tp_malloc(tp, sizeof(tpd_frame));
-    tpd_frame * f = r.frame.info;
+    r.info = tp_malloc(tp, sizeof(tpd_frame));
+    tpd_frame * f = TPD_FRAME(r);
 
     f->globals = globals;
     f->code = code;

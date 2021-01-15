@@ -22,15 +22,15 @@ tp_obj tp_args(TP, int argc, char *argv[]) {
     tp_obj self = tp_list_t(tp);
     int i;
     for (i=1; i<argc; i++) {
-        tpd_list_append(tp, self.list.val, tp_string_atom(tp, argv[i]));
+        tpd_list_append(tp, TPD_LIST(self), tp_string_atom(tp, argv[i]));
     }
     return self;
 }
 
 tp_obj tp_conf_set(TP) {
-    tp_obj o = TP_OBJ();
-    tp_obj k = TP_STR();
-    int v = TP_NUM();
+    tp_obj o = TP_PARAMS_OBJ();
+    tp_obj k = TP_PARAMS_STR();
+    int v = TP_PARAMS_NUM();
     if(tp_string_equal_atom(k, "gcmax")) {
         tp->gcmax = v;
     } else {
@@ -40,8 +40,8 @@ tp_obj tp_conf_set(TP) {
 }
 
 tp_obj tp_conf_get(TP) {
-    tp_obj o = TP_OBJ();
-    tp_obj k = TP_STR();
+    tp_obj o = TP_PARAMS_OBJ();
+    tp_obj k = TP_PARAMS_STR();
     if(tp_string_equal_atom(k, "gcmax")) {
         return tp_number(tp->gcmax);
     } else {
@@ -56,7 +56,7 @@ tp_obj tp_get_exc(TP) {
 }
 
 tp_obj tpy_exit(TP) {
-    int code = TP_NUM();
+    int code = TP_PARAMS_NUM();
     exit(code);
     return tp_None;
 }

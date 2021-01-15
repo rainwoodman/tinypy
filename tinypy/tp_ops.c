@@ -8,11 +8,11 @@
  */
 int tp_true(TP, tp_obj v) {
     switch(v.type.typeid) {
-        case TP_NUMBER: return v.number.val != 0;
+        case TP_NUMBER: return v.num != 0;
         case TP_NONE: return 0;
         case TP_STRING: return tp_string_len(v) != 0;
-        case TP_LIST: return v.list.val->len != 0;
-        case TP_DICT: return v.dict.val->len != 0;
+        case TP_LIST: return TPD_LIST(v)->len != 0;
+        case TP_DICT: return TPD_DICT(v)->len != 0;
     }
     return 1;
 }
@@ -29,14 +29,14 @@ int tp_none(tp_obj v) {
 tp_obj tp_has(TP,tp_obj self, tp_obj k) {
     int type = self.type.typeid;
     if (type == TP_DICT) {
-        if (tpd_dict_hashfind(tp, self.dict.val, tp_hash(tp, k), k) != -1) {
+        if (tpd_dict_hashfind(tp, TPD_DICT(self), tp_hash(tp, k), k) != -1) {
             return tp_True;
         }
         return tp_False;
     } else if (type == TP_STRING && k.type.typeid == TP_STRING) {
         return tp_number(tp_str_index(self,k)!=-1);
     } else if (type == TP_LIST) {
-        return tp_number(tpd_list_find(tp, self.list.val, k, tp_equal)!=-1);
+        return tp_number(tpd_list_find(tp, TPD_LIST(self), k, tp_equal)!=-1);
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_has) TypeError: iterable argument required"));
 }
@@ -84,7 +84,7 @@ tp_obj tp_iter(TP,tp_obj self, tp_obj k) {
     int type = self.type.typeid;
     if (type == TP_LIST || type == TP_STRING) { return tp_get(tp,self,k); }
     if (type == TP_DICT && k.type.typeid == TP_NUMBER) {
-        return self.dict.val->items[tpd_dict_next(tp,self.dict.val)].key;
+        return TPD_DICT(self)->items[tpd_dict_next(tp,TPD_DICT(self))].key;
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_iter) TypeError: iteration over non-sequence"));
 }
@@ -121,13 +121,13 @@ tp_obj tp_getraw(TP, tp_obj self) {
 static void tp_slice_get_indices(TP, tp_obj slice, tp_obj obj, int * start, int * stop) {
     int a, b, l;
     tp_obj tmp;
-    l = tp_len(tp, obj).number.val;
+    l = tp_len(tp, obj).num;
     tmp = tp_get(tp, slice, tp_number(0));
-    if (tmp.type.typeid == TP_NUMBER) { a = tmp.number.val; }
+    if (tmp.type.typeid == TP_NUMBER) { a = tmp.num; }
     else if(tmp.type.typeid == TP_NONE) { a = 0; }
     else { tp_raise_printf(, "(tp_get) TypeError: indices must be numbers"); }
     tmp = tp_get(tp,slice,tp_number(1));
-    if (tmp.type.typeid == TP_NUMBER) { b = tmp.number.val; }
+    if (tmp.type.typeid == TP_NUMBER) { b = tmp.num; }
     else if(tmp.type.typeid == TP_NONE) { b = l; }
     else { tp_raise_printf(, "(tp_get) TypeError: indices must be numbers"); }
 
@@ -178,24 +178,24 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
         tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %O", &k);
     } else if (type == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
-            int l = tp_len(tp,self).number.val;
-            int n = k.number.val;
+            int l = tp_len(tp,self).num;
+            int n = k.num;
             n = (n<0?l+n:n);
-            return tpd_list_get(tp, self.list.val, n, "tp_get");
+            return tpd_list_get(tp, TPD_LIST(self), n, "tp_get");
         } else if (k.type.typeid == TP_STRING) {
             if (_tp_lookup(tp, self, k, &r)) { return r;}
         } else if (k.type.typeid == TP_LIST) {
             int a, b;
             tp_slice_get_indices(tp, k, self, &a, &b);
             /* FIXME: Unlike CPython, I think indexing shall return a view like numpy. */
-            return tp_list_from_items(tp,b-a,&self.list.val->items[a]);
+            return tp_list_from_items(tp,b-a,&TPD_LIST(self)->items[a]);
         } else if (k.type.typeid == TP_NONE) {
-            return tpd_list_pop(tp, self.list.val, 0, "tp_get");
+            return tpd_list_pop(tp, TPD_LIST(self), 0, "tp_get");
         }
     } else if (type == TP_STRING) {
         if (k.type.typeid == TP_NUMBER) {
             int l = tp_string_len(self);
-            int n = k.number.val;
+            int n = k.num;
             n = (n<0?l+n:n);
             if (n >= 0 && n < l) {
                 return tp->chars[(unsigned char) tp_string_getptr(self)[n]];
@@ -248,18 +248,18 @@ int tp_iget(TP, tp_obj *r, tp_obj self, tp_obj k) {
         return 0;
     }
     if (self.type.typeid == TP_DICT) {
-        int n = tpd_dict_hashfind(tp, self.dict.val, tp_hash(tp, k), k);
+        int n = tpd_dict_hashfind(tp, TPD_DICT(self), tp_hash(tp, k), k);
         if (n == -1) { return 0; }
-        *r = self.dict.val->items[n].val;
+        *r = TPD_DICT(self)->items[n].val;
         tp_grey(tp,*r);
         return 1;
     }
     if (self.type.typeid == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
-            int l = self.list.val->len;
-            int n = k.number.val;
+            int l = TPD_LIST(self)->len;
+            int n = k.num;
             if(n >=0 && n < l) {
-                *r = tpd_list_get(tp, self.list.val, n, "tp_iget");
+                *r = tpd_list_get(tp, TPD_LIST(self), n, "tp_iget");
                 tp_grey(tp, *r);
                 return 1;
             } else {
@@ -267,8 +267,8 @@ int tp_iget(TP, tp_obj *r, tp_obj self, tp_obj k) {
             }
         }
         if (k.type.typeid == TP_NONE) {
-            if(self.list.val->len > 0) {
-                *r = tpd_list_pop(tp, self.list.val, 0, "tp_get");
+            if(TPD_LIST(self)->len > 0) {
+                *r = tpd_list_pop(tp, TPD_LIST(self), 0, "tp_get");
                 tp_grey(tp, *r);
                 return 1;
             }
@@ -299,10 +299,10 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
         return;
     } else if (type == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
-            tpd_list_set(tp, self.list.val, k.number.val, v, "tp_set");
+            tpd_list_set(tp, TPD_LIST(self), k.num, v, "tp_set");
             return;
         } else if (k.type.typeid == TP_NONE) {
-            tpd_list_append(tp, self.list.val, v);
+            tpd_list_append(tp, TPD_LIST(self), v);
             return;
         }
     }
@@ -311,7 +311,7 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
 
 tp_obj tp_add(TP, tp_obj a, tp_obj b) {
     if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
-        return tp_number(a.number.val+b.number.val);
+        return tp_number(a.num+b.num);
     } else if (a.type.typeid == TP_STRING && a.type.typeid == b.type.typeid) {
         return tp_string_add(tp, a, b);
     } else if (a.type.typeid == TP_LIST && a.type.typeid == b.type.typeid) {
@@ -326,17 +326,17 @@ tp_obj tp_add(TP, tp_obj a, tp_obj b) {
 
 tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
     if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
-        return tp_number(a.number.val*b.number.val);
+        return tp_number(a.num*b.num);
     }
     if(a.type.typeid == TP_NUMBER) {
         tp_obj c = a; a = b; b = c;
     }
     if(a.type.typeid == TP_STRING && b.type.typeid == TP_NUMBER) {
-        int n = b.number.val;
+        int n = b.num;
         return tp_string_mul(tp, a, n);
     }
     if(a.type.typeid == TP_LIST && b.type.typeid == TP_NUMBER) {
-        int n = b.number.val;
+        int n = b.num;
         return tp_list_mul(tp, a, n);
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_mul) TypeError: ?"));
@@ -352,9 +352,9 @@ tp_obj tp_len(TP,tp_obj self) {
     if (type == TP_STRING) {
         return tp_number(tp_string_len(self));
     } else if (type == TP_DICT) {
-        return tp_number(self.dict.val->len);
+        return tp_number(TPD_DICT(self)->len);
     } else if (type == TP_LIST) {
-        return tp_number(self.list.val->len);
+        return tp_number(TPD_LIST(self)->len);
     }
     
     tp_raise(tp_None,tp_string_atom(tp, "(tp_len) TypeError: len() of unsized object"));
@@ -364,12 +364,12 @@ int tp_equal(TP, tp_obj a, tp_obj b) {
     if (a.type.typeid != b.type.typeid) { return 0;}
     switch(a.type.typeid) {
         case TP_NONE: return 1;
-        case TP_NUMBER: return a.number.val == b.number.val;
+        case TP_NUMBER: return a.num == b.num;
         case TP_STRING: return tp_string_cmp(a, b) == 0;
         case TP_LIST: return tp_list_equal(tp, a, b);
         case TP_DICT: return tp_dict_equal(tp, a, b);
-        case TP_FUNC: return a.func.info == b.func.info;
-        case TP_DATA: return (char*)a.data.val == (char*)b.data.val;
+        case TP_FUNC: return TPD_FUNC(a) == TPD_FUNC(b);
+        case TP_DATA: return (char*)a.ptr == (char*)b.ptr;
     }
     tp_raise(0,tp_string_atom(tp, "(tp_equal) TypeError: Unknown types."));
 }
@@ -380,14 +380,14 @@ int tp_lessthan(TP, tp_obj a, tp_obj b) {
     }
     switch(a.type.typeid) {
         case TP_NONE: return 0;
-        case TP_NUMBER: return a.number.val < b.number.val;
+        case TP_NUMBER: return a.num < b.num;
         case TP_STRING: return tp_string_cmp(a, b) < 0;
         case TP_LIST: return tp_list_lessthan(tp, a, b);
         case TP_DICT: {
             tp_raise(0,tp_string_atom(tp, "(tp_lessthan) TypeError: Cannot compare dict."));
         }
-        case TP_FUNC: return a.func.info < b.func.info;
-        case TP_DATA: return (char*)a.data.val < (char*)b.data.val;
+        case TP_FUNC: return TPD_FUNC(a) < TPD_FUNC(b);
+        case TP_DATA: return (char*) a.ptr < (char*) b.ptr;
     }
     tp_raise(0,tp_string_atom(tp, "(tp_lessthan) TypeError: Unknown types."));
 }
@@ -396,7 +396,7 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
     switch(a.type.typeid) {
         case TP_NUMBER:
             if(b.type.typeid == TP_NUMBER)
-                return tp_number(((long)a.number.val) % ((long)b.number.val));
+                return tp_number(((long)a.num) % ((long)b.num));
             break;
         case TP_STRING:
             TP_META_BEGIN(a, format);
@@ -409,7 +409,7 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
 #define TP_OP(name,expr) \
     tp_obj name(TP,tp_obj _a,tp_obj _b) { \
     if (_a.type.typeid == TP_NUMBER && _a.type.typeid == _b.type.typeid) { \
-        tp_num a = _a.number.val; tp_num b = _b.number.val; \
+        tp_num a = _a.num; tp_num b = _b.num; \
         return tp_number(expr); \
     } \
     tp_raise(tp_None,tp_string_atom(tp, "(" #name ") TypeError: unsupported operand type(s)")); \
@@ -426,7 +426,7 @@ TP_OP(tp_pow,pow(a,b));
 
 tp_obj tp_bitwise_not(TP, tp_obj a) {
     if (a.type.typeid == TP_NUMBER) {
-        return tp_number(~(long)a.number.val);
+        return tp_number(~(long)a.num);
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_bitwise_not) TypeError: unsupported operand type"));
 }
@@ -452,7 +452,7 @@ tp_obj tp_call(TP, tp_obj self, tp_obj lparams, tp_obj dparams) {
     if (self.type.typeid == TP_DICT) {
         if (self.type.magic == TP_DICT_CLASS) {
             TP_META_BEGIN_CLASS(self, __new__)
-                tpd_list_insert(tp, lparams.list.val, 0, self);
+                tpd_list_insert(tp, TPD_LIST(lparams), 0, self);
                 return tp_call(tp, __new__, lparams, dparams);
             TP_META_END_CLASS;
         } else if (self.type.magic == TP_DICT_OBJECT) {
@@ -468,15 +468,15 @@ tp_obj tp_call(TP, tp_obj self, tp_obj lparams, tp_obj dparams) {
                 lparams = tp_list_t(tp);
             }
             /* method, add instance */
-            tpd_list_insert(tp, lparams.list.val, 0, self.func.info->instance);
+            tpd_list_insert(tp, TPD_LIST(lparams), 0, TPD_FUNC(self)->instance);
         }
-        if(self.func.cfnc != NULL) {
+        if(self.ptr != NULL) {
             /* C func, set tp->lparams for the CAPI calling convention. */
             *tp->lparams = lparams;
             *tp->dparams = dparams;
 
             tp_obj (* cfunc)(tp_vm *);
-            cfunc = self.func.cfnc;
+            cfunc = self.ptr;
             tp_obj r = cfunc(tp);
             tp_grey(tp, r);
             return r;
@@ -484,8 +484,8 @@ tp_obj tp_call(TP, tp_obj self, tp_obj lparams, tp_obj dparams) {
             /* compiled Python function */
             tp_obj dest = tp_None;
             tp_enter_frame(tp, lparams, dparams,
-                           self.func.info->globals,
-                           self.func.info->code,
+                           TPD_FUNC(self)->globals,
+                           TPD_FUNC(self)->code,
                            &dest);
             tp_run_frame(tp);
             return dest;

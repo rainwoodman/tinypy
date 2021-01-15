@@ -27,12 +27,12 @@
  * > }
  * >
  * > tp_obj my_obj = tpy_data(TP, 0, my_ptr);
- * > my_obj.data.info->free = __free__;
+ * > my_TPD_DATA(obj)->free = __free__;
  */
 tp_obj tp_data_t(TP, int magic, void *v) {
     tp_obj r = {TP_DATA};
-    r.data.info = (tpd_data*)tp_malloc(tp, sizeof(tpd_data));
-    r.data.val = v;
+    r.info = (tpd_data*)tp_malloc(tp, sizeof(tpd_data));
+    r.ptr = v;
     r.type.magic = magic;
     return tp_track(tp,r);
 }
@@ -40,8 +40,8 @@ tp_obj tp_data_t(TP, int magic, void *v) {
 /* creates an untracked tp_data */
 tp_obj tp_data_nt(TP, int magic, void *v) {
     tp_obj r = {TP_DATA};
-    r.data.info = NULL;
-    r.data.val = v;
+    r.info = NULL;
+    r.ptr = v;
     r.type.magic = magic;
     return r;
 }

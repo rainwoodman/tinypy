@@ -26,9 +26,9 @@ SDL_Surface *pygame_obj_to_surf(TP,tp_obj self) {
 
 
 tp_obj pygame_surface_set_at(TP) {
-    tp_obj self = TP_OBJ();
-    tp_obj pos = TP_TYPE(TP_LIST);
-    tp_obj clr = TP_TYPE(TP_LIST);
+    tp_obj self = TP_PARAMS_OBJ();
+    tp_obj pos = TP_PARAMS_TYPE(TP_LIST);
+    tp_obj clr = TP_PARAMS_TYPE(TP_LIST);
     SDL_Rect r;
     r.x = tp_get(tp,pos,tp_number(0)).number.val;
     r.y = tp_get(tp,pos,tp_number(1)).number.val;
@@ -57,7 +57,7 @@ tp_obj pygame_surf_to_obj(TP,SDL_Surface *s) {
 /* display module */
 
 tp_obj pygame_display_set_mode(TP) {
-    tp_obj sz = TP_TYPE(TP_LIST);
+    tp_obj sz = TP_PARAMS_TYPE(TP_LIST);
     int w = tp_get(tp,sz,tp_number(0)).number.val;
     int h = tp_get(tp,sz,tp_number(1)).number.val;
     SDL_Surface *s = SDL_SetVideoMode(w, h, 0, 0);
@@ -79,7 +79,7 @@ SDL_Rect pygame_list_to_rect(TP,tp_obj o) {
 }
 
 tp_obj pygame_display_update(TP) {
-    SDL_Rect r = pygame_list_to_rect(tp,TP_TYPE(TP_LIST));
+    SDL_Rect r = pygame_list_to_rect(tp,TP_PARAMS_TYPE(TP_LIST));
     SDL_UpdateRects(SDL_GetVideoSurface(), 1, &r);
     return tp_None;
 }
