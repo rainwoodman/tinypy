@@ -19,86 +19,86 @@
  **/
 
 #define TP_GC_TRACE 0
-#undef TP_GC_ASSERT_LISTS_ARE_DISJOINT     /* Assert no white object is on the black list. Very slow. */
+#define TP_GC_ASSERT_LISTS_ARE_DISJOINT 0    /* Assert no white object is on the black list. Very slow. */
 
 /* tp_grey: ensure an object to the grey list, if the object is already
  * marked grey, then do nothing. */
 void tp_grey(TP, tp_obj v) {
-    if (v.type.typeid < TP_GC_TRACKED || (!v.gc.gci)) { return; }
-    if (v.gc.gci->grey) { return; }
+    if (v.type.typeid < TP_GC_TRACKED || !TPD_OBJ(v)) { return; }
+    if (TPD_OBJ(v)->gci.grey) { return; }
     if (v.type.typeid == TP_STRING && v.type.magic == TP_STRING_ATOM) { return; }
     if (v.type.typeid == TP_STRING && v.type.magic == TP_STRING_EXTERN) { return; }
     int i;
-    v.gc.gci->grey = 1;
-    v.gc.gci->black = 0;
+    TPD_OBJ(v)->gci.grey = 1;
+    TPD_OBJ(v)->gci.black = 0;
     /* terminal types, no need to follow */
     if (v.type.typeid == TP_DATA) {
-        v.gc.gci->black = 1;
+        TPD_OBJ(v)->gci.black = 1;
         #if TP_GC_TRACE
-        printf("[%04d] adding to black, %p\n", tp->steps, v.gc.gci);
+        printf("[%04d] adding to black, %p\n", tp->steps, v.info);
         #endif
         tpd_list_appendx(tp, tp->black, v);
         return;
     }
     if (v.type.typeid == TP_STRING && v.type.magic != TP_STRING_VIEW) {
-        v.gc.gci->black = 1;
+        TPD_OBJ(v)->gci.black = 1;
         #if TP_GC_TRACE
-        printf("[%04d] adding to black, %p\n", tp->steps, v.gc.gci);
+        printf("[%04d] adding to black, %p\n", tp->steps, v.info);
         #endif
         tpd_list_appendx(tp, tp->black, v);
         return;
     }
 
     #if TP_GC_TRACE
-    printf("[%04d] adding to grey, %p\n", tp->steps, v.gc.gci);
+    printf("[%04d] adding to grey, %p\n", tp->steps, v.info);
     #endif
     tpd_list_appendx(tp, tp->grey, v);
 }
 
 static void tp_grey_trace(TP, tp_obj p, tp_obj v, char * tag) {
     #if TP_GC_TRACE
-    printf("[%04d] follow %p (%d) %s -> %p (%d)\n", tp->steps, p.gc.gci, p.type.typeid, tag, v.gc.gci, v.type.typeid);
+    printf("[%04d] follow %p (%d) %s -> %p (%d)\n", tp->steps, p.info, p.type.typeid, tag, v.info, v.type.typeid);
     #endif
     tp_grey(tp, v);
 }
 void tp_follow(TP,tp_obj v) {
     int type = v.type.typeid;
     if (type == TP_STRING && v.type.magic == TP_STRING_VIEW) {
-        tp_grey_trace(tp, v, v.string.info->base, "base");
+        tp_grey_trace(tp, v, TPD_STRING(v)->base, "base");
     }
     if (type == TP_LIST) {
         int n;
-        for (n=0; n<v.list.val->len; n++) {
-            tp_grey_trace(tp, v, v.list.val->items[n], "item");
+        for (n=0; n<TPD_LIST(v)->len; n++) {
+            tp_grey_trace(tp, v, TPD_LIST(v)->items[n], "item");
         }
     }
     if (type == TP_DICT) {
         int i;
-        for (i=0; i<v.dict.val->len; i++) {
-            int n = tpd_dict_next(tp,v.dict.val);
-            tp_grey_trace(tp, v, v.dict.val->items[n].key, "key");
-            tp_grey_trace(tp, v, v.dict.val->items[n].val, "val");
+        for (i=0; i<TPD_DICT(v)->len; i++) {
+            int n = tpd_dict_next(tp,TPD_DICT(v));
+            tp_grey_trace(tp, v, TPD_DICT(v)->items[n].key, "key");
+            tp_grey_trace(tp, v, TPD_DICT(v)->items[n].val, "val");
         }
     }
     tp_grey_trace(tp, v, tp_get_meta(tp, v), "meta");
 
     if (type == TP_FUNC) {
-        tp_grey_trace(tp, v, v.func.info->instance, "instance");
-        tp_grey_trace(tp, v, v.func.info->globals, "globals");
-        tp_grey_trace(tp, v, v.func.info->code, "code");
+        tp_grey_trace(tp, v, TPD_FUNC(v)->instance, "instance");
+        tp_grey_trace(tp, v, TPD_FUNC(v)->globals, "globals");
+        tp_grey_trace(tp, v, TPD_FUNC(v)->code, "code");
     }
     if (type == TP_FRAME) {
         int i;
-        for(i = 0; i < v.frame.info->cregs; i ++) {
-            tp_grey_trace(tp, v, v.frame.info->regs[i], "reg");
+        for(i = 0; i < TPD_FRAME(v)->cregs; i ++) {
+            tp_grey_trace(tp, v, TPD_FRAME(v)->regs[i], "reg");
         }
-        tp_grey_trace(tp, v, v.frame.info->line, "line");
-        tp_grey_trace(tp, v, v.frame.info->name, "name");
-        tp_grey_trace(tp, v, v.frame.info->fname, "fname");
-        tp_grey_trace(tp, v, v.frame.info->code, "code");
-        tp_grey_trace(tp, v, v.frame.info->globals, "globals");
-        tp_grey_trace(tp, v, v.frame.info->lparams, "lparams");
-        tp_grey_trace(tp, v, v.frame.info->dparams, "dparams");
+        tp_grey_trace(tp, v, TPD_FRAME(v)->line, "line");
+        tp_grey_trace(tp, v, TPD_FRAME(v)->name, "name");
+        tp_grey_trace(tp, v, TPD_FRAME(v)->fname, "fname");
+        tp_grey_trace(tp, v, TPD_FRAME(v)->code, "code");
+        tp_grey_trace(tp, v, TPD_FRAME(v)->globals, "globals");
+        tp_grey_trace(tp, v, TPD_FRAME(v)->lparams, "lparams");
+        tp_grey_trace(tp, v, TPD_FRAME(v)->dparams, "dparams");
     }
 }
 
@@ -122,32 +122,32 @@ void tp_gc_set_reachable(TP, tp_obj v) {
 
 void tp_delete(TP, tp_obj v) {
     #if TP_GC_TRACE
-    printf("[%04d] deleting object %p\n", tp->steps, v.gc.gci);
+    printf("[%04d] deleting object %p\n", tp->steps, v.info);
     #endif
     int type = v.type.typeid;
     if (type == TP_LIST) {
-        tpd_list_free(tp, v.list.val);
+        tpd_list_free(tp, TPD_LIST(v));
         return;
     } else if (type == TP_DICT) {
-        tpd_dict_free(tp, v.dict.val);
+        tpd_dict_free(tp, v.info);
         return;
     } else if (type == TP_STRING) {
         if(v.type.magic == TP_STRING_NORMAL) {
-            tp_free(tp, v.string.info->s);
+            tp_free(tp, TPD_STRING(v)->s);
         }
-        tp_free(tp, v.string.info);
+        tp_free(tp, v.info);
         return;
     } else if (type == TP_DATA) {
-        if (v.data.info->free) {
-            v.data.info->free(tp,v);
+        if (v.info && TPD_DATA(v)->free) {
+            TPD_DATA(v)->free(tp,v);
         }
-        tp_free(tp, v.data.info);
+        tp_free(tp, v.info);
         return;
     } else if (type == TP_FUNC) {
-        tp_free(tp, v.func.info);
+        tp_free(tp, v.info);
         return;
     } else if (type == TP_FRAME) {
-        tp_free(tp, v.frame.info);
+        tp_free(tp, v.info);
         return;
     }
     tp_raise(, tp_string_atom(tp, "(tp_delete) TypeError: ?"));
@@ -158,11 +158,11 @@ void tp_collect(TP) {
 
     for (n=0; n<tp->white->len; n++) {
         tp_obj r = tp->white->items[n];
-        if (r.gc.gci->black) { continue; }
-        #ifdef TP_GC_ASSERT_LISTS_ARE_DISJOINT
+        if (TPD_OBJ(r)->gci.black) { continue; }
+        #if TP_GC_ASSERT_LISTS_ARE_DISJOINT
         int i;
         for (i = 0; i < tp->black->len; i ++) {
-            if(tp->black->items[i].gc.gci == r.gc.gci) {
+            if(TPD_OBJ(tp->black->items[i]) == TPD_OBJ(r)) {
                 abort();
             }
         }
@@ -173,19 +173,19 @@ void tp_collect(TP) {
 
     /* put all objects to the white list, without duplicates. */
     for (n=0; n<tp->black->len; n++) {
-        tp->black->items[n].gc.gci->black = 1;
+        TPD_OBJ(tp->black->items[n])->gci.black = 1;
     }
     for (n=0; n<tp->black->len; n++) {
         tp_obj v = tp->black->items[n];
-        if(v.gc.gci->black == 0) {
+        if(TPD_OBJ(v)->gci.black == 0) {
             abort();
         }
         #if TP_GC_TRACE
-        printf("[%04d] adding to white, %p\n", tp->steps, v.gc.gci);
+        printf("[%04d] adding to white, %p\n", tp->steps, v.info);
         #endif
         tpd_list_appendx(tp, tp->white, v);
-        v.gc.gci->black = 0;
-        v.gc.gci->grey = 0;
+        TPD_OBJ(v)->gci.black = 0;
+        TPD_OBJ(v)->gci.grey = 0;
     }
     tp->black->len = 0;
 }
@@ -195,14 +195,14 @@ void tp_mark(TP, int max) {
         tp_obj v;
         /* pick a grey object */
         v = tpd_list_pop(tp, tp->grey, tp->grey->len-1, "_tp_gcinc");
-        if(v.gc.gci->black) {
+        if(TPD_OBJ(v)->gci.black) {
             abort();
         }
         /* color it as black. */
-        v.gc.gci->black = 1;
-        v.gc.gci->grey = 1;
+        TPD_OBJ(v)->gci.black = 1;
+        TPD_OBJ(v)->gci.grey = 1;
         #if TP_GC_TRACE
-        printf("[%04d] adding to black, %p\n", tp->steps, v.gc.gci);
+        printf("[%04d] adding to black, %p\n", tp->steps, v.info);
         #endif
         tpd_list_appendx(tp, tp->black, v);
 
@@ -224,9 +224,9 @@ void tp_gc_dump(TP, tpd_list * l, int name, int mark) {
         tp_obj v = l->items[i];
         printf("%s%p:%d%d%c",
         i % 6 == 0?step:"",
-        v.gc.gci,
-        v.gc.gci->black,
-        v.gc.gci->grey,
+        TPD_OBJ(v),
+        TPD_OBJ(v)->gci.black,
+        TPD_OBJ(v)->gci.grey,
         (i + 1) % 6 == 0?'\n':' '
         );
     }
@@ -258,18 +258,18 @@ void tp_gc_run(TP, int full) {
  * Use tp_track if the object is definitely new.*/
 tp_obj tp_track(TP,tp_obj v) {
     /* force greying the object */
-    if (v.type.typeid >= TP_GC_TRACKED && v.gc.gci) {
-        v.gc.gci->grey = 0;
+    if (v.type.typeid >= TP_GC_TRACKED && TPD_OBJ(v)) {
+        TPD_OBJ(v)->gci.grey = 0;
         /* NOTE(rainwoodman): I don't think we need to set the following flags */
-        v.gc.gci->black = 0;
+        TPD_OBJ(v)->gci.black = 0;
     }
     tp_grey(tp,v);
     return v;
 }
 
 void tp_gc_deinit(TP) {
-    while (tp->root.list.val->len) {
-        tpd_list_pop(tp, tp->root.list.val, 0, "tp_deinit");
+    while (TPD_LIST(tp->root)->len) {
+        tpd_list_pop(tp, TPD_LIST(tp->root), 0, "tp_deinit");
     }
     tp_gc_run(tp, 1);
     tp_delete(tp, tp->root);

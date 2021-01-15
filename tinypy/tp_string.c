@@ -45,9 +45,9 @@ tp_obj tp_string_t(TP, int n) {
     tp_obj r;
     r.type.typeid = TP_STRING;
     r.type.magic = TP_STRING_NORMAL;
-    r.string.info = (tpd_string*)tp_malloc(tp, sizeof(tpd_string));
-    r.string.info->len = n;
-    r.string.info->s = tp_malloc(tp, n);
+    r.info = tp_malloc(tp, sizeof(tpd_string));
+    TPD_STRING(r)->len = n;
+    TPD_STRING(r)->s = tp_malloc(tp, n);
     return tp_track(tp, r);
 }
 
@@ -57,8 +57,8 @@ tp_obj tp_string_atom(TP, const char * v) {
     tp_obj r;
     r.type.typeid = TP_STRING;
     r.type.magic = TP_STRING_ATOM;
-    r.string.info = &info;
-    r.string.val = v;
+    r.info = &info;
+    r.ptr = (char*) v;
     return r;
 }
 
@@ -70,10 +70,10 @@ tp_obj tp_string_from_const_nt(TP, const char *s, int n) {
     if(n < 0) n = strlen(s);
     r.type.typeid = TP_STRING;
     r.type.magic = TP_STRING_EXTERN;
-    r.string.info = (tpd_string*) tp_malloc(tp, sizeof(tpd_string));
-    r.string.info->base = tp_None;
-    r.string.info->s = (char*) s;
-    r.string.info->len = n;
+    r.info = tp_malloc(tp, sizeof(tpd_string));
+    TPD_STRING(r)->base = tp_None;
+    TPD_STRING(r)->s = (char*) s;
+    TPD_STRING(r)->len = n;
     return r;
 }
 
@@ -97,9 +97,9 @@ tp_obj tp_string_steal_from_builder(TP, StringBuilder * sb)
     tp_obj r;
     r.type.typeid = TP_STRING;
     r.type.magic = TP_STRING_NORMAL;
-    r.string.info = (tpd_string*)tp_malloc(tp, sizeof(tpd_string));
-    r.string.info->len = sb->len;
-    r.string.info->s = sb->buffer;
+    r.info = tp_malloc(tp, sizeof(tpd_string));
+    TPD_STRING(r)->len = sb->len;
+    TPD_STRING(r)->s = sb->buffer;
     sb->buffer = NULL;
     sb->len = 0;
     return tp_track(tp, r);
@@ -107,16 +107,16 @@ tp_obj tp_string_steal_from_builder(TP, StringBuilder * sb)
 
 char * tp_string_getptr(tp_obj s) {
     if(s.type.magic == TP_STRING_ATOM) {
-        return (char*) s.string.val;
+        return (char*) s.ptr;
     }
-    return s.string.info->s;
+    return TPD_STRING(s)->s;
 }
 
 int tp_string_len(tp_obj s) {
     if(s.type.magic == TP_STRING_ATOM) {
-        return strlen(s.string.val);
+        return strlen(s.ptr);
     }
-    return s.string.info->len;
+    return TPD_STRING(s)->len;
 }
 
 /*
@@ -130,10 +130,10 @@ tp_obj tp_string_view(TP, tp_obj s, int a, int b) {
     tp_obj r;
     r.type.typeid = TP_STRING;
     r.type.magic = TP_STRING_VIEW;
-    r.string.info = (tpd_string*) tp_malloc(tp, sizeof(tpd_string));
-    r.string.info->base = s;
-    r.string.info->s = tp_string_getptr(s) + a;
-    r.string.info->len = b - a;
+    r.info = tp_malloc(tp, sizeof(tpd_string));
+    TPD_STRING(r)->base = s;
+    TPD_STRING(r)->s = tp_string_getptr(s) + a;
+    TPD_STRING(r)->len = b - a;
     return tp_track(tp, r);
 }
 

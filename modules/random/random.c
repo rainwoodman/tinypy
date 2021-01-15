@@ -203,7 +203,7 @@ static RandomObject _gRandom;       /* random object */
 
 static tp_obj random_seed(TP)
 {
-    tp_obj arg = TP_DEFAULT(tp_None);
+    tp_obj arg = TP_PARAMS_DEFAULT(tp_None);
 
     if (arg.type.typeid == TP_NONE) {
         time_t now;
@@ -212,7 +212,7 @@ static tp_obj random_seed(TP)
         init_genrand(&_gRandom, (unsigned long)now);
         _gRandom.has_seed = 1;
     } else if (arg.type.typeid == TP_NUMBER) {
-        init_genrand(&_gRandom, (unsigned long)arg.number.val);
+        init_genrand(&_gRandom, (unsigned long)arg.num);
         _gRandom.has_seed = 1;
     } else if (arg.type.typeid == TP_STRING) {
         unsigned long seed;
@@ -245,23 +245,23 @@ static tp_obj random_getstate(TP)
  */
 static tp_obj random_setstate(TP)
 {
-    tp_obj state_list = TP_OBJ();
+    tp_obj state_list = TP_PARAMS_OBJ();
     tp_obj state_elem;
     tp_obj len;
     int i;
 
     len = tp_len(tp, state_list);
-    if (len.number.val != N+1) {
+    if (len.num != N+1) {
         tp_raise_printf(tp_None, "%s: state vector's size invalid(should be %d)", 
                 __func__, N+1);
     }
 
     for (i = 0; i < N; i++) {
         state_elem = tp_get(tp, state_list, tp_number(i));
-        _gRandom.state[i] = (unsigned long)state_elem.number.val;
+        _gRandom.state[i] = (unsigned long)state_elem.num;
     }
     state_elem = tp_get(tp, state_list, tp_number(i));
-    _gRandom.index = (int)state_elem.number.val;
+    _gRandom.index = (int)state_elem.num;
 
     return (tp_None);
 }
@@ -292,7 +292,7 @@ static tp_obj random_setstate(TP)
  */
 static tp_obj random_jumpahead(TP)
 {
-    long n = (long)TP_NUM();
+    long n = (long)TP_PARAMS_NUM();
     long i, j;
     unsigned long *mt;
     unsigned long tmp;
@@ -390,7 +390,7 @@ static tp_obj random_seed(TP)
 {
     long a;
     int x, y, z;
-    tp_obj arg = TP_DEFAULT(tp_None);
+    tp_obj arg = TP_PARAMS_DEFAULT(tp_None);
 
     if (arg.type.typeid == TP_NONE) {
         time_t now;
@@ -398,7 +398,7 @@ static tp_obj random_seed(TP)
         (void)time(&now);
         a = (long)now * 256;
     } else if (arg.type.typeid == TP_NUMBER) {
-        a = (long)arg.number.val;
+        a = (long)arg.num;
     } else {
         tp_raise_printf(tp_None, "%s", "invalid argument for seed()");
     }
@@ -500,7 +500,7 @@ static tp_obj random_getstate(TP)
  */
 static tp_obj random_jumpahead(TP)
 {
-    int n = (int)TP_NUM();
+    int n = (int)TP_PARAMS_NUM();
     long x, y, z;
 
     if (n < 0)
@@ -531,7 +531,7 @@ static int has_seed = 0;
 
 static tp_obj random_seed(TP)
 {
-    tp_obj arg = TP_DEFAULT(tp_None);
+    tp_obj arg = TP_PARAMS_DEFAULT(tp_None);
 
     if (arg.type.typeid == TP_NONE) {
         time_t now;
@@ -540,7 +540,7 @@ static tp_obj random_seed(TP)
         srandom((unsigned int)now);
         has_seed = 1;
     } else if (arg.type.typeid == TP_NUMBER) {
-        srandom((unsigned long)arg.number.val);
+        srandom((unsigned long)arg.num);
         has_seed = 1;
     } else {
         tp_raise_printf(tp_None, "%s", "invalid argument for seed()");
@@ -616,8 +616,8 @@ tp_obj random_jumpahead(TP)
  */
 tp_obj random_uniform(TP)
 {
-    double a = TP_NUM();
-    double b = TP_NUM();
+    double a = TP_PARAMS_NUM();
+    double b = TP_PARAMS_NUM();
     double r = 0.0;
     tp_obj rvo;         /* random variable object */
 
@@ -625,7 +625,7 @@ tp_obj random_uniform(TP)
         tp_raise_printf(tp_None, "%s: a(%f) must be less than b(%f)", a, b);
 
     rvo = random_random(tp);
-    r = a + (b - a) * rvo.number.val;
+    r = a + (b - a) * rvo.num;
     
     return (tp_number(r));
 }
@@ -642,8 +642,8 @@ tp_obj random_uniform(TP)
  */
 tp_obj random_normalvariate(TP)
 {
-    double mu = TP_NUM();
-    double sigma = TP_NUM();
+    double mu = TP_PARAMS_NUM();
+    double sigma = TP_PARAMS_NUM();
     double NV_MAGICCONST;
     double u1, u2;
     double z, zz;
@@ -653,9 +653,9 @@ tp_obj random_normalvariate(TP)
     NV_MAGICCONST = 4.0 * exp(-0.5) / sqrt(2.0);
     while (1) {
         rvo = random_random(tp);
-        u1  = rvo.number.val;
+        u1  = rvo.num;
         rvo = random_random(tp);
-        u2  = 1.0 - rvo.number.val;
+        u2  = 1.0 - rvo.num;
         z   = NV_MAGICCONST * (u1 - 0.5) / u2;
         zz  = z * z / 4.0;
         if (zz <= - log(u2))
@@ -678,8 +678,8 @@ tp_obj random_normalvariate(TP)
  */
 tp_obj random_lognormvariate(TP)
 {
-    double mu = TP_NUM();
-    double sigma = TP_NUM();
+    double mu = TP_PARAMS_NUM();
+    double sigma = TP_PARAMS_NUM();
     tp_obj params;
     tp_obj normvar;     /* normal distribution variate */
     double r = 0.0;
@@ -689,7 +689,7 @@ tp_obj random_lognormvariate(TP)
      */
     params = tp_params_v(tp, 2, tp_number(mu), tp_number(sigma));
     normvar = tp_ez_call(tp, "random", "normalvariate", params);
-    r = exp(normvar.number.val);
+    r = exp(normvar.num);
 
     return (tp_number(r));
 }
@@ -702,13 +702,13 @@ tp_obj random_lognormvariate(TP)
  */
 tp_obj random_expovariate(TP)
 {
-    double lambda = TP_NUM();
+    double lambda = TP_PARAMS_NUM();
     double u, r;
     tp_obj rvo;
 
     do {
         rvo = random_random(tp);
-        u = rvo.number.val;
+        u = rvo.num;
     } while (u <= 0.0000001);
 
     r = -log(u) / lambda;
@@ -737,8 +737,8 @@ tp_obj random_expovariate(TP)
  */
 tp_obj random_vonmisesvariate(TP)
 {
-    double mu = TP_NUM();
-    double kappa = TP_NUM();
+    double mu = TP_PARAMS_NUM();
+    double kappa = TP_PARAMS_NUM();
     tp_obj rvo;
     double a, b, c, r;
     double u1, u2, u3, z, f;
@@ -747,7 +747,7 @@ tp_obj random_vonmisesvariate(TP)
 
     if (kappa <= 1e-6) {
         rvo = random_random(tp);
-        theta = TWOPI * rvo.number.val;
+        theta = TWOPI * rvo.num;
         return (tp_number(theta));
     }
 
@@ -757,14 +757,14 @@ tp_obj random_vonmisesvariate(TP)
 
     while (1) {
         rvo = random_random(tp);
-        u1 = rvo.number.val;
+        u1 = rvo.num;
 
         z = cos(M_PI * u1);
         f = (1.0 + r * z)/(r + z);
         c = kappa * (r - f);
 
         rvo = random_random(tp);
-        u2 = rvo.number.val;
+        u2 = rvo.num;
 
         if ((u2 < (c * (2.0 - c))) ||
             (u2 <= (c * exp(1.0 - c))))
@@ -772,7 +772,7 @@ tp_obj random_vonmisesvariate(TP)
     }
 
     rvo = random_random(tp);
-    u3 = rvo.number.val;
+    u3 = rvo.num;
     if (u3 > 0.5)
         theta = fmod(mu, TWOPI) + acos(f);
     else
@@ -788,8 +788,8 @@ tp_obj random_vonmisesvariate(TP)
  */
 tp_obj random_gammavariate(TP)
 {
-    double alpha = TP_NUM();
-    double beta  = TP_NUM();
+    double alpha = TP_PARAMS_NUM();
+    double beta  = TP_PARAMS_NUM();
     tp_obj rvo;
     double res;
     double LOG4 = log(4.0);
@@ -823,11 +823,11 @@ tp_obj random_gammavariate(TP)
 
         while (1) {
             rvo = random_random(tp);
-            u1 = rvo.number.val;
+            u1 = rvo.num;
             if (! ((1e-7 < u1) && (u1 < 0.9999999)))
                 continue;
             rvo = random_random(tp);
-            u2 = 1.0 - rvo.number.val;
+            u2 = 1.0 - rvo.num;
             v = log(u1 / (1.0 - u1)) / ainv;
             x = alpha * exp(v);
             z = u1 * u1 * u2;
@@ -849,7 +849,7 @@ tp_obj random_gammavariate(TP)
 
         do {
             rvo = random_random(tp);
-            u = rvo.number.val;
+            u = rvo.num;
         } while (u <= 1e-7);
 
         res = - log(u) * beta;
@@ -866,7 +866,7 @@ tp_obj random_gammavariate(TP)
 
         while (1) {
             rvo = random_random(tp);
-            u = rvo.number.val;
+            u = rvo.num;
             b = (M_E + alpha) / M_E;
             p = b * u;
             if (p <= 1.0)
@@ -875,7 +875,7 @@ tp_obj random_gammavariate(TP)
             else
                 x = - log((b - p) / alpha);
             rvo = random_random(tp);
-            u1 = rvo.number.val;
+            u1 = rvo.num;
             if (p > 1.0) {
                 /*FIXME: if u1 <= x ** (alpha - 1.0):*/
                 if (u1 <= pow(x, alpha - 1.0))
@@ -915,8 +915,8 @@ tp_obj random_gammavariate(TP)
  */
 tp_obj random_betavariate(TP)
 {
-    double alpha = TP_NUM();
-    double beta  = TP_NUM();
+    double alpha = TP_PARAMS_NUM();
+    double beta  = TP_PARAMS_NUM();
     double t;
     double r = 0.0;    
     tp_obj y;
@@ -924,13 +924,13 @@ tp_obj random_betavariate(TP)
 
     params = tp_params_v(tp, 2, tp_number(alpha), tp_number(1.0));
     y = tp_ez_call(tp, "random", "gammavariate", params);
-    if (y.number.val == 0) {
+    if (y.num == 0) {
         return (y);
     } else {
         params = tp_params_v(tp, 2, tp_number(beta), tp_number(1.0));
-        t = y.number.val;
+        t = y.num;
         y = tp_ez_call(tp, "random", "gammavariate", params);
-        r = t / (t + y.number.val);
+        r = t / (t + y.num);
         return (tp_number(r));
     }
 }
@@ -941,13 +941,13 @@ tp_obj random_betavariate(TP)
  */
 tp_obj random_paretovariate(TP)
 {
-    double alpha = TP_NUM();
+    double alpha = TP_PARAMS_NUM();
     double u;
     double r;
     tp_obj rvo;
     
     rvo = random_random(tp);
-    u = 1.0 - rvo.number.val;
+    u = 1.0 - rvo.num;
     r = 1.0 / pow(u, 1.0/alpha);
     
     return (tp_number(r));
@@ -962,14 +962,14 @@ tp_obj random_paretovariate(TP)
  */
 tp_obj random_weibullvariate(TP)
 {
-    double alpha = TP_NUM();
-    double beta  = TP_NUM();
+    double alpha = TP_PARAMS_NUM();
+    double beta  = TP_PARAMS_NUM();
     double u;
     double r;
     tp_obj rvo;
     
     rvo = random_random(tp);
-    u = 1.0 - rvo.number.val;
+    u = 1.0 - rvo.num;
     r = alpha * pow(-log(u), 1.0/beta);
     return (tp_number(r));
 }
@@ -982,12 +982,12 @@ tp_obj random_weibullvariate(TP)
  */
 tp_obj random_randrange(TP)
 {
-    tp_obj start = TP_OBJ();
-    tp_obj stop = TP_DEFAULT(tp_None);
-    tp_obj step = TP_DEFAULT(tp_number(1));
+    tp_obj start = TP_PARAMS_OBJ();
+    tp_obj stop = TP_PARAMS_DEFAULT(tp_None);
+    tp_obj step = TP_PARAMS_DEFAULT(tp_number(1));
     tp_obj rvo = random_random(tp);
-    int istart = (int)start.number.val;
-    int istep = (int)step.number.val;
+    int istart = (int)start.num;
+    int istep = (int)step.num;
     int istop;
     int iwidth;
     double res;
@@ -997,10 +997,10 @@ tp_obj random_randrange(TP)
                         * if only one argument, then start just means stop
                         */
         istop = istart;
-        res = (rvo.number.val * istop);
+        res = (rvo.num * istop);
         return (tp_number(res));
     } else if (stop.type.typeid == TP_NUMBER) {
-        istop = (int)stop.number.val;
+        istop = (int)stop.num;
         iwidth = istop - istart;
         if (iwidth < 0)
             tp_raise_printf(tp_None, "%s", "stop must be > start");
@@ -1008,11 +1008,11 @@ tp_obj random_randrange(TP)
             tp_raise_printf(tp_None, "%s", "step must be integer larger than 0");
             
         if (istep == 1) {
-            res = (int)(istart + (int)(rvo.number.val * iwidth));
+            res = (int)(istart + (int)(rvo.num * iwidth));
             return (tp_number(res));
         } else {
             int n = (iwidth + istep - 1) / istep;
-            res = (int)(istart + istep * (int)(n * rvo.number.val));
+            res = (int)(istart + istep * (int)(n * rvo.num));
             return (tp_number(res));
         }
     } else {
@@ -1025,8 +1025,8 @@ tp_obj random_randrange(TP)
  */
 tp_obj random_randint(TP)
 {
-    double a = TP_NUM();
-    double b = TP_NUM();
+    double a = TP_PARAMS_NUM();
+    double b = TP_PARAMS_NUM();
     tp_obj r;
     tp_obj params;
 
@@ -1040,18 +1040,18 @@ tp_obj random_randint(TP)
  */
 tp_obj random_choice(TP)
 {
-    tp_obj seq = TP_OBJ();
+    tp_obj seq = TP_PARAMS_OBJ();
     tp_obj len;
     tp_obj rvo;
     tp_obj r;
     int i;
     
     len = tp_len(tp, seq);
-    if (len.number.val <= 0)
+    if (len.num <= 0)
         tp_raise_printf(tp_None, "%s", "seq mustn't be empty");
     
     rvo = random_random(tp);
-    i = (int)(len.number.val * rvo.number.val);
+    i = (int)(len.num * rvo.num);
     r = tp_get(tp, seq, tp_number(i));
     
     return (r);
@@ -1062,7 +1062,7 @@ tp_obj random_choice(TP)
  */
 tp_obj random_shuffle(TP)
 {
-    tp_obj seq = TP_OBJ();
+    tp_obj seq = TP_PARAMS_OBJ();
     tp_obj elmi;
     tp_obj elmj;
     tp_obj params;
@@ -1070,17 +1070,17 @@ tp_obj random_shuffle(TP)
     tp_obj len = tp_len(tp, seq);
     int i, j;
     
-    if (len.number.val <= 0)
+    if (len.num <= 0)
         return (tp_None);
     
-    for (i = len.number.val - 1; i > len.number.val / 2; i--) {
+    for (i = len.num - 1; i > len.num / 2; i--) {
         /*
                        * randomly exchange elment i and elment j, element i from the behind end of 'seq', while
                        * element j from the front end of 'seq'.
                        */
-        params = tp_params_v(tp, 2, tp_number(0), tp_number(len.number.val / 2));
+        params = tp_params_v(tp, 2, tp_number(0), tp_number(len.num / 2));
         rvo = tp_ez_call(tp, "random", "randint", params);
-        j = (int)rvo.number.val;
+        j = (int)rvo.num;
         elmi = tp_get(tp, seq, tp_number(i));
         elmj = tp_get(tp, seq, tp_number(j));        
         
@@ -1088,14 +1088,14 @@ tp_obj random_shuffle(TP)
         tp_set(tp, seq, tp_number(j), elmi);
     }
     
-    for (i = len.number.val / 2; i >= 0; i--) {
+    for (i = len.num / 2; i >= 0; i--) {
         /*
                        * randomly exchange elment i and elment j, element i from the front end of 'seq', while
                        * element j from the behind end of 'seq'.
                        */
-        params = tp_params_v(tp, 2, tp_number(len.number.val / 2), tp_number(len.number.val - 1));
+        params = tp_params_v(tp, 2, tp_number(len.num / 2), tp_number(len.num - 1));
         rvo = tp_ez_call(tp, "random", "randint", params);
-        j = (int)rvo.number.val;
+        j = (int)rvo.num;
         elmi = tp_get(tp, seq, tp_number(i));
         elmj = tp_get(tp, seq, tp_number(j));
         

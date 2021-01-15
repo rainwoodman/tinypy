@@ -3,7 +3,7 @@ void tp_set_meta(TP, tp_obj self, tp_obj meta) {
         tp_raise(,
             tp_string_atom(tp, "(tp_check_type) TypeError: type does not support meta."));
     }
-    self.dict.val->meta = meta;
+    TPD_DICT(self)->meta = meta;
 }
 tp_obj tp_get_meta(TP, tp_obj self) {
     if(self.type.typeid == TP_STRING) {
@@ -16,7 +16,7 @@ tp_obj tp_get_meta(TP, tp_obj self) {
         return tp->dict_class;
     }
     if(self.type.typeid == TP_DICT && self.type.magic != TP_DICT_RAW) {
-        return self.dict.val->meta;
+        return TPD_DICT(self)->meta;
     }
     return tp_None;
 }
@@ -24,9 +24,9 @@ tp_obj tp_get_meta(TP, tp_obj self) {
 int _tp_lookup_(TP, tp_obj self, int hash, tp_obj k, tp_obj *r, int depth) {
     /* first do a dict look up from the object itself, but never look for values from a raw dict. */
     if(self.type.typeid == TP_DICT && self.type.magic != TP_DICT_RAW) {
-        int n = tpd_dict_hashfind(tp, self.dict.val, hash, k);
+        int n = tpd_dict_hashfind(tp, TPD_DICT(self), hash, k);
         if (n != -1) {
-            *r= self.dict.val->items[n].val;
+            *r= TPD_DICT(self)->items[n].val;
             return 1;
         }
         /* raw dict, no meta chain up. we are done. */
