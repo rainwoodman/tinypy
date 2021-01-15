@@ -155,10 +155,16 @@ tp_obj tpy_iunpack(TP) {
 }
 
 tp_obj tpy_abs(TP) {
-    return tp_float(fabs(TPN_AS_FLOAT(tpy_number(tp))));
+    tp_obj v = tp_number_cast(tp, tpy_number(tp), TP_NUMBER_FLOAT);
+    return tp_float(fabs(TPN_AS_FLOAT(v)));
 }
 tp_obj tpy_int(TP) {
-    return tp_int(TPN_AS_INT(tpy_number(tp)));
+    tp_obj v = tp_number_cast(tp, tpy_number(tp), TP_NUMBER_INT);
+    return v;
+}
+tp_obj tpy_float(TP) {
+    tp_obj v = tp_number_cast(tp, tpy_number(tp), TP_NUMBER_FLOAT);
+    return v;
 }
 double _roundf(double v) {
     double av = fabs(v); double iv = (long)av;
@@ -410,7 +416,7 @@ void tp_module_builtins_init(TP) {
     {"__import__",tpy_import},
     {"len",tpy_len},
     {"str", tpy_str},
-    {"float",tpy_number}, 
+    {"float",tpy_float}, 
     {"istype",tpy_istype},
     {"isinstance",tpy_isinstance}, 
     {"chr",tpy_chr}, 

@@ -13,6 +13,9 @@ tp_inline static tp_obj tp_float(double v) {
 }
 
 tp_inline static tp_obj tp_number_cast(TP, tp_obj v, enum TPTypeMagic kind) {
+    if(v.type.typeid != TP_NUMBER) {
+        tp_raise_printf(tp_None, "tp_cast: not a number object");
+    }
     tp_obj r = {TP_NUMBER};
     r.type.magic = kind;
     switch(v.type.magic) {

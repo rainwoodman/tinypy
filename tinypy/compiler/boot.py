@@ -44,7 +44,11 @@ if not "tinypy" in sys.version:
 
     def ipack(v):
         import struct
-        return struct.pack('l', v)
+        # FIXME: on automatically detect systems where long = 4 bytes
+        if v > 0x7fffffffffffffff:
+            return struct.pack('L', v)
+        else:
+            return struct.pack('l', v)
 
     def funpack(v):
         import struct
