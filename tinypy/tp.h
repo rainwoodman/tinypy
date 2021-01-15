@@ -128,6 +128,35 @@ typedef struct tp_obj {
     };
 } tp_obj;
 
+tp_inline static tp_obj tp_int(int v) {
+    tp_obj r = {TP_NUMBER};
+    r.num = v;
+    return r;
+}
+
+tp_inline static tp_obj tp_float(tp_num v) {
+    tp_obj r = {TP_NUMBER};
+    r.num = v;
+    return r;
+}
+
+tp_inline static int tp_number_to_int(tp_obj v) {
+    return v.num;
+}
+#define TPN_AS_INT(v) tp_number_to_int(v)
+tp_inline static tp_num tp_number_to_float(tp_obj v) {
+    return v.num;
+}
+#define TPN_AS_FLOAT(v) tp_number_to_float(v)
+
+extern tp_obj tp_None;
+extern tp_obj tp_True;
+extern tp_obj tp_False;
+
+tp_inline static tp_obj tp_bool(int v) {
+    return v?tp_True:tp_False;
+}
+
 typedef struct tpd_obj {
     TPGCMask gci;
 } tpd_obj;
@@ -279,10 +308,6 @@ typedef struct tp_vm {
     void (*echo)(const char* data, int length);
 } tp_vm;
 
-#define tp_True tp_number(1)
-#define tp_False tp_number(0)
-
-extern tp_obj tp_None;
 
 #ifdef TP_SANDBOX
 void *tp_malloc(TP, unsigned long);
@@ -394,15 +419,6 @@ tp_obj tpd_list_get(TP, tpd_list *self, int k, const char *error);
         (e) = tpd_list_get(tp, TPD_LIST(*tp->lparams), __i, "TP_LOOP");
 #define TP_END \
     }
-
-/* Function: tp_number
- * Creates a new numeric object.
- */
-tp_inline static tp_obj tp_number(tp_num v) {
-    tp_obj r = {TP_NUMBER};
-    r.num = v;
-    return r;
-}
 
 /* Function: tp_string_n
  * Creates a new string object from a partial C string.

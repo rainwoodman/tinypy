@@ -233,9 +233,9 @@ static tp_obj random_getstate(TP)
     int i;
 
     for (i = 0; i < N; i++) {
-        tp_set(tp, state_list, tp_None, tp_number(_gRandom.state[i]));
+        tp_set(tp, state_list, tp_None, tp_int(_gRandom.state[i]));
     }
-    tp_set(tp, state_list, tp_None, tp_number(_gRandom.index));
+    tp_set(tp, state_list, tp_None, tp_int(_gRandom.index));
 
     return (state_list);
 }
@@ -257,10 +257,10 @@ static tp_obj random_setstate(TP)
     }
 
     for (i = 0; i < N; i++) {
-        state_elem = tp_get(tp, state_list, tp_number(i));
+        state_elem = tp_get(tp, state_list, tp_int(i));
         _gRandom.state[i] = (unsigned long)state_elem.num;
     }
-    state_elem = tp_get(tp, state_list, tp_number(i));
+    state_elem = tp_get(tp, state_list, tp_int(i));
     _gRandom.index = (int)state_elem.num;
 
     return (tp_None);
@@ -337,7 +337,7 @@ static tp_obj random_random(TP)
     a = genrand_int32(self)>>5;
     b = genrand_int32(self)>>6;
     
-    return tp_number((a*67108864.0+b)*(1.0/9007199254740992.0));
+    return tp_float((a*67108864.0+b)*(1.0/9007199254740992.0));
 }
 
 
@@ -463,7 +463,7 @@ static tp_obj random_random(TP)
     if (errno == EDOM)
         tp_raise_printf(tp_None, "%s", "fmod(): denominator can't be zero");
 
-    return tp_number(r);
+    return tp_float(r);
 }
 
 /*
@@ -567,7 +567,7 @@ tp_obj random_random(TP)
 
     r = (tp_num)random()/(tp_num)RAND_MAX;
 
-    return (tp_number(r));
+    return (tp_float(r));
 }
 
 /*
@@ -627,7 +627,7 @@ tp_obj random_uniform(TP)
     rvo = random_random(tp);
     r = a + (b - a) * rvo.num;
     
-    return (tp_number(r));
+    return (tp_float(r));
 }
 
 /*
@@ -664,7 +664,7 @@ tp_obj random_normalvariate(TP)
 
     r = mu + z * sigma;
 
-    return (tp_number(r));
+    return (tp_float(r));
 }
 
 /*
@@ -687,11 +687,11 @@ tp_obj random_lognormvariate(TP)
     /*
      * call random_normalvariate() actually
      */
-    params = tp_params_v(tp, 2, tp_number(mu), tp_number(sigma));
+    params = tp_params_v(tp, 2, tp_float(mu), tp_float(sigma));
     normvar = tp_ez_call(tp, "random", "normalvariate", params);
     r = exp(normvar.num);
 
-    return (tp_number(r));
+    return (tp_float(r));
 }
 
 /*
@@ -713,7 +713,7 @@ tp_obj random_expovariate(TP)
 
     r = -log(u) / lambda;
 
-    return (tp_number(r));
+    return (tp_float(r));
 }
 
 /*
@@ -748,7 +748,7 @@ tp_obj random_vonmisesvariate(TP)
     if (kappa <= 1e-6) {
         rvo = random_random(tp);
         theta = TWOPI * rvo.num;
-        return (tp_number(theta));
+        return (tp_float(theta));
     }
 
     a = 1.0 + sqrt(1.0 + 4.0 * kappa * kappa);
@@ -778,7 +778,7 @@ tp_obj random_vonmisesvariate(TP)
     else
         theta = fmod(mu, TWOPI) - acos(f);
 
-    return (tp_number(theta));
+    return (tp_float(theta));
 }
 
 /*
@@ -835,7 +835,7 @@ tp_obj random_gammavariate(TP)
             if ((r + SG_MAGICCONST - 4.5 * z >= 0.0) ||
                 (r >= log(z))) {
                 res = x * beta;
-                return (tp_number(res));
+                return (tp_float(res));
             }
         }
     }
@@ -853,7 +853,7 @@ tp_obj random_gammavariate(TP)
         } while (u <= 1e-7);
 
         res = - log(u) * beta;
-        return (tp_number(res));
+        return (tp_float(res));
     } else {
 
         /*
@@ -886,7 +886,7 @@ tp_obj random_gammavariate(TP)
         }
 
         res = x * beta;
-        return (tp_number(res));
+        return (tp_float(res));
     }
 }
 
@@ -922,16 +922,16 @@ tp_obj random_betavariate(TP)
     tp_obj y;
     tp_obj params;
 
-    params = tp_params_v(tp, 2, tp_number(alpha), tp_number(1.0));
+    params = tp_params_v(tp, 2, tp_float(alpha), tp_float(1.0));
     y = tp_ez_call(tp, "random", "gammavariate", params);
     if (y.num == 0) {
         return (y);
     } else {
-        params = tp_params_v(tp, 2, tp_number(beta), tp_number(1.0));
+        params = tp_params_v(tp, 2, tp_float(beta), tp_float(1.0));
         t = y.num;
         y = tp_ez_call(tp, "random", "gammavariate", params);
         r = t / (t + y.num);
-        return (tp_number(r));
+        return (tp_float(r));
     }
 }
 
@@ -950,7 +950,7 @@ tp_obj random_paretovariate(TP)
     u = 1.0 - rvo.num;
     r = 1.0 / pow(u, 1.0/alpha);
     
-    return (tp_number(r));
+    return (tp_float(r));
 }
 
 /*
@@ -971,7 +971,7 @@ tp_obj random_weibullvariate(TP)
     rvo = random_random(tp);
     u = 1.0 - rvo.num;
     r = alpha * pow(-log(u), 1.0/beta);
-    return (tp_number(r));
+    return (tp_float(r));
 }
 
 /*
@@ -984,7 +984,7 @@ tp_obj random_randrange(TP)
 {
     tp_obj start = TP_PARAMS_OBJ();
     tp_obj stop = TP_PARAMS_DEFAULT(tp_None);
-    tp_obj step = TP_PARAMS_DEFAULT(tp_number(1));
+    tp_obj step = TP_PARAMS_DEFAULT(tp_int(1));
     tp_obj rvo = random_random(tp);
     int istart = (int)start.num;
     int istep = (int)step.num;
@@ -998,7 +998,7 @@ tp_obj random_randrange(TP)
                         */
         istop = istart;
         res = (rvo.num * istop);
-        return (tp_number(res));
+        return (tp_int(res));
     } else if (stop.type.typeid == TP_NUMBER) {
         istop = (int)stop.num;
         iwidth = istop - istart;
@@ -1009,11 +1009,11 @@ tp_obj random_randrange(TP)
             
         if (istep == 1) {
             res = (int)(istart + (int)(rvo.num * iwidth));
-            return (tp_number(res));
+            return (tp_int(res));
         } else {
             int n = (iwidth + istep - 1) / istep;
             res = (int)(istart + istep * (int)(n * rvo.num));
-            return (tp_number(res));
+            return (tp_int(res));
         }
     } else {
         tp_raise_printf(tp_None, "%s", "wrong type of stop");
@@ -1030,7 +1030,7 @@ tp_obj random_randint(TP)
     tp_obj r;
     tp_obj params;
 
-    params = tp_params_v(tp, 2, tp_number(a), tp_number(b + 1));
+    params = tp_params_v(tp, 2, tp_int(a), tp_int(b + 1));
     r = tp_ez_call(tp, "random", "randrange", params);
     return (r);
 }
@@ -1052,7 +1052,7 @@ tp_obj random_choice(TP)
     
     rvo = random_random(tp);
     i = (int)(len.num * rvo.num);
-    r = tp_get(tp, seq, tp_number(i));
+    r = tp_get(tp, seq, tp_int(i));
     
     return (r);
 }
@@ -1067,40 +1067,40 @@ tp_obj random_shuffle(TP)
     tp_obj elmj;
     tp_obj params;
     tp_obj rvo;
-    tp_obj len = tp_len(tp, seq);
+    int len = TPN_AS_INT(tp_len(tp, seq));
     int i, j;
     
-    if (len.num <= 0)
+    if (len <= 0)
         return (tp_None);
     
-    for (i = len.num - 1; i > len.num / 2; i--) {
+    for (i = len - 1; i > len / 2; i--) {
         /*
                        * randomly exchange elment i and elment j, element i from the behind end of 'seq', while
                        * element j from the front end of 'seq'.
                        */
-        params = tp_params_v(tp, 2, tp_number(0), tp_number(len.num / 2));
+        params = tp_params_v(tp, 2, tp_int(0), tp_int(len / 2));
         rvo = tp_ez_call(tp, "random", "randint", params);
-        j = (int)rvo.num;
-        elmi = tp_get(tp, seq, tp_number(i));
-        elmj = tp_get(tp, seq, tp_number(j));        
+        j = TPN_AS_INT(rvo);
+        elmi = tp_get(tp, seq, tp_int(i));
+        elmj = tp_get(tp, seq, tp_int(j));        
         
-        tp_set(tp, seq, tp_number(i), elmj);
-        tp_set(tp, seq, tp_number(j), elmi);
+        tp_set(tp, seq, tp_int(i), elmj);
+        tp_set(tp, seq, tp_int(j), elmi);
     }
     
-    for (i = len.num / 2; i >= 0; i--) {
+    for (i = len / 2; i >= 0; i--) {
         /*
                        * randomly exchange elment i and elment j, element i from the front end of 'seq', while
                        * element j from the behind end of 'seq'.
                        */
-        params = tp_params_v(tp, 2, tp_number(len.num / 2), tp_number(len.num - 1));
+        params = tp_params_v(tp, 2, tp_int(len / 2), tp_int(len - 1));
         rvo = tp_ez_call(tp, "random", "randint", params);
         j = (int)rvo.num;
-        elmi = tp_get(tp, seq, tp_number(i));
-        elmj = tp_get(tp, seq, tp_number(j));
+        elmi = tp_get(tp, seq, tp_int(i));
+        elmj = tp_get(tp, seq, tp_int(j));
         
-        tp_set(tp, seq, tp_number(i), elmj);
-        tp_set(tp, seq, tp_number(j), elmi);
+        tp_set(tp, seq, tp_int(i), elmj);
+        tp_set(tp, seq, tp_int(j), elmi);
     }
     
     return (tp_None);

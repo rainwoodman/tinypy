@@ -2,7 +2,10 @@
 #include "tp_internal.h"
 
 tp_obj tp_None = {TP_NONE};
+tp_obj tp_True = {TP_NUMBER, .num = 1};
+tp_obj tp_False = {TP_NUMBER, .num = 0};
 
+#include "tp_number.c"
 #include "tpd_list.c"
 #include "tpd_dict.c"
 

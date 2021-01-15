@@ -10,7 +10,7 @@ tp_obj tpy_list_index(TP) {
     if (i < 0) {
         tp_raise(tp_None,tp_string_atom(tp, "(tp_index) ValueError: list.index(x): x not in list"));
     }
-    return tp_number(i);
+    return tp_int(i);
 }
 
 tp_obj tpy_list_append(TP) {

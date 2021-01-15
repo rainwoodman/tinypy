@@ -34,9 +34,9 @@ tp_obj tp_has(TP,tp_obj self, tp_obj k) {
         }
         return tp_False;
     } else if (type == TP_STRING && k.type.typeid == TP_STRING) {
-        return tp_number(tp_str_index(self,k)!=-1);
+        return tp_bool(tp_str_index(self,k)!=-1);
     } else if (type == TP_LIST) {
-        return tp_number(tpd_list_find(tp, TPD_LIST(self), k, tp_equal)!=-1);
+        return tp_bool(tpd_list_find(tp, TPD_LIST(self), k, tp_equal)!=-1);
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_has) TypeError: iterable argument required"));
 }
@@ -122,11 +122,11 @@ static void tp_slice_get_indices(TP, tp_obj slice, tp_obj obj, int * start, int 
     int a, b, l;
     tp_obj tmp;
     l = tp_len(tp, obj).num;
-    tmp = tp_get(tp, slice, tp_number(0));
+    tmp = tp_get(tp, slice, tp_int(0));
     if (tmp.type.typeid == TP_NUMBER) { a = tmp.num; }
     else if(tmp.type.typeid == TP_NONE) { a = 0; }
     else { tp_raise_printf(, "(tp_get) TypeError: indices must be numbers"); }
-    tmp = tp_get(tp,slice,tp_number(1));
+    tmp = tp_get(tp,slice,tp_int(1));
     if (tmp.type.typeid == TP_NUMBER) { b = tmp.num; }
     else if(tmp.type.typeid == TP_NONE) { b = l; }
     else { tp_raise_printf(, "(tp_get) TypeError: indices must be numbers"); }
@@ -311,7 +311,7 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
 
 tp_obj tp_add(TP, tp_obj a, tp_obj b) {
     if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
-        return tp_number(a.num+b.num);
+        return tp_float(TPN_AS_FLOAT(a) + TPN_AS_FLOAT(b));
     } else if (a.type.typeid == TP_STRING && a.type.typeid == b.type.typeid) {
         return tp_string_add(tp, a, b);
     } else if (a.type.typeid == TP_LIST && a.type.typeid == b.type.typeid) {
@@ -326,7 +326,7 @@ tp_obj tp_add(TP, tp_obj a, tp_obj b) {
 
 tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
     if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
-        return tp_number(a.num*b.num);
+        return tp_float(TPN_AS_FLOAT(a) * TPN_AS_FLOAT(b));
     }
     if(a.type.typeid == TP_NUMBER) {
         tp_obj c = a; a = b; b = c;
@@ -350,11 +350,11 @@ tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
 tp_obj tp_len(TP,tp_obj self) {
     int type = self.type.typeid;
     if (type == TP_STRING) {
-        return tp_number(tp_string_len(self));
+        return tp_int(tp_string_len(self));
     } else if (type == TP_DICT) {
-        return tp_number(TPD_DICT(self)->len);
+        return tp_int(TPD_DICT(self)->len);
     } else if (type == TP_LIST) {
-        return tp_number(TPD_LIST(self)->len);
+        return tp_int(TPD_LIST(self)->len);
     }
     
     tp_raise(tp_None,tp_string_atom(tp, "(tp_len) TypeError: len() of unsized object"));
@@ -396,7 +396,7 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
     switch(a.type.typeid) {
         case TP_NUMBER:
             if(b.type.typeid == TP_NUMBER)
-                return tp_number(((long)a.num) % ((long)b.num));
+                return tp_int(TPN_AS_INT(a) % TPN_AS_INT(b));
             break;
         case TP_STRING:
             TP_META_BEGIN(a, format);
@@ -406,27 +406,27 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
     tp_raise(tp_None, tp_string_atom(tp, "(tp_mod) TypeError: ?"));
 }
 
-#define TP_OP(name,expr) \
+#define TP_OP(name, expr, type_name, cast) \
     tp_obj name(TP,tp_obj _a,tp_obj _b) { \
-    if (_a.type.typeid == TP_NUMBER && _a.type.typeid == _b.type.typeid) { \
-        tp_num a = _a.num; tp_num b = _b.num; \
-        return tp_number(expr); \
+    if (_a.type.typeid == TP_NUMBER && _b.type.typeid == TP_NUMBER) { \
+        type_name a = cast(_a); type_name b = cast(_b); \
+        return expr; \
     } \
     tp_raise(tp_None,tp_string_atom(tp, "(" #name ") TypeError: unsupported operand type(s)")); \
 }
 
-TP_OP(tp_bitwise_and,((long)a)&((long)b));
-TP_OP(tp_bitwise_or,((long)a)|((long)b));
-TP_OP(tp_bitwise_xor,((long)a)^((long)b));
-TP_OP(tp_lsh,((long)a)<<((long)b));
-TP_OP(tp_rsh,((long)a)>>((long)b));
-TP_OP(tp_sub,a-b);
-TP_OP(tp_div,a/b);
-TP_OP(tp_pow,pow(a,b));
+TP_OP(tp_bitwise_and, tp_int(a & b), int, TPN_AS_INT);
+TP_OP(tp_bitwise_or, tp_int(a | b), int, TPN_AS_INT);
+TP_OP(tp_bitwise_xor, tp_int(a ^ b), int, TPN_AS_INT);
+TP_OP(tp_lsh, tp_int(a << b), int, TPN_AS_INT);
+TP_OP(tp_rsh, tp_int(a >> b), int, TPN_AS_INT);
+TP_OP(tp_sub, tp_float(a - b), tp_num, TPN_AS_FLOAT);
+TP_OP(tp_div, tp_float(a / b), tp_num, TPN_AS_FLOAT);
+TP_OP(tp_pow, tp_float(pow(a, b)), tp_num, TPN_AS_FLOAT);
 
 tp_obj tp_bitwise_not(TP, tp_obj a) {
     if (a.type.typeid == TP_NUMBER) {
-        return tp_number(~(long)a.num);
+        return tp_int(~TPN_AS_INT(a));
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_bitwise_not) TypeError: unsupported operand type"));
 }

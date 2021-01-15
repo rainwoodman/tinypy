@@ -14,8 +14,8 @@ void math_init(TP)
     /*
      * initialize pi and e
      */
-    math_pi = tp_number(M_PI);
-    math_e  = tp_number(M_E);
+    math_pi = tp_float(M_PI);
+    math_e  = tp_float(M_E);
 
     /*
      * bind math functions to math module

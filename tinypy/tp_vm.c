@@ -271,12 +271,12 @@ int tp_step(TP) {
         case TP_IMOD:  RA = tp_mod(tp,RB,RC); break;
         case TP_ILSH:  RA = tp_lsh(tp,RB,RC); break;
         case TP_IRSH:  RA = tp_rsh(tp,RB,RC); break;
-        case TP_INE: RA = tp_number(!tp_equal(tp,RB,RC)); break;
-        case TP_IEQ: RA = tp_number(tp_equal(tp,RB,RC)); break;
-        case TP_ILE: RA = tp_number(tp_equal(tp,RB,RC) || tp_lessthan(tp, RB, RC)); break;
-        case TP_ILT: RA = tp_number(tp_lessthan(tp,RB,RC)); break;
+        case TP_INE: RA = tp_bool(!tp_equal(tp,RB,RC)); break;
+        case TP_IEQ: RA = tp_bool(tp_equal(tp,RB,RC)); break;
+        case TP_ILE: RA = tp_bool(tp_equal(tp,RB,RC) || tp_lessthan(tp, RB, RC)); break;
+        case TP_ILT: RA = tp_bool(tp_lessthan(tp,RB,RC)); break;
         case TP_IBITNOT:  RA = tp_bitwise_not(tp,RB); break;
-        case TP_INOT: RA = tp_number(!tp_true(tp,RB)); break;
+        case TP_INOT: RA = tp_bool(!tp_true(tp,RB)); break;
         case TP_IPASS: break;
         case TP_IIF: if (tp_true(tp,RA)) { cur += 1; } break;
         case TP_IIFN: if (!tp_true(tp,RA)) { cur += 1; } break;
@@ -293,7 +293,7 @@ int tp_step(TP) {
             }
             break;
         case TP_IIN: RA = tp_has(tp,RC,RB); break;
-        case TP_INOTIN: RA = tp_number(!tp_true(tp, tp_has(tp,RC,RB))); break;
+        case TP_INOTIN: RA = tp_bool(!tp_true(tp, tp_has(tp,RC,RB))); break;
         case TP_IIGET: tp_iget(tp,&RA,RB,RC); break;
         case TP_ISET: tp_set(tp,RA,RB,RC); break;
         case TP_IDEL: tp_del(tp,RA,RB); break;
@@ -306,7 +306,7 @@ int tp_step(TP) {
             tp_bounds(tp,cur,sizeof(tp_num)/4);
             #endif
             cur++;
-            RA = tp_number((*cur).number.val[0]);
+            RA = tp_float((*cur).number.val[0]);
             cur+= sizeof(tp_num)/4;
             continue;
         case TP_ISTRING: {

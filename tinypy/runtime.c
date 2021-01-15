@@ -37,7 +37,7 @@ tp_obj tp_load(TP, const char * fname) {
 tp_obj tpy_exists(TP) {
     char * fname = tp_cstr(tp, TP_PARAMS_STR());
     struct stat stbuf;
-    tp_obj r = tp_number(!stat(fname, &stbuf));
+    tp_obj r = tp_bool(!stat(fname, &stbuf));
     tp_free(tp, fname);
     return r;
 }
@@ -64,7 +64,7 @@ tp_obj tpy_mtime(TP) {
     tp_obj r;
     if (!stat(fname, &stbuf)) {
         tp_free(tp, fname);
-        r = tp_number(stbuf.st_mtime);
+        r = tp_int(stbuf.st_mtime);
         return r;
     } else {
         tp_free(tp, fname);
@@ -82,7 +82,7 @@ tp_obj tpy_system(TP) {
     char * s = tp_cstr(tp, TP_PARAMS_STR());
     int r = system(s);
     tp_free(tp, s);
-    return tp_number(r);
+    return tp_int(r);
 }
 
 void tp_module_os_init (TP) {

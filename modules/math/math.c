@@ -27,7 +27,7 @@
                                         "out of range", __func__, x);	\
         }                                           \
                                                     \
-        return (tp_number(r));                      \
+        return (tp_float(r));                       \
     }
 
 /*
@@ -50,7 +50,7 @@
                                         "out of range", __func__, x, y); \
         }                                           \
                                                     \
-        return (tp_number(r));                      \
+        return (tp_float(r));                       \
     }
 
 
@@ -189,8 +189,8 @@ static tp_obj math_frexp(TP) {
                                     "out of range", __func__, x);
     }
 
-    tp_set(tp, rList, tp_None, tp_number(r));
-    tp_set(tp, rList, tp_None, tp_number((tp_num)y));
+    tp_set(tp, rList, tp_None, tp_float(r));
+    tp_set(tp, rList, tp_None, tp_float((tp_num)y));
     return (rList);
 }
 
@@ -248,7 +248,7 @@ static tp_obj math_log(TP) {
 
     r = num / den;
 
-    return (tp_number(r));
+    return (tp_float(r));
 
 excep:
     tp_raise_printf(tp_None, "%s(x, y): x=%f,y=%f "
@@ -282,8 +282,8 @@ static tp_obj math_modf(TP) {
                                     "out of range", __func__, x);
     }
 
-    tp_set(tp, rList, tp_None, tp_number(r));
-    tp_set(tp, rList, tp_None, tp_number(y));
+    tp_set(tp, rList, tp_None, tp_float(r));
+    tp_set(tp, rList, tp_None, tp_float(y));
     return (rList);
 }
 
@@ -307,7 +307,7 @@ static tp_obj math_pow(TP) {
                                     "out of range", __func__, x, y);
     }
 
-    return (tp_number(r));
+    return (tp_float(r));
 }
 
 

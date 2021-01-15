@@ -43,7 +43,7 @@ tp_obj tp_conf_get(TP) {
     tp_obj o = TP_PARAMS_OBJ();
     tp_obj k = TP_PARAMS_STR();
     if(tp_string_equal_atom(k, "gcmax")) {
-        return tp_number(tp->gcmax);
+        return tp_int(tp->gcmax);
     } else {
         tp_raise_printf(tp_None, "(tp_conf_get) unknown key %O", &k);
     }
