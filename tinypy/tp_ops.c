@@ -415,11 +415,11 @@ tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
     tp_raise(tp_None,tp_string_atom(tp, "(" #name ") TypeError: unsupported operand type(s)")); \
 }
 
-TP_OP(tp_bitwise_and, tp_int(a & b), int, TPN_AS_INT);
-TP_OP(tp_bitwise_or, tp_int(a | b), int, TPN_AS_INT);
-TP_OP(tp_bitwise_xor, tp_int(a ^ b), int, TPN_AS_INT);
-TP_OP(tp_lsh, tp_int(a << b), int, TPN_AS_INT);
-TP_OP(tp_rsh, tp_int(a >> b), int, TPN_AS_INT);
+TP_OP(tp_bitwise_and, tp_int(a & b), long, TPN_AS_INT);
+TP_OP(tp_bitwise_or, tp_int(a | b), long, TPN_AS_INT);
+TP_OP(tp_bitwise_xor, tp_int(a ^ b), long, TPN_AS_INT);
+TP_OP(tp_lsh, tp_int(a << b), long, TPN_AS_INT);
+TP_OP(tp_rsh, tp_int(a >> b), long, TPN_AS_INT);
 TP_OP(tp_sub, tp_float(a - b), tp_num, TPN_AS_FLOAT);
 TP_OP(tp_div, tp_float(a / b), tp_num, TPN_AS_FLOAT);
 TP_OP(tp_pow, tp_float(pow(a, b)), tp_num, TPN_AS_FLOAT);

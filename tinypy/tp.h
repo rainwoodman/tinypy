@@ -128,7 +128,7 @@ typedef struct tp_obj {
     };
 } tp_obj;
 
-tp_inline static tp_obj tp_int(int v) {
+tp_inline static tp_obj tp_int(long v) {
     tp_obj r = {TP_NUMBER};
     r.num = v;
     return r;
@@ -140,7 +140,7 @@ tp_inline static tp_obj tp_float(tp_num v) {
     return r;
 }
 
-tp_inline static int tp_number_to_int(tp_obj v) {
+tp_inline static long tp_number_to_int(tp_obj v) {
     return v.num;
 }
 #define TPN_AS_INT(v) tp_number_to_int(v)
