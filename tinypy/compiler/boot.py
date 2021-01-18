@@ -1,6 +1,7 @@
 import sys
 
 if not "tinypy" in sys.version:
+    import struct
 
     ARGV = sys.argv
 
@@ -38,25 +39,11 @@ if not "tinypy" in sys.version:
         elif t == 'number': return (isinstance(v,float) or isinstance(v,int))
         raise '?'
 
-    def fpack(v):
-        import struct
-        return struct.pack('d', v)
+    def pack(format, v):
+        return struct.pack(format, v)
 
-    def ipack(v):
-        import struct
-        # FIXME: on automatically detect systems where long = 4 bytes
-        if v > 0x7fffffffffffffff:
-            return struct.pack('L', v)
-        else:
-            return struct.pack('l', v)
-
-    def funpack(v):
-        import struct
-        return struct.unpack('d', v)[0]
-
-    def iunpack(v):
-        import struct
-        return struct.unpack('l', v)[0]
+    def unpack(format, v):
+        return struct.unpack(format, v)[0]
 
     def load(fname):
         f = open(fname,'rb')

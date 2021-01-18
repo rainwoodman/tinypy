@@ -122,36 +122,14 @@ tp_obj tpy_number(TP) {
     tp_raise(tp_None,tp_string_atom(tp, "(tpy_number) TypeError: ?"));
 }
 
-tp_obj tpy_fpack(TP) {
-    double v = TP_PARAMS_FLOAT();
-    tp_obj r = tp_string_t(tp,sizeof(double));
-    *(double*) tp_string_getptr(r) = v;
-    return r;
+tp_obj tpy_pack(TP) {
+    char * format = tp_string_getptr(TP_PARAMS_STR());
+    return tp_pack(tp, format, TP_PARAMS_OBJ());
 }
 
-tp_obj tpy_funpack(TP) {
-    tp_obj v = TP_PARAMS_STR();
-    if (tp_string_len(v) != sizeof(double)) {
-        tp_raise(tp_None, tp_string_atom(tp, "funpack ValueError: length of string is incorrect."));
-    }
-    double r = *((double*) tp_string_getptr(v));
-    return tp_float(r);
-}
-
-tp_obj tpy_ipack(TP) {
-    long v = TP_PARAMS_INT();
-    tp_obj r = tp_string_t(tp,sizeof(long));
-    *(long*) tp_string_getptr(r) = v;
-    return r;
-}
-
-tp_obj tpy_iunpack(TP) {
-    tp_obj v = TP_PARAMS_STR();
-    if (tp_string_len(v) != sizeof(long)) {
-        tp_raise(tp_None, tp_string_atom(tp, "iunpack ValueError: length of string is incorrect."));
-    }
-    long r = *((long*) tp_string_getptr(v));
-    return tp_int(r);
+tp_obj tpy_unpack(TP) {
+    char * format = tp_string_getptr(TP_PARAMS_STR());
+    return tp_unpack(tp, format, TP_PARAMS_STR());
 }
 
 tp_obj tpy_abs(TP) {
@@ -420,10 +398,8 @@ void tp_module_builtins_init(TP) {
     {"istype",tpy_istype},
     {"isinstance",tpy_isinstance}, 
     {"chr",tpy_chr}, 
-    {"fpack",tpy_fpack},
-    {"funpack", tpy_funpack},
-    {"ipack",tpy_ipack},
-    {"iunpack", tpy_iunpack},
+    {"pack",tpy_pack},
+    {"unpack", tpy_unpack},
     {"abs",tpy_abs},
     {"eval",tpy_eval},
     {"exec",tpy_exec},

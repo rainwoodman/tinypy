@@ -74,14 +74,14 @@ def do_string(t,r=None):
 
 def _do_integer(i,r=None):
     r = get_tmp(r)
-    code(INTEGER,r,0,0)
-    write(ipack(i))
+    code(INTEGER,r,ord('l'),8)
+    write(pack("l", i))
     return r
 
 def _do_float(i,r=None):
     r = get_tmp(r)
-    code(NUMBER,r,0,0)
-    write(fpack(i))
+    code(NUMBER,r,ord('d'),8)
+    write(pack("d", i))
     return r
 
 def do_float(t,r=None):

@@ -579,3 +579,38 @@ void tp_assert(TP, tp_obj r, tp_obj b, tp_obj c)
     tp_raise(, msg);
 }
 /**/
+
+tp_obj tp_pack(TP, char *format, tp_obj v) {
+    tp_obj r;
+    switch(*format) {
+        case 'd':
+            r = tp_string_t(tp,sizeof(double));
+            *(double*) tp_string_getptr(r) = TPN_AS_FLOAT(v);
+            break;
+        case 'l':
+            r = tp_string_t(tp,sizeof(long));
+            *(long*) tp_string_getptr(r) = TPN_AS_INT(v);
+            break;
+        default:
+            abort();
+    }
+    return r;
+}
+tp_obj tp_unpack(TP, char * format, tp_obj v) {
+    tp_obj r;
+    switch(*format) {
+        case 'd':
+            if (tp_string_len(v) != sizeof(double)) goto ex_len;
+            return tp_float(*((double*) tp_string_getptr(v)));
+        case 'l':
+            if (tp_string_len(v) != sizeof(long)) goto ex_len;
+            return tp_int(*((long*) tp_string_getptr(v)));
+        default:
+            abort();
+    }
+    return r;
+
+ex_len:
+    tp_raise(tp_None, tp_string_atom(tp, "unpack ValueError: length of string is incorrect."));
+}
+

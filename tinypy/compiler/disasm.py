@@ -52,15 +52,15 @@ def disassemble(bc):
             n = b * 256 + c
             line += " " + str(text(n,ip,bc))
             line = trim(line)
-            ip += (int(n / 4) + 1) * 4 
+            ip += (int(n / 4) + 1) * 4
         elif i == opcodes.NUMBER:
-            f = funpack(text(8,ip,bc))
+            f = unpack(chr(b), text(c,ip,bc))
             line += " " + str(f)
-            ip += 8
+            ip += c
         elif i == opcodes.INTEGER:
-            f = iunpack(text(8,ip,bc))
+            f = unpack(chr(b), text(c,ip,bc))
             line += " " + str(f)
-            ip += 8
+            ip += c
         asmc.append(line)
         print(line)
     asmc = "\n".join(asmc)

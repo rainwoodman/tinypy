@@ -302,20 +302,22 @@ int tp_step(TP) {
             break;
         case TP_IMOVE: RA = RB; break;
         case TP_INUMBER:
-            #ifdef TP_SANDBOX
-            tp_bounds(tp,cur,sizeof((*cur).number.val[0])/4);
-            #endif
-            cur++;
-            RA = tp_float((*cur).number.val[0]);
-            cur+= sizeof((*cur).number.val[0])/4;
-            continue;
         case TP_IINTEGER:
             #ifdef TP_SANDBOX
-            tp_bounds(tp,cur,sizeof((*cur).integer.val[0])/4);
+            tp_bounds(tp,cur,VC/4);
             #endif
             cur++;
-            RA = tp_int((*cur).integer.val[0]);
-            cur+= sizeof((*cur).integer.val[0])/4;
+            switch((char)VB) {
+                case 'd':
+                    RA = tp_float(*(double*)cur);
+                    break;
+                case 'l':
+                    RA = tp_int(*(long*)cur);
+                    break;
+                default:
+                    abort();
+            }
+            cur+= VC / 4;
             continue;
         case TP_ISTRING: {
             #ifdef TP_SANDBOX

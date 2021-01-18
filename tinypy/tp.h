@@ -186,9 +186,6 @@ typedef union tpd_code {
     unsigned char i;
     struct { unsigned char i,a,b,c; } regs;
     struct { char val[0]; } string;
-    /* ensure the struct is 0 bytes long. */
-    TP_PACKED struct { double val[0]; } number;
-    TP_PACKED struct { long val[0]; } integer;
 } tpd_code;
 
 typedef struct tpd_frame {
