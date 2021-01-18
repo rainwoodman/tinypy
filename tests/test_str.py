@@ -75,6 +75,9 @@ class StringUnitTests(UnitTest):
         assert ord("\r") == 13
         assert ord("\t") == 9
         assert ord("\0") == 0
+        assert len("\xff") == 1
+        assert ord("\xff") == 255
+        assert ord("\x0f") == 15
 
 if __name__ == '__main__':
     tests = StringUnitTests()

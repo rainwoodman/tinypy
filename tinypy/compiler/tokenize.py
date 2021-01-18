@@ -174,14 +174,17 @@ def do_string(s,i,l):
             c = s[i]
             if c == "\\":
                 i = i+1; c = s[i]
-                if c == "n": c = '\n'
-                elif c == "r": c = chr(13)
-                elif c == "t": c = "\t"
-                elif c == "0": c = "\0"
-                elif c == "\\": c = "\\"
+                if c == "n": c = b'\n'
+                elif c == "r": c = b'\r'
+                elif c == "t": c = b'\t'
+                elif c == "0": c = b'\0'
+                elif c == "x" and i + 3 < l:
+                    c = bytes([int(s[i+1:i+3], 16)])
+                    i = i + 2
+                elif c == "\\": c = b'\\'
                 else:
                     u_error('tokenize',s,T.f)
-                v,i = v+c.encode(),i+1
+                v,i = v + c,i+1
             elif c == q:
                 i += 1
                 T.add('string',v)

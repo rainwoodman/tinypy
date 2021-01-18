@@ -376,6 +376,23 @@ tp_obj tpy_dict_update(TP) {
     return tp_None;
 }
 
+tp_obj tpy_bytes(TP) {
+    tp_obj v = TP_PARAMS_OBJ();
+    if(v.type.typeid == TP_STRING) {
+        return v;
+    }
+    if(v.type.typeid != TP_LIST) {
+        tp_raise_printf(tp_None, "(tpy_bytes): Only take a list or a string");
+    }
+    tp_obj r = tp_string_t(tp, TPD_LIST(v)->len);
+    int i;
+    char * p = tp_string_getptr(r);
+    for(i = 0; i < TPD_LIST(v)->len; i ++) {
+        p[i] = TPN_AS_INT(TPD_LIST(v)->items[i]);
+    }
+    return r;
+}
+
 void tp_module_builtins_init(TP) {
     tp_obj builtins = tp_object(tp);
     tp_set(tp, builtins, tp_string_atom(tp, "MODULES"), tp->modules);
@@ -394,6 +411,7 @@ void tp_module_builtins_init(TP) {
     {"__import__",tpy_import},
     {"len",tpy_len},
     {"str", tpy_str},
+    {"bytes", tpy_bytes},
     {"float",tpy_float}, 
     {"istype",tpy_istype},
     {"isinstance",tpy_isinstance}, 
