@@ -302,7 +302,6 @@ int tp_step(TP) {
             break;
         case TP_IMOVE: RA = RB; break;
         case TP_INUMBER:
-        case TP_IINTEGER:
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,VC/4);
             #endif

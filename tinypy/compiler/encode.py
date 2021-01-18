@@ -73,20 +73,18 @@ def do_string(t,r=None):
     return _do_string(t.val,r)
 
 def _do_integer(i,r=None):
-    r = get_tmp(r)
-    code(INTEGER,r,ord('l'),8)
-    write(pack("l", i))
-    return r
+    return _do_number('l', i, r)
 
-def _do_float(i,r=None):
+def _do_number(format, i, r=None):
     r = get_tmp(r)
-    code(NUMBER,r,ord('d'),8)
-    write(pack("d", i))
+    buf = pack(format, i)
+    code(NUMBER,r,ord(format),len(buf))
+    write(buf)
     return r
 
 def do_float(t,r=None):
     s = t.val
-    return _do_float(float(s.encode()),r)
+    return _do_number('d', float(s.encode()),r)
 
 def do_integer(t,r=None):
     s = t.val
