@@ -70,10 +70,3 @@ else:
 
     def merge(a, b):
         a.update(b)
-
-    # tpy strings are byte strings.
-    def bytes(s):
-        return s
-
-    def bytearray(t):
-        return join([chr(i) for i in t])

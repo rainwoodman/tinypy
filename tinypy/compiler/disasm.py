@@ -15,7 +15,7 @@ def pad(s, n):
     return s + p
 
 def text(x, ip, bc):
-    return bytes(bytearray(bc[ip:ip+x]))
+    return bytes(bc[ip:ip+x])
 
 def trim(x):
     txt = []
@@ -24,7 +24,7 @@ def trim(x):
             txt.append(c)
     return "".join(txt)
 
-def disassemble(bc):    
+def disassemble(bc):
     bc = [x for x in bc]
     asmc = []
     ip = 0

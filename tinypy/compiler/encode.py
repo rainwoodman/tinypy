@@ -155,7 +155,7 @@ def map_tags():
             out[n] = item[1]
         elif item[0] == 'code':
             i,a,b,c = item[1:]
-            out[n] = bytes(bytearray((i,a,b,c)))
+            out[n] = bytes([i,a,b,c])
         else:
             raise str(('huh?',item))
         if len(out[n]) != 4:
