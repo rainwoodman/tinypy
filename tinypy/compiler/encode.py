@@ -73,24 +73,33 @@ def do_string(t,r=None):
     return _do_string(t.val,r)
 
 def _do_integer(i,r=None):
-    return _do_number('l', i, r)
+    if i <= 0x7fffffff:
+        return _do_number('=i', i, r)
+    elif i <= 0xffffffff:
+        return _do_number('=I', i, r)
+    elif i <= 0x7fffffffffffffff:
+        return _do_number('=q', i, r)
+    else:
+        return _do_number('=Q', i, r)
 
 def _do_number(format, i, r=None):
     r = get_tmp(r)
     buf = pack(format, i)
-    code(NUMBER,r,ord(format),len(buf))
+    code(NUMBER,r,ord(format[1]),len(buf))
     write(buf)
     return r
 
 def do_float(t,r=None):
     s = t.val
-    return _do_number('d', float(s.encode()),r)
+    return _do_number('=d', float(s.encode()),r)
 
 def do_integer(t,r=None):
     s = t.val
     if s.startswith('0x'):
-        return _do_integer(int(s[2:].encode(), 16),r)
-    return _do_integer(int(s.encode()),r)
+        v = int(s[2:].encode(), 16)
+    else:
+        v = int(s.encode())
+    return _do_integer(v,r)
 
 def get_tag():
     k = str(D._tagi)

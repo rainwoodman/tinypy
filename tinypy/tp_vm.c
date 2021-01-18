@@ -305,18 +305,15 @@ int tp_step(TP) {
             #ifdef TP_SANDBOX
             tp_bounds(tp,cur,VC/4);
             #endif
+            {
             cur++;
-            switch((char)VB) {
-                case 'd':
-                    RA = tp_float(*(double*)cur);
-                    break;
-                case 'l':
-                    RA = tp_int(*(long*)cur);
-                    break;
-                default:
-                    abort();
-            }
+            char format[2];
+            format[0] = '=';
+            format[1] = VB;
+            int a = (char*) cur - tp_string_getptr(f->code);
+            RA = tp_unpack(tp, format, tp_string_view(tp, f->code, a, a+VC));
             cur+= VC / 4;
+            }
             continue;
         case TP_ISTRING: {
             #ifdef TP_SANDBOX

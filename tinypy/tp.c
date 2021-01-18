@@ -13,6 +13,7 @@ tp_obj tp_False = {.type = {TP_NUMBER, TP_NUMBER_INT}, .nint = 0};
 
 #include "tp_gc.c"
 #include "tp_hash.c"
+#include "tp_number.c"
 #include "tp_list.c"
 #include "tp_dict.c"
 #include "tp_string.c"
