@@ -1,3 +1,5 @@
+from tinypy.compiler.boot import *
+
 class Token:
     def __init__(self,pos=(0,0),type='symbol',val=None,items=None):
         self.pos,self.type,self.val,self.items=pos,type,val,items

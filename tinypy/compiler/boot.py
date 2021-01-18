@@ -2,6 +2,7 @@ import sys
 
 if not "tinypy" in sys.version:
     import struct
+    _bytes = bytes
 
     ARGV = sys.argv
 
@@ -10,7 +11,7 @@ if not "tinypy" in sys.version:
         out = b''
         for el in v:
             # At this point all elements in v must be bytes.
-            if not isinstance(el, bytes):
+            if not isinstance(el, _bytes):
                 raise
                 el = el.encode()
             out += el
@@ -23,7 +24,7 @@ if not "tinypy" in sys.version:
             for k in b: setattr(a,k,b[k])
 
     def number(v):
-        if not isinstance(v, bytes):
+        if not isinstance(v, _bytes):
             raise
         if b'.' in v:
             return float(v)
@@ -56,6 +57,10 @@ if not "tinypy" in sys.version:
         r = f.read().decode()
         f.close()
         return r
+
+    if sys.version_info.major == 2:
+        def bytes(v):
+            return _bytes(bytearray(v))
 
     def save(fname,v):
         f = open(fname,'wb')

@@ -153,9 +153,11 @@ def map_tags():
         item = out[n]
         if item[0] == 'data':
             out[n] = item[1]
+            assert len(out[n]) == 4
         elif item[0] == 'code':
             i,a,b,c = item[1:]
             out[n] = bytes([i,a,b,c])
+            assert len(out[n]) == 4, len(out[n])
         else:
             raise str(('huh?',item))
         if len(out[n]) != 4:
