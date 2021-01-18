@@ -17,7 +17,7 @@
  */
 #define TP_MATH_FUNC1(cfunc)                        \
     static tp_obj math_##cfunc(TP) {                \
-        double x = TP_PARAMS_NUM();                        \
+        double x = TP_PARAMS_FLOAT();                        \
         double r = 0.0;                             \
                                                     \
         errno = 0;                                  \
@@ -27,7 +27,7 @@
                                         "out of range", __func__, x);	\
         }                                           \
                                                     \
-        return (tp_number(r));                      \
+        return (tp_float(r));                       \
     }
 
 /*
@@ -39,8 +39,8 @@
  */
 #define TP_MATH_FUNC2(cfunc)                        \
     static tp_obj math_##cfunc(TP) {                \
-        double x = TP_PARAMS_NUM();                        \
-        double y = TP_PARAMS_NUM();                        \
+        double x = TP_PARAMS_FLOAT();                        \
+        double y = TP_PARAMS_FLOAT();                        \
         double r = 0.0;                             \
                                                     \
         errno = 0;                                  \
@@ -50,7 +50,7 @@
                                         "out of range", __func__, x, y); \
         }                                           \
                                                     \
-        return (tp_number(r));                      \
+        return (tp_float(r));                       \
     }
 
 
@@ -177,7 +177,7 @@ TP_MATH_FUNC2(fmod)
  * if x = 0, the (r, y) = (0, 0).
  */
 static tp_obj math_frexp(TP) {
-    double x = TP_PARAMS_NUM();
+    double x = TP_PARAMS_FLOAT();
     int    y = 0;   
     double r = 0.0;
     tp_obj rList = tp_list_t(tp);
@@ -189,8 +189,8 @@ static tp_obj math_frexp(TP) {
                                     "out of range", __func__, x);
     }
 
-    tp_set(tp, rList, tp_None, tp_number(r));
-    tp_set(tp, rList, tp_None, tp_number((tp_num)y));
+    tp_set(tp, rList, tp_None, tp_float(r));
+    tp_set(tp, rList, tp_None, tp_int(y));
     return (rList);
 }
 
@@ -222,7 +222,7 @@ TP_MATH_FUNC2(ldexp)
  * log(x, base) = log10(x) / log10(base).
  */
 static tp_obj math_log(TP) {
-    double x = TP_PARAMS_NUM();
+    double x = TP_PARAMS_FLOAT();
     tp_obj b = TP_PARAMS_DEFAULT(tp_None);
     double y = 0.0;
     double den = 0.0;   /* denominator */
@@ -232,7 +232,7 @@ static tp_obj math_log(TP) {
     if (b.type.typeid == TP_NONE)
         y = M_E;
     else if (b.type.typeid == TP_NUMBER)
-        y = (double)b.num;
+        y = TPN_AS_FLOAT(b);
     else
         tp_raise_printf(tp_None, "%s(x, [base]): base invalid", __func__);
 
@@ -248,7 +248,7 @@ static tp_obj math_log(TP) {
 
     r = num / den;
 
-    return (tp_number(r));
+    return (tp_float(r));
 
 excep:
     tp_raise_printf(tp_None, "%s(x, y): x=%f,y=%f "
@@ -270,7 +270,7 @@ TP_MATH_FUNC1(log10)
  * the same sign as x.
  */
 static tp_obj math_modf(TP) {
-    double x = TP_PARAMS_NUM();
+    double x = TP_PARAMS_FLOAT();
     double y = 0.0; 
     double r = 0.0;
     tp_obj rList = tp_list_t(tp);
@@ -282,8 +282,8 @@ static tp_obj math_modf(TP) {
                                     "out of range", __func__, x);
     }
 
-    tp_set(tp, rList, tp_None, tp_number(r));
-    tp_set(tp, rList, tp_None, tp_number(y));
+    tp_set(tp, rList, tp_None, tp_float(r));
+    tp_set(tp, rList, tp_None, tp_float(y));
     return (rList);
 }
 
@@ -296,8 +296,8 @@ static tp_obj math_modf(TP) {
  * alternative in math module.
  */
 static tp_obj math_pow(TP) {
-    double x = TP_PARAMS_NUM();
-    double y = TP_PARAMS_NUM();
+    double x = TP_PARAMS_FLOAT();
+    double y = TP_PARAMS_FLOAT();
     double r = 0.0;
 
     errno = 0;
@@ -307,7 +307,7 @@ static tp_obj math_pow(TP) {
                                     "out of range", __func__, x, y);
     }
 
-    return (tp_number(r));
+    return (tp_float(r));
 }
 
 

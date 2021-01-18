@@ -71,6 +71,8 @@ def _make_dicts():
         if not (k[0] >= 'A' and k[0] <= 'Z'):
             continue
         names[G[k]] = k
+        if k in codes:
+            raise Exception("duplicated codes")
         codes[k] = G[k]
     return names, codes
 

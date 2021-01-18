@@ -2,6 +2,8 @@
 #include "tp_internal.h"
 
 tp_obj tp_None = {TP_NONE};
+tp_obj tp_True = {.type = {TP_NUMBER, TP_NUMBER_INT}, .nint = 1};
+tp_obj tp_False = {.type = {TP_NUMBER, TP_NUMBER_INT}, .nint = 0};
 
 #include "tpd_list.c"
 #include "tpd_dict.c"
@@ -11,6 +13,7 @@ tp_obj tp_None = {TP_NONE};
 
 #include "tp_gc.c"
 #include "tp_hash.c"
+#include "tp_number.c"
 #include "tp_list.c"
 #include "tp_dict.c"
 #include "tp_string.c"

@@ -1,6 +1,7 @@
 import sys
 
 if not "tinypy" in sys.version:
+    import struct
 
     ARGV = sys.argv
 
@@ -24,9 +25,12 @@ if not "tinypy" in sys.version:
     def number(v):
         if not isinstance(v, bytes):
             raise
-        if v[0:2] == b'0x':
-            v = int(v[2:],16)
-        return float(v)
+        if b'.' in v:
+            return float(v)
+        else:
+            if v[0:2] == b'0x':
+                return int(v[2:],16)
+            return int(v)
 
     def istype(v,t):
         if t == 'string': return isinstance(v,str)
@@ -35,13 +39,11 @@ if not "tinypy" in sys.version:
         elif t == 'number': return (isinstance(v,float) or isinstance(v,int))
         raise '?'
 
-    def fpack(v):
-        import struct
-        return struct.pack('d', v)
+    def pack(format, v):
+        return struct.pack(format, v)
 
-    def funpack(v):
-        import struct
-        return struct.unpack('d', v)[0]
+    def unpack(format, v):
+        return struct.unpack(format, v)[0]
 
     def load(fname):
         f = open(fname,'rb')

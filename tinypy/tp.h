@@ -72,6 +72,9 @@ enum TP_PACKED TPTypeMagic {
     TP_STRING_ATOM,   /* Nul terminated string, unmanaged memory. */
     TP_STRING_EXTERN, /* unmanaged external string */
     TP_STRING_VIEW,   /* reference to a section of another string */
+
+    TP_NUMBER_INT,    /* integer */
+    TP_NUMBER_FLOAT,  /* float */
 };
 
 enum TP_PACKED TPTypeMask {
@@ -94,8 +97,6 @@ typedef union {
     };
     int i;
     } TPGCMask;
-
-typedef double tp_num;
 
 /* Type: tp_obj
  * Tinypy's object representation.
@@ -123,10 +124,15 @@ typedef struct tp_obj {
     TPTypeInfo type;
     void * info;
     union {
-        tp_num num;
+        double nfloat;
+        long nint;
         void * ptr;
     };
 } tp_obj;
+
+extern tp_obj tp_None;
+extern tp_obj tp_True;
+extern tp_obj tp_False;
 
 typedef struct tpd_obj {
     TPGCMask gci;
@@ -180,8 +186,6 @@ typedef union tpd_code {
     unsigned char i;
     struct { unsigned char i,a,b,c; } regs;
     struct { char val[0]; } string;
-    /* ensure the struct is 0 bytes long. */
-    TP_PACKED struct { tp_num val[0]; } number;
 } tpd_code;
 
 typedef struct tpd_frame {
@@ -279,10 +283,6 @@ typedef struct tp_vm {
     void (*echo)(const char* data, int length);
 } tp_vm;
 
-#define tp_True tp_number(1)
-#define tp_False tp_number(0)
-
-extern tp_obj tp_None;
 
 #ifdef TP_SANDBOX
 void *tp_malloc(TP, unsigned long);
@@ -366,7 +366,8 @@ tp_obj tp_check_type(TP, int t, tp_obj v) {
 #define TP_NPARAMS() (TPD_LIST(*tp->lparams)->len)
 #define TP_PARAMS_OBJ() (tp_get(tp, *tp->lparams, tp_None))
 #define TP_PARAMS_TYPE(t) tp_check_type(tp, t, TP_PARAMS_OBJ())
-#define TP_PARAMS_NUM() (TP_PARAMS_TYPE(TP_NUMBER).num)
+#define TP_PARAMS_FLOAT() (TPN_AS_FLOAT(TP_PARAMS_TYPE(TP_NUMBER)))
+#define TP_PARAMS_INT() (TPN_AS_INT(TP_PARAMS_TYPE(TP_NUMBER)))
 #define TP_PARAMS_STR() (TP_PARAMS_TYPE(TP_STRING))
 #define TP_PARAMS_DEFAULT(d) (TPD_LIST(*tp->lparams)->len?TP_PARAMS_OBJ():(d))
 
@@ -394,15 +395,6 @@ tp_obj tpd_list_get(TP, tpd_list *self, int k, const char *error);
         (e) = tpd_list_get(tp, TPD_LIST(*tp->lparams), __i, "TP_LOOP");
 #define TP_END \
     }
-
-/* Function: tp_number
- * Creates a new numeric object.
- */
-tp_inline static tp_obj tp_number(tp_num v) {
-    tp_obj r = {TP_NUMBER};
-    r.num = v;
-    return r;
-}
 
 /* Function: tp_string_n
  * Creates a new string object from a partial C string.
@@ -452,6 +444,8 @@ void tp_module_sys_init(TP, int argc, char * argv[]);
 void tp_module_builtins_init(TP);
 void tp_module_compiler_init(TP);
 void tp_module_corelib_init(TP);
+
+#include "tp_number.h"
 
 #include "tp_ops.h"
 

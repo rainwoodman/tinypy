@@ -46,19 +46,19 @@ tp_obj tpy_str_split(TP) {
 tp_obj tpy_str_find(TP) {
     tp_obj s = TP_PARAMS_OBJ();
     tp_obj v = TP_PARAMS_OBJ();
-    return tp_number(tp_str_index(s,v));
+    return tp_int(tp_str_index(s,v));
 }
 
 tp_obj tpy_str_index(TP) {
     tp_obj s = TP_PARAMS_OBJ();
     tp_obj v = TP_PARAMS_OBJ();
     int n = tp_str_index(s,v);
-    if (n >= 0) { return tp_number(n); }
+    if (n >= 0) { return tp_int(n); }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_str_index) ValueError: substring not found"));
 }
 
 tp_obj tpy_chr(TP) {
-    int v = TP_PARAMS_NUM();
+    int v = TP_PARAMS_INT();
     return tp->chars[(unsigned char)v];
 }
 
@@ -67,7 +67,7 @@ tp_obj tpy_ord(TP) {
     if (tp_string_len(s) != 1) {
         tp_raise(tp_None,tp_string_atom(tp, "(tp_ord) TypeError: ord() expected a character"));
     }
-    return tp_number((unsigned char)tp_string_getptr(s)[0]);
+    return tp_int((unsigned char)tp_string_getptr(s)[0]);
 }
 
 // NOTE: tpy strings are all byte strings, like py2. Thus encode is a noop.

@@ -30,7 +30,7 @@ tp_obj tp_args(TP, int argc, char *argv[]) {
 tp_obj tp_conf_set(TP) {
     tp_obj o = TP_PARAMS_OBJ();
     tp_obj k = TP_PARAMS_STR();
-    int v = TP_PARAMS_NUM();
+    int v = TP_PARAMS_INT();
     if(tp_string_equal_atom(k, "gcmax")) {
         tp->gcmax = v;
     } else {
@@ -43,7 +43,7 @@ tp_obj tp_conf_get(TP) {
     tp_obj o = TP_PARAMS_OBJ();
     tp_obj k = TP_PARAMS_STR();
     if(tp_string_equal_atom(k, "gcmax")) {
-        return tp_number(tp->gcmax);
+        return tp_int(tp->gcmax);
     } else {
         tp_raise_printf(tp_None, "(tp_conf_get) unknown key %O", &k);
     }
@@ -56,7 +56,7 @@ tp_obj tp_get_exc(TP) {
 }
 
 tp_obj tpy_exit(TP) {
-    int code = TP_PARAMS_NUM();
+    int code = TP_PARAMS_INT();
     exit(code);
     return tp_None;
 }

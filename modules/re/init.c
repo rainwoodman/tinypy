@@ -98,22 +98,22 @@ static tp_obj regex_obj_search(TP)
 {
 	tp_obj self = TP_PARAMS_OBJ();		/* regex object */
 	tp_obj str = TP_PARAMS_STR();
-	tp_obj pos = TP_PARAMS_DEFAULT(tp_number(0));
+	tp_obj pos = TP_PARAMS_DEFAULT(tp_int(0));
 	tp_obj maobj;				/* match object */
 	regexobject *re = NULL;
 	int r = -2;					/* -2 indicate exception */
 	int range;
 
-	if (pos.num < 0 || pos.num > tp_string_len(str)) {
+	if (TPN_AS_INT(pos) < 0 || TPN_AS_INT(pos) > tp_string_len(str)) {
 		LastError = "search offset out of range";
 		goto exception;
 	}
-	range = tp_string_len(str) - pos.num;
+	range = tp_string_len(str) - TPN_AS_INT(pos);
 
 	re = getre(tp, self);
 	re->re_lastok = NULL;
 	r = re_search(&re->re_patbuf, (unsigned char *)TPD_STRING(str)->s, 
-			tp_string_len(str), pos.num, range, &re->re_regs);
+			tp_string_len(str), TPN_AS_INT(pos), range, &re->re_regs);
 
 	/* cannot match pattern */
 	if (r == -1)
@@ -153,7 +153,7 @@ static tp_obj regex_obj_match(TP)
 {
 	tp_obj self = TP_PARAMS_OBJ();		/* regex object */
 	tp_obj str = TP_PARAMS_STR();
-	tp_obj pos = TP_PARAMS_DEFAULT(tp_number(0));
+	tp_obj pos = TP_PARAMS_DEFAULT(tp_int(0));
 	tp_obj maobj;				/* match object */
 	regexobject *re = NULL;
 	int r = -2;					/* -2 indicate exception */
@@ -161,7 +161,7 @@ static tp_obj regex_obj_match(TP)
 	re = getre(tp, self);
 	re->re_lastok = NULL;
 	r = re_match(&re->re_patbuf, (unsigned char *)TPD_STRING(str)->s, 
-			tp_string_len(str), pos.num, &re->re_regs);
+			tp_string_len(str), TPN_AS_INT(pos), &re->re_regs);
 
 	/* cannot match pattern */
 	if (r == -1)
@@ -197,7 +197,7 @@ static tp_obj regex_obj_split(TP)
 {
 	tp_obj self		= TP_PARAMS_OBJ();	/* regex object */
 	tp_obj restr	= TP_PARAMS_OBJ();	/* string */
-	tp_obj maxsplit = TP_PARAMS_DEFAULT(tp_number(0));
+	tp_obj maxsplit = TP_PARAMS_DEFAULT(tp_int(0));
 	tp_obj maobj;				/* match object */
 	regexobject *re = NULL;		/* lower level regex object */
 	tp_obj result	= tp_list_t(tp);
@@ -206,16 +206,16 @@ static tp_obj regex_obj_split(TP)
 	int srchloc;				/* search location */
 
 	/* maxsplit == 0 means no limit */
-	if ((int)maxsplit.num == 0)
-		maxsplit.num = RE_NREGS;
-	assert(maxsplit.num > 0);
+	if (TPN_AS_INT(maxsplit) == 0)
+		maxsplit = tp_int(RE_NREGS);
+	assert(TPN_AS_INT(maxsplit) > 0);
 
 	srchloc = 0;
 	slen = strlen((char *)TPD_STRING(restr)->s);
 
 	do {
 		/* generate a temp match object */
-		tp_params_v(tp, 3, self, restr, tp_number(srchloc));
+		tp_params_v(tp, 3, self, restr, tp_int(srchloc));
 		maobj = regex_obj_search(tp);
 		if (!tp_true(tp, maobj)) 
 			break;
@@ -226,7 +226,7 @@ static tp_obj regex_obj_split(TP)
 		}
 
 		/* extract fields */
-		if ((int)maxsplit.num > 0) {
+		if (TPN_AS_INT(maxsplit) > 0) {
 			int start = re->re_regs.start[0];
 			int end   = re->re_regs.end[0];
 			/*printf("%s:start(%d),end(%d)\n", __func__, start, end);*/
@@ -238,12 +238,12 @@ static tp_obj regex_obj_split(TP)
 
 			if (tp_true(tp, grpstr)) {
 				tp_set(tp, result, tp_None, grpstr);
-				maxsplit.num--;
+				maxsplit = tp_int(TPN_AS_INT(maxsplit)-1);
 			}
 
 			srchloc = end;
 		}
-	} while (srchloc < slen && (int)maxsplit.num > 0);
+	} while (srchloc < slen && TPN_AS_INT(maxsplit) > 0);
 
 	/* collect remaining string, if necessary */
 	if (srchloc < slen) {
@@ -266,7 +266,7 @@ static tp_obj regex_obj_findall(TP)
 {
 	tp_obj self		= TP_PARAMS_OBJ();	/* regex object */
 	tp_obj restr	= TP_PARAMS_OBJ();	/* string */
-	tp_obj pos		= TP_PARAMS_DEFAULT(tp_number(0));
+	tp_obj pos		= TP_PARAMS_DEFAULT(tp_int(0));
 	tp_obj maobj;				/* match object */
 	regexobject *re = NULL;		/* lower level regex object */
 	tp_obj result	= tp_list_t(tp);
@@ -274,14 +274,14 @@ static tp_obj regex_obj_findall(TP)
 	int	slen;					/* string length */
 	int srchloc;				/* search location */
 
-	srchloc = (int)pos.num;
+	srchloc = TPN_AS_INT(pos);
 	slen	= strlen((char *)TPD_STRING(restr)->s);
 	if (srchloc < 0 || srchloc >= slen)
 		tp_raise(tp_None, tp_string_atom(tp, "starting position out of range"));
 
 	do {
 		/* generate a temp match object */
-		tp_params_v(tp, 3, self, restr, tp_number(srchloc));
+		tp_params_v(tp, 3, self, restr, tp_int(srchloc));
 		maobj = regex_obj_search(tp);
 		if (!tp_true(tp, maobj)) 
 			break;
@@ -349,14 +349,14 @@ static tp_obj match_obj_group(TP)
 		indices[0] = 0;
 		single = 1;
 	} else if (TP_NPARAMS() == 1) {
-		indices[0] = (int)TP_PARAMS_NUM();
+		indices[0] = TP_PARAMS_INT();
 		single = 1;
 	} else {
 		i = 0;
 		TP_LOOP(grpidx)
-		if (grpidx.num < 0 || grpidx.num > RE_NREGS)
+		if (TPN_AS_INT(grpidx) < 0 || TPN_AS_INT(grpidx) > RE_NREGS)
 			tp_raise(tp_None, tp_string_atom(tp, "group() grpidx out of range"));
-		indices[i++] = (int)grpidx.num;
+		indices[i++] = TPN_AS_INT(grpidx);
 		TP_END
 	}
 
@@ -374,7 +374,7 @@ static tp_obj match_obj_group(TP)
 		}
 		tp_set(tp, result, tp_None, grpstr);
 	}
-	return (single ? tp_get(tp, result, tp_number(0)) : result);
+	return (single ? tp_get(tp, result, tp_int(0)) : result);
 }
 
 /*
@@ -423,7 +423,7 @@ static tp_obj match_obj_groups(TP)
 static tp_obj match_obj_start(TP)
 {
 	tp_obj self = TP_PARAMS_OBJ();						/* match object */
-	tp_obj group = TP_PARAMS_DEFAULT(tp_number(0));	/* group */
+	tp_obj group = TP_PARAMS_DEFAULT(tp_int(0));	/* group */
 	regexobject *re = NULL;
 	int start;
 
@@ -433,12 +433,12 @@ static tp_obj match_obj_start(TP)
 				tp_string_atom(tp, "start() only valid after successful match/search"));
 	}
 
-	if (group.num < 0 || group.num > RE_NREGS)
+	if (TPN_AS_INT(group) < 0 || TPN_AS_INT(group) > RE_NREGS)
 		tp_raise(tp_None, tp_string_atom(tp, "IndexError: group index out of range"));
 
-	start = re->re_regs.start[(int)group.num];
+	start = re->re_regs.start[TPN_AS_INT(group)];
 
-	return (tp_number(start));
+	return (tp_int(start));
 }
 
 /*
@@ -450,7 +450,7 @@ static tp_obj match_obj_start(TP)
 static tp_obj match_obj_end(TP)
 {
 	tp_obj self = TP_PARAMS_OBJ();						/* match object */
-	tp_obj group = TP_PARAMS_DEFAULT(tp_number(0));	/* group */
+	tp_obj group = TP_PARAMS_DEFAULT(tp_int(0));	/* group */
 	regexobject *re = NULL;
 	int end;
 
@@ -460,12 +460,12 @@ static tp_obj match_obj_end(TP)
 				tp_string_atom(tp, "end() only valid after successful match/search"));
 	}
 
-	if (group.num < 0 || group.num > RE_NREGS)
+	if (TPN_AS_INT(group) < 0 || TPN_AS_INT(group) > RE_NREGS)
 		tp_raise(tp_None, tp_string_atom(tp, "IndexError: group index out of range"));
 
-	end = re->re_regs.end[(int)group.num];
+	end = re->re_regs.end[TPN_AS_INT(group)];
 
-	return (tp_number(end));
+	return (tp_int(end));
 }
 
 /*
@@ -477,7 +477,7 @@ static tp_obj match_obj_end(TP)
 static tp_obj match_obj_span(TP)
 {
 	tp_obj self = TP_PARAMS_OBJ();						/* match object */
-	tp_obj group = TP_PARAMS_DEFAULT(tp_number(0));	/* group */
+	tp_obj group = TP_PARAMS_DEFAULT(tp_int(0));	/* group */
 	regexobject *re = NULL;
 	int start;
 	int end;
@@ -489,15 +489,15 @@ static tp_obj match_obj_span(TP)
 				tp_string_atom(tp, "span() only valid after successful match/search"));
 	}
 
-	if (group.num < 0 || group.num > RE_NREGS)
+	if (TPN_AS_INT(group) < 0 || TPN_AS_INT(group) > RE_NREGS)
 		tp_raise(tp_None, tp_string_atom(tp, "IndexError: group index out of range"));
 
-	start = re->re_regs.start[(int)group.num];
-	end   = re->re_regs.end[(int)group.num];
+	start = re->re_regs.start[TPN_AS_INT(group)];
+	end   = re->re_regs.end[TPN_AS_INT(group)];
 
 	result = tp_list_t(tp);
-	tp_set(tp, result, tp_None, tp_number(start));
-	tp_set(tp, result, tp_None, tp_number(end));
+	tp_set(tp, result, tp_None, tp_int(start));
+	tp_set(tp, result, tp_None, tp_int(end));
 
 	return (result);
 }
@@ -514,7 +514,7 @@ static tp_obj regex_compile(TP)
 	int size = 0;
 	tp_obj reobj_data;
 	tp_obj repat = TP_PARAMS_TYPE(TP_STRING);						/* pattern */
-	tp_obj resyn = TP_PARAMS_DEFAULT(tp_number(RE_SYNTAX_EMACS));	/* syntax */
+	tp_obj resyn = TP_PARAMS_DEFAULT(tp_int(RE_SYNTAX_EMACS));	/* syntax */
 	tp_obj reobj;	/* regex object */
 	regexobject *re;
 
@@ -537,7 +537,7 @@ static tp_obj regex_compile(TP)
 	re->re_lastok = NULL;
 
 	re->re_errno = 0;
-	re->re_syntax = (int)resyn.num;
+	re->re_syntax = TPN_AS_INT(resyn);
 
 	pat = TPD_STRING(repat)->s;
 	size = tp_string_len(repat);
@@ -584,7 +584,7 @@ static tp_obj regex_search(TP)
 {
 	tp_obj repat = TP_PARAMS_OBJ();	/* pattern */
 	tp_obj restr = TP_PARAMS_OBJ();	/* string */
-	tp_obj resyn = TP_PARAMS_DEFAULT(tp_number(RE_SYNTAX_EMACS));
+	tp_obj resyn = TP_PARAMS_DEFAULT(tp_int(RE_SYNTAX_EMACS));
 	tp_obj reobj;				/* regex object */
 	tp_obj maobj;				/* match object */
 
@@ -593,7 +593,7 @@ static tp_obj regex_search(TP)
 	reobj = regex_compile(tp);
 	
 	/* call r.search() */
-	tp_params_v(tp, 3, reobj, restr, tp_number(0));
+	tp_params_v(tp, 3, reobj, restr, tp_int(0));
 	maobj = regex_obj_search(tp);
 
 	return (maobj);
@@ -606,7 +606,7 @@ static tp_obj regex_match(TP)
 {
 	tp_obj repat = TP_PARAMS_OBJ();	/* pattern */
 	tp_obj restr = TP_PARAMS_OBJ();	/* string */
-	tp_obj resyn = TP_PARAMS_DEFAULT(tp_number(RE_SYNTAX_EMACS));
+	tp_obj resyn = TP_PARAMS_DEFAULT(tp_int(RE_SYNTAX_EMACS));
 	tp_obj reobj;				/* regex object */
 	tp_obj maobj;				/* match object */
 
@@ -615,7 +615,7 @@ static tp_obj regex_match(TP)
 	reobj = regex_compile(tp);
 	
 	/* call r.search() */
-	tp_params_v(tp, 3, reobj, restr, tp_number(0));
+	tp_params_v(tp, 3, reobj, restr, tp_int(0));
 	maobj = regex_obj_match(tp);
 
 	return (maobj);
@@ -631,11 +631,11 @@ static tp_obj regex_split(TP)
 {
 	tp_obj repat = TP_PARAMS_OBJ();	/* pattern */
 	tp_obj restr = TP_PARAMS_OBJ();	/* string */
-	tp_obj maxsplit = TP_PARAMS_DEFAULT(tp_number(0));
+	tp_obj maxsplit = TP_PARAMS_DEFAULT(tp_int(0));
 	tp_obj reobj;				/* regex object */
 
 	/* generate a temp regex object */
-	tp_params_v(tp, 2, repat, tp_number(RE_SYNTAX_EMACS));
+	tp_params_v(tp, 2, repat, tp_int(RE_SYNTAX_EMACS));
 	reobj = regex_compile(tp);
 	
 	tp_params_v(tp, 3, reobj, restr, maxsplit);
@@ -652,7 +652,7 @@ static tp_obj regex_findall(TP)
 {
 	tp_obj repat = TP_PARAMS_OBJ();	/* pattern */
 	tp_obj restr = TP_PARAMS_OBJ();	/* string */
-	tp_obj resyn = TP_PARAMS_DEFAULT(tp_number(RE_SYNTAX_EMACS));
+	tp_obj resyn = TP_PARAMS_DEFAULT(tp_int(RE_SYNTAX_EMACS));
 	tp_obj reobj;				/* regex object */
 
 	/* generate a temp regex object */
@@ -684,10 +684,10 @@ void re_init(TP)
 	tp_set(tp, re_mod, tp_string_atom(tp, "match"),		  tp_function(tp, regex_match));
 	tp_set(tp, re_mod, tp_string_atom(tp, "split"),		  tp_function(tp, regex_split));
 	tp_set(tp, re_mod, tp_string_atom(tp, "findall"),	  tp_function(tp, regex_findall));
-	tp_set(tp, re_mod, tp_string_atom(tp, "AWK_SYNTAX"),   tp_number(RE_SYNTAX_AWK));
-	tp_set(tp, re_mod, tp_string_atom(tp, "EGREP_SYNTAX"), tp_number(RE_SYNTAX_EGREP));
-	tp_set(tp, re_mod, tp_string_atom(tp, "GREP_SYNTAX"),  tp_number(RE_SYNTAX_GREP));
-	tp_set(tp, re_mod, tp_string_atom(tp, "EMACS_SYNTAX"), tp_number(RE_SYNTAX_EMACS));
+	tp_set(tp, re_mod, tp_string_atom(tp, "AWK_SYNTAX"),   tp_int(RE_SYNTAX_AWK));
+	tp_set(tp, re_mod, tp_string_atom(tp, "EGREP_SYNTAX"), tp_int(RE_SYNTAX_EGREP));
+	tp_set(tp, re_mod, tp_string_atom(tp, "GREP_SYNTAX"),  tp_int(RE_SYNTAX_GREP));
+	tp_set(tp, re_mod, tp_string_atom(tp, "EMACS_SYNTAX"), tp_int(RE_SYNTAX_EMACS));
 
 	/*
 	 * bind special attibutes to re module

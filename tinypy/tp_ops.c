@@ -8,7 +8,16 @@
  */
 int tp_true(TP, tp_obj v) {
     switch(v.type.typeid) {
-        case TP_NUMBER: return v.num != 0;
+        case TP_NUMBER: {
+            switch(v.type.magic) {
+                case TP_NUMBER_FLOAT:
+                    return TPN_AS_FLOAT(v) != 0;
+                case TP_NUMBER_INT:
+                    return TPN_AS_INT(v) != 0;
+                default:
+                    abort();
+            }
+        }
         case TP_NONE: return 0;
         case TP_STRING: return tp_string_len(v) != 0;
         case TP_LIST: return TPD_LIST(v)->len != 0;
@@ -34,9 +43,9 @@ tp_obj tp_has(TP,tp_obj self, tp_obj k) {
         }
         return tp_False;
     } else if (type == TP_STRING && k.type.typeid == TP_STRING) {
-        return tp_number(tp_str_index(self,k)!=-1);
+        return tp_bool(tp_str_index(self,k)!=-1);
     } else if (type == TP_LIST) {
-        return tp_number(tpd_list_find(tp, TPD_LIST(self), k, tp_equal)!=-1);
+        return tp_bool(tpd_list_find(tp, TPD_LIST(self), k, tp_equal)!=-1);
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_has) TypeError: iterable argument required"));
 }
@@ -121,13 +130,13 @@ tp_obj tp_getraw(TP, tp_obj self) {
 static void tp_slice_get_indices(TP, tp_obj slice, tp_obj obj, int * start, int * stop) {
     int a, b, l;
     tp_obj tmp;
-    l = tp_len(tp, obj).num;
-    tmp = tp_get(tp, slice, tp_number(0));
-    if (tmp.type.typeid == TP_NUMBER) { a = tmp.num; }
+    l = TPN_AS_INT(tp_len(tp, obj));
+    tmp = tp_get(tp, slice, tp_int(0));
+    if (tmp.type.typeid == TP_NUMBER) { a = TPN_AS_INT(tmp); }
     else if(tmp.type.typeid == TP_NONE) { a = 0; }
     else { tp_raise_printf(, "(tp_get) TypeError: indices must be numbers"); }
-    tmp = tp_get(tp,slice,tp_number(1));
-    if (tmp.type.typeid == TP_NUMBER) { b = tmp.num; }
+    tmp = tp_get(tp,slice,tp_int(1));
+    if (tmp.type.typeid == TP_NUMBER) { b = TPN_AS_INT(tmp); }
     else if(tmp.type.typeid == TP_NONE) { b = l; }
     else { tp_raise_printf(, "(tp_get) TypeError: indices must be numbers"); }
 
@@ -178,8 +187,8 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
         tp_raise_printf(tp_None, "(tpd_dict_get) KeyError: %O", &k);
     } else if (type == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
-            int l = tp_len(tp,self).num;
-            int n = k.num;
+            int l = TPN_AS_INT(tp_len(tp,self));
+            int n = TPN_AS_INT(k);
             n = (n<0?l+n:n);
             return tpd_list_get(tp, TPD_LIST(self), n, "tp_get");
         } else if (k.type.typeid == TP_STRING) {
@@ -195,7 +204,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
     } else if (type == TP_STRING) {
         if (k.type.typeid == TP_NUMBER) {
             int l = tp_string_len(self);
-            int n = k.num;
+            int n = TPN_AS_INT(k);
             n = (n<0?l+n:n);
             if (n >= 0 && n < l) {
                 return tp->chars[(unsigned char) tp_string_getptr(self)[n]];
@@ -257,7 +266,7 @@ int tp_iget(TP, tp_obj *r, tp_obj self, tp_obj k) {
     if (self.type.typeid == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
             int l = TPD_LIST(self)->len;
-            int n = k.num;
+            int n = TPN_AS_INT(k);
             if(n >=0 && n < l) {
                 *r = tpd_list_get(tp, TPD_LIST(self), n, "tp_iget");
                 tp_grey(tp, *r);
@@ -299,7 +308,7 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
         return;
     } else if (type == TP_LIST) {
         if (k.type.typeid == TP_NUMBER) {
-            tpd_list_set(tp, TPD_LIST(self), k.num, v, "tp_set");
+            tpd_list_set(tp, TPD_LIST(self), TPN_AS_INT(k), v, "tp_set");
             return;
         } else if (k.type.typeid == TP_NONE) {
             tpd_list_append(tp, TPD_LIST(self), v);
@@ -311,7 +320,13 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
 
 tp_obj tp_add(TP, tp_obj a, tp_obj b) {
     if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
-        return tp_number(a.num+b.num);
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(TPN_AS_INT(a) + TPN_AS_INT(b));
+            case TP_NUMBER_FLOAT:
+                return tp_float(TPN_AS_FLOAT(a) + TPN_AS_FLOAT(b));
+            default: abort();
+        }
     } else if (a.type.typeid == TP_STRING && a.type.typeid == b.type.typeid) {
         return tp_string_add(tp, a, b);
     } else if (a.type.typeid == TP_LIST && a.type.typeid == b.type.typeid) {
@@ -326,20 +341,80 @@ tp_obj tp_add(TP, tp_obj a, tp_obj b) {
 
 tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
     if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
-        return tp_number(a.num*b.num);
-    }
-    if(a.type.typeid == TP_NUMBER) {
-        tp_obj c = a; a = b; b = c;
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(TPN_AS_INT(a) * TPN_AS_INT(b));
+            case TP_NUMBER_FLOAT:
+                return tp_float(TPN_AS_FLOAT(a) * TPN_AS_FLOAT(b));
+            default: abort();
+        }
     }
     if(a.type.typeid == TP_STRING && b.type.typeid == TP_NUMBER) {
-        int n = b.num;
+        int n = TPN_AS_INT(b);
         return tp_string_mul(tp, a, n);
     }
     if(a.type.typeid == TP_LIST && b.type.typeid == TP_NUMBER) {
-        int n = b.num;
+        int n = TPN_AS_INT(b);
         return tp_list_mul(tp, a, n);
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_mul) TypeError: ?"));
+}
+
+tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
+    if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(TPN_AS_INT(a) % TPN_AS_INT(b));
+            case TP_NUMBER_FLOAT:
+                return tp_float(fmod(TPN_AS_FLOAT(a), TPN_AS_FLOAT(b)));
+            default: abort();
+        }
+    }
+    if(a.type.typeid == TP_STRING) {
+            TP_META_BEGIN(a, format);
+            return tp_call(tp, format, tp_list_v(tp, 1, b), tp_None);
+            TP_META_END;
+    }
+    tp_raise(tp_None, tp_string_atom(tp, "(tp_mod) TypeError: ?"));
+}
+
+tp_obj tp_sub(TP, tp_obj a, tp_obj b) {
+    if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(TPN_AS_INT(a) - TPN_AS_INT(b));
+            case TP_NUMBER_FLOAT:
+                return tp_float(TPN_AS_FLOAT(a) - TPN_AS_FLOAT(b));
+            default: abort();
+        }
+    }
+    tp_raise(tp_None, tp_string_atom(tp, "(tp_sub) TypeError: ?"));
+}
+
+tp_obj tp_div(TP, tp_obj a, tp_obj b) {
+    if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(TPN_AS_INT(a) / TPN_AS_INT(b));
+            case TP_NUMBER_FLOAT:
+                return tp_float(TPN_AS_FLOAT(a) / TPN_AS_FLOAT(b));
+            default: abort();
+        }
+    }
+    tp_raise(tp_None, tp_string_atom(tp, "(tp_div) TypeError: ?"));
+}
+
+tp_obj tp_pow(TP, tp_obj a, tp_obj b) {
+    if (a.type.typeid == TP_NUMBER && a.type.typeid == b.type.typeid) {
+        switch(tp_number_upcast(tp, &a, &b)) {
+            case TP_NUMBER_INT:
+                return tp_int(pow(TPN_AS_INT(a), TPN_AS_INT(b)));
+            case TP_NUMBER_FLOAT:
+                return tp_float(pow(TPN_AS_FLOAT(a), TPN_AS_FLOAT(b)));
+            default: abort();
+        }
+    }
+    tp_raise(tp_None, tp_string_atom(tp, "(tp_div) TypeError: ?"));
 }
 
 /* Function: tp_len
@@ -350,11 +425,11 @@ tp_obj tp_mul(TP,tp_obj a, tp_obj b) {
 tp_obj tp_len(TP,tp_obj self) {
     int type = self.type.typeid;
     if (type == TP_STRING) {
-        return tp_number(tp_string_len(self));
+        return tp_int(tp_string_len(self));
     } else if (type == TP_DICT) {
-        return tp_number(TPD_DICT(self)->len);
+        return tp_int(TPD_DICT(self)->len);
     } else if (type == TP_LIST) {
-        return tp_number(TPD_LIST(self)->len);
+        return tp_int(TPD_LIST(self)->len);
     }
     
     tp_raise(tp_None,tp_string_atom(tp, "(tp_len) TypeError: len() of unsized object"));
@@ -364,7 +439,14 @@ int tp_equal(TP, tp_obj a, tp_obj b) {
     if (a.type.typeid != b.type.typeid) { return 0;}
     switch(a.type.typeid) {
         case TP_NONE: return 1;
-        case TP_NUMBER: return a.num == b.num;
+        case TP_NUMBER: 
+            switch(tp_number_upcast(tp, &a, &b)) {
+                case TP_NUMBER_INT:
+                    return TPN_AS_INT(a) == TPN_AS_INT(b);
+                case TP_NUMBER_FLOAT:
+                    return TPN_AS_FLOAT(a) == TPN_AS_FLOAT(b);
+                default: abort();
+            }
         case TP_STRING: return tp_string_cmp(a, b) == 0;
         case TP_LIST: return tp_list_equal(tp, a, b);
         case TP_DICT: return tp_dict_equal(tp, a, b);
@@ -380,7 +462,14 @@ int tp_lessthan(TP, tp_obj a, tp_obj b) {
     }
     switch(a.type.typeid) {
         case TP_NONE: return 0;
-        case TP_NUMBER: return a.num < b.num;
+        case TP_NUMBER:
+            switch(tp_number_upcast(tp, &a, &b)) {
+                case TP_NUMBER_INT:
+                    return TPN_AS_INT(a) < TPN_AS_INT(b);
+                case TP_NUMBER_FLOAT:
+                    return TPN_AS_FLOAT(a) < TPN_AS_FLOAT(b);
+                default: abort();
+            }
         case TP_STRING: return tp_string_cmp(a, b) < 0;
         case TP_LIST: return tp_list_lessthan(tp, a, b);
         case TP_DICT: {
@@ -392,41 +481,25 @@ int tp_lessthan(TP, tp_obj a, tp_obj b) {
     tp_raise(0,tp_string_atom(tp, "(tp_lessthan) TypeError: Unknown types."));
 }
 
-tp_obj tp_mod(TP, tp_obj a, tp_obj b) {
-    switch(a.type.typeid) {
-        case TP_NUMBER:
-            if(b.type.typeid == TP_NUMBER)
-                return tp_number(((long)a.num) % ((long)b.num));
-            break;
-        case TP_STRING:
-            TP_META_BEGIN(a, format);
-            return tp_call(tp, format, tp_list_v(tp, 1, b), tp_None);
-            TP_META_END;
-    }
-    tp_raise(tp_None, tp_string_atom(tp, "(tp_mod) TypeError: ?"));
-}
 
-#define TP_OP(name,expr) \
+#define TP_DEF_OP_INT(name, expr) \
     tp_obj name(TP,tp_obj _a,tp_obj _b) { \
-    if (_a.type.typeid == TP_NUMBER && _a.type.typeid == _b.type.typeid) { \
-        tp_num a = _a.num; tp_num b = _b.num; \
-        return tp_number(expr); \
+    if (_a.type.typeid == TP_NUMBER && _b.type.typeid == TP_NUMBER) { \
+        long a = TPN_AS_INT(_a); long b = TPN_AS_INT(_b); \
+        return tp_int(expr); \
     } \
     tp_raise(tp_None,tp_string_atom(tp, "(" #name ") TypeError: unsupported operand type(s)")); \
 }
 
-TP_OP(tp_bitwise_and,((long)a)&((long)b));
-TP_OP(tp_bitwise_or,((long)a)|((long)b));
-TP_OP(tp_bitwise_xor,((long)a)^((long)b));
-TP_OP(tp_lsh,((long)a)<<((long)b));
-TP_OP(tp_rsh,((long)a)>>((long)b));
-TP_OP(tp_sub,a-b);
-TP_OP(tp_div,a/b);
-TP_OP(tp_pow,pow(a,b));
+TP_DEF_OP_INT(tp_bitwise_and, a & b);
+TP_DEF_OP_INT(tp_bitwise_or, a | b);
+TP_DEF_OP_INT(tp_bitwise_xor, a ^ b);
+TP_DEF_OP_INT(tp_lsh, a << b);
+TP_DEF_OP_INT(tp_rsh, a >> b);
 
 tp_obj tp_bitwise_not(TP, tp_obj a) {
     if (a.type.typeid == TP_NUMBER) {
-        return tp_number(~(long)a.num);
+        return tp_int(~TPN_AS_INT(a));
     }
     tp_raise(tp_None,tp_string_atom(tp, "(tp_bitwise_not) TypeError: unsupported operand type"));
 }
@@ -506,3 +579,4 @@ void tp_assert(TP, tp_obj r, tp_obj b, tp_obj c)
     tp_raise(, msg);
 }
 /**/
+

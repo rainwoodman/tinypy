@@ -47,14 +47,14 @@ tp_obj tpy_range(TP) {
     int a,b,c,i;
     tp_obj r = tp_list_t(tp);
     switch (TP_NPARAMS()) {
-        case 1: a = 0; b = TP_PARAMS_NUM(); c = 1; break;
+        case 1: a = 0; b = TP_PARAMS_INT(); c = 1; break;
         case 2:
-        case 3: a = TP_PARAMS_NUM(); b = TP_PARAMS_NUM(); c = TP_PARAMS_DEFAULT(tp_number(1)).num; break;
+        case 3: a = TP_PARAMS_INT(); b = TP_PARAMS_INT(); c = TPN_AS_INT(TP_PARAMS_DEFAULT(tp_int(1))); break;
         default: return r;
     }
     if (c != 0) {
         for (i=a; (c>0) ? i<b : i>b; i+=c) {
-            tpd_list_append(tp, TPD_LIST(r), tp_number(i));
+            tpd_list_append(tp, TPD_LIST(r), tp_int(i));
         }
     }
     return r;
@@ -63,12 +63,12 @@ tp_obj tpy_range(TP) {
 tp_obj tpy_istype(TP) {
     tp_obj v = TP_PARAMS_OBJ();
     tp_obj t = TP_PARAMS_STR();
-    if (tp_string_equal_atom(t, "string")) { return tp_number(v.type.typeid == TP_STRING); }
-    if (tp_string_equal_atom(t, "list")) { return tp_number(v.type.typeid == TP_LIST); }
-    if (tp_string_equal_atom(t, "dict")) { return tp_number(v.type.typeid == TP_DICT); }
-    if (tp_string_equal_atom(t, "number")) { return tp_number(v.type.typeid == TP_NUMBER); }
-    if (tp_string_equal_atom(t, "func")) { return tp_number(v.type.typeid == TP_FUNC && (v.type.mask & TP_FUNC_MASK_METHOD) == 0); }
-    if (tp_string_equal_atom(t, "method")) { return tp_number(v.type.typeid == TP_FUNC && (v.type.mask & TP_FUNC_MASK_METHOD) != 0); }
+    if (tp_string_equal_atom(t, "string")) { return tp_bool(v.type.typeid == TP_STRING); }
+    if (tp_string_equal_atom(t, "list")) { return tp_bool(v.type.typeid == TP_LIST); }
+    if (tp_string_equal_atom(t, "dict")) { return tp_bool(v.type.typeid == TP_DICT); }
+    if (tp_string_equal_atom(t, "number")) { return tp_bool(v.type.typeid == TP_NUMBER); }
+    if (tp_string_equal_atom(t, "func")) { return tp_bool(v.type.typeid == TP_FUNC && (v.type.mask & TP_FUNC_MASK_METHOD) == 0); }
+    if (tp_string_equal_atom(t, "method")) { return tp_bool(v.type.typeid == TP_FUNC && (v.type.mask & TP_FUNC_MASK_METHOD) != 0); }
     tp_raise(tp_None,tp_string_atom(tp, "(is_type) TypeError: ?"));
 }
 
@@ -87,17 +87,17 @@ tp_obj tpy_isinstance(TP) {
         if(tp_none(meta)) break;
 
         if (TPD_DICT(meta) == TPD_DICT(t)) {
-            return tp_number(1);
+            return tp_True;
         }
         p = meta;
     }
-    return tp_number(0);
+    return tp_False;
 }
 
 
-tp_obj tpy_float(TP) {
+tp_obj tpy_number(TP) {
     tp_obj v = TP_PARAMS_OBJ();
-    int ord = TP_PARAMS_DEFAULT(tp_number(0)).num;
+    int ord = TPN_AS_INT(TP_PARAMS_DEFAULT(tp_int(0)));
     int type = v.type.typeid;
     if (type == TP_NUMBER) { return v; }
     if (type == TP_STRING && tp_string_len(v) < 32) {
@@ -108,49 +108,49 @@ tp_obj tpy_float(TP) {
         memcpy(s, tp_string_getptr(v), len);
         char *end = NULL;
         if (strchr(s, '.')) {
-            r = tp_number(strtod(s, &end));
+            r = tp_float(strtod(s, &end));
         } else if (strchr(s, '-')) {
-            r = tp_number(strtol(s, &end, ord));
+            r = tp_int(strtol(s, &end, ord));
         } else {
-            r = tp_number(strtoul(s, &end, ord));
+            r = tp_int(strtoul(s, &end, ord));
         }
         if((end - s) != len) {
-          tp_raise_printf(tp_None, "(tpy_float) TypeError: could not parse string %s to a number", s);
+          tp_raise_printf(tp_None, "(tpy_number) TypeError: could not parse string %s to a number", s);
         }
         return r;
     }
-    tp_raise(tp_None,tp_string_atom(tp, "(tpy_float) TypeError: ?"));
+    tp_raise(tp_None,tp_string_atom(tp, "(tpy_number) TypeError: ?"));
 }
 
-tp_obj tpy_fpack(TP) {
-    tp_num v = TP_PARAMS_NUM();
-    tp_obj r = tp_string_t(tp,sizeof(tp_num));
-    *(tp_num*) tp_string_getptr(r) = v;
-    return r;
+tp_obj tpy_pack(TP) {
+    char * format = tp_string_getptr(TP_PARAMS_STR());
+    return tp_pack(tp, format, TP_PARAMS_OBJ());
 }
 
-tp_obj tpy_funpack(TP) {
-    tp_obj v = TP_PARAMS_STR();
-    if (tp_string_len(v) != sizeof(tp_num)) {
-        tp_raise(tp_None, tp_string_atom(tp, "funpack ValueError: length of string is incorrect."));
-    }
-    tp_num r = *((tp_num*) tp_string_getptr(v));
-    return tp_number(r);
+tp_obj tpy_unpack(TP) {
+    char * format = tp_string_getptr(TP_PARAMS_STR());
+    return tp_unpack(tp, format, TP_PARAMS_STR());
 }
 
 tp_obj tpy_abs(TP) {
-    return tp_number(fabs(tpy_float(tp).num));
+    tp_obj v = tp_number_cast(tp, tpy_number(tp), TP_NUMBER_FLOAT);
+    return tp_float(fabs(TPN_AS_FLOAT(v)));
 }
 tp_obj tpy_int(TP) {
-    return tp_number((long)tpy_float(tp).num);
+    tp_obj v = tp_number_cast(tp, tpy_number(tp), TP_NUMBER_INT);
+    return v;
 }
-tp_num _roundf(tp_num v) {
-    tp_num av = fabs(v); tp_num iv = (long)av;
+tp_obj tpy_float(TP) {
+    tp_obj v = tp_number_cast(tp, tpy_number(tp), TP_NUMBER_FLOAT);
+    return v;
+}
+double _roundf(double v) {
+    double av = fabs(v); double iv = (long)av;
     av = (av-iv < 0.5?iv:iv+1);
     return (v<0?-av:av);
 }
 tp_obj tpy_round(TP) {
-    return tp_number(_roundf(tpy_float(tp).num));
+    return tp_float(_roundf(TPN_AS_FLOAT(tpy_number(tp))));
 }
 
 /* Function: tp_setmeta
@@ -218,7 +218,7 @@ tp_obj tpy_getraw(TP) {
  */
 tp_obj tpy_bool(TP) {
     tp_obj v = TP_PARAMS_OBJ();
-    return (tp_number(tp_true(tp, v)));
+    return tp_bool(tp_true(tp, v));
 }
 
 /* import a module or members of a module
@@ -247,7 +247,7 @@ tp_obj tpy_import(TP) {
     tp_obj modname = TP_PARAMS_OBJ();
     tp_obj member = TP_PARAMS_OBJ();
 
-    if (!tp_has(tp, tp->modules, modname).num) {
+    if (!tp_true(tp, tp_has(tp, tp->modules, modname))) {
         tp_raise(tp_None, tp_string_atom(tp, "(tpy_import) cannot import module"));
     }
 
@@ -398,13 +398,13 @@ void tp_module_builtins_init(TP) {
     {"istype",tpy_istype},
     {"isinstance",tpy_isinstance}, 
     {"chr",tpy_chr}, 
-    {"fpack",tpy_fpack},
-    {"funpack", tpy_funpack},
+    {"pack",tpy_pack},
+    {"unpack", tpy_unpack},
     {"abs",tpy_abs},
     {"eval",tpy_eval},
     {"exec",tpy_exec},
     {"globals", tpy_globals},
-    {"number",tpy_float},
+    {"number",tpy_number},
     {"int",tpy_int},
     {"bool", tpy_bool},
     {"dict", tpy_dict},
