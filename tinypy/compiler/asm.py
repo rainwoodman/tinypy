@@ -41,19 +41,16 @@ def assemble(asmc):
         a = int(a)
         b = int(b)
         c = int(c)
-        bc.append(chr(ops[i]))
-        bc.append(chr(a))
-        bc.append(chr(b))
-        bc.append(chr(c))
+        bc.extend(bytes([ops[i], a, b, c]))
         if i == "LINE":
             n = a * 4
             d = dequote(d)
             text = d
-            text += chr(0) * (n - len(d))
+            text += b'\0' * (n - len(d))
             bc.append(text)
         if i == "STRING":
             d = dequote(d)
-            text = d + "\0"*(4-len(d)%4)
+            text = d + b"\0"*(4-len(d)%4)
             bc.append(text)
         elif i == "NUMBER":
             d = int(d)
