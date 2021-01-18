@@ -10,6 +10,12 @@ class Token:
     def __repr__(self):
         return self._format()
 
+    def as_string(self):
+        if self.type == 'string':
+            raise
+            return self
+        return Token(self.pos, 'string', self.val.encode(), self.items)
+
     def update(self, other):
         for k in other:
             self[k] = other[k]
@@ -151,7 +157,7 @@ def do_name(s,i,l):
     return i
 
 def do_string(s,i,l):
-    v,q,i = '',s[i],i+1
+    v,q,i = b'',s[i],i+1
     if (l-i) >= 5 and s[i] == q and s[i+1] == q: # """
         i += 2
         while i<l-2:
@@ -161,7 +167,7 @@ def do_string(s,i,l):
                 T.add('string',v)
                 break
             else:
-                v,i = v+c,i+1
+                v,i = v+c.encode(),i+1
                 if c == '\n': T.y,T.yi = T.y+1,i
     else:
         while i<l:
@@ -175,13 +181,13 @@ def do_string(s,i,l):
                 elif c == "\\": c = "\\"
                 else:
                     u_error('tokenize',s,T.f)
-                v,i = v+c,i+1
+                v,i = v+c.encode(),i+1
             elif c == q:
                 i += 1
                 T.add('string',v)
                 break
             else:
-                v,i = v+c,i+1
+                v,i = v+c.encode(),i+1
     return i
 
 def do_comment(s,i,l):

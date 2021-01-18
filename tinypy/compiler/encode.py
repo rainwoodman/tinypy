@@ -65,7 +65,7 @@ def get_code16(i,a,b):
 
 def _do_string(v,r=None):
     r = get_tmp(r)
-    val = v.encode() + b"\0"*(4-len(v)%4)
+    val = v + b"\0"*(4-len(v)%4)
     code_16(STRING,r,len(v))
     write(val)
     return r
@@ -306,7 +306,7 @@ def do_symbol(t,r=None):
 def do_set_ctx(k,v):
     if k.type == 'name':
         if (D._globals and k.val not in D.vars) or (k.val in D.globals):
-            c = do_string(k)
+            c = do_string(k.as_string())
             b = do(v)
             code(GSET,c,b)
             free_tmp(c)
@@ -392,38 +392,36 @@ def do_import(t):
     else:
         mod, name = t.items
 
-    mod.type = 'string'
     v = do_call(Token(t.pos,'call',None,[
         Token(t.pos,'name','__import__'),
-        mod,
+        mod.as_string(),
         Token(t.pos, 'symbol', 'None')]
         ))
 
-    name.type = 'name'
+    assert name.type == 'name'
     do_set_ctx(name,Token(t.pos,'reg',v))
 
 def do_from(t):
     mod = t.items[0]
-    items = t.items[1]
-    mod.type = 'string'
+    names = t.items[1]
+    mod = mod.as_string()
 
-    if items.type == 'largs':
+    if names.type == 'largs':
         # it really shouldn't be largs -- need to fix the parser.
-        if items.val == '*':
-            items.type = 'string'
-    elif items.type == 'name':
-        items.type = 'string'
-        items = Token(items.pos, 'tuple', None, [items])
-    elif items.type ==  'tuple':
-        for item in items.items:
-            item.type = 'string'
+        if names.val == '*':
+            names = names.as_string()
+    elif names.type == 'name':
+        names = Token(names.pos, 'tuple', None, [names.as_string()])
+    elif names.type ==  'tuple':
+        names = Token(names.pos, 'tuple', None, [
+            i.as_string() for i in names.items])
     else: 
         tokenize.u_error('SyntaxError', D.code, t.pos)
 
     v = do(Token(t.pos,'call',None,[
         Token(t.pos,'name','__import__'),
         mod,
-        items,
+        names,
         ]))
 
     g = do(Token(t.pos, 'name', '__dict__'))
@@ -450,8 +448,8 @@ def do_call(t,r=None):
     if len(n) != 0 or d != None:
         e = do(Token(t.pos,'dict',None,[])); un_tmp(e);
         for i in n:
-            i.items[0].type = 'string'
-            t1,t2 = do(i.items[0]),do(i.items[1])
+            i1, i2 = i.items
+            t1, t2 = do(i1.as_string()), do(i2)
             code(SET,e,t1,t2)
             free_tmp(t1); free_tmp(t2) #REG
         if d: 
@@ -486,7 +484,7 @@ def do_name(t,r=None):
     if t.val not in D.rglobals:
         D.rglobals.append(t.val)
     r = get_tmp(r)
-    c = do_string(t)
+    c = do_string(t.as_string())
     code(GGET,r,c)
     free_tmp(c)
     return r
@@ -514,7 +512,7 @@ def do_def(tok):
     for i in p:
         # pop positional args
         v = do_local(i)
-        tmp = do_string(i)
+        tmp = do_string(i.as_string())
         code(IGET, v, dparams, tmp)
         tmp = _do_none(tmp)
         code(IGET, v, lparams, tmp)
@@ -525,7 +523,7 @@ def do_def(tok):
         do(i.items[1], v)
         tmp = _do_none()
         code(IGET, v, lparams, tmp)
-        tmp = do_string(i.items[0], tmp)
+        tmp = do_string(i.items[0].as_string(), tmp)
         code(IGET, v, dparams, tmp)
         free_tmp(tmp) #REG
     if l != None:
@@ -557,16 +555,16 @@ def do_class(tok):
     items = tok.items
     parent = None
     if items[0].type == 'name':
-        name = items[0].val
+        name = items[0]
         parent = Token(tok.pos,'name','object')
     else:
-        name = items[0].items[0].val
+        name = items[0].items[0]
         parent = items[0].items[1]
 
     kls = get_tmp()
     code(CLASS, kls)
     un_tmp(kls)
-    ts = _do_string(name)
+    ts = do_string(name.as_string())
     code(GSET,ts,kls)
     free_tmp(ts) #REG
     
@@ -588,13 +586,14 @@ def do_class(tok):
 
     # we must refetch the kls object, because after begin() the kls reg is
     # invalidated.
-    ts = _do_string(name)
+    ts = do_string(name.as_string())
     kls = get_tmp()
     code(GGET, kls, ts)
     un_tmp(kls)
     free_tmp(ts) #REG
     for val in D.vars:
-        ts = _do_string(val)
+        val_name = Token(tok.pos,'name',val)
+        ts = do_string(val_name.as_string())
         code(SET,kls, ts, get_reg(val))
         free_tmp(ts) #REG
     free_reg(kls)
@@ -741,8 +740,8 @@ def do_pass(t): code(PASS)
 
 def do_info(name='?'):
     if D.nopos: return
-    code(FILE,free_tmp(_do_string(D.fname)))
-    code(NAME,free_tmp(_do_string(name)))
+    code(FILE,free_tmp(_do_string(D.fname.encode())))
+    code(NAME,free_tmp(_do_string(name.encode())))
 def do_module(t):
     do_info()
     free_tmp(do(t.items[0])) #REG

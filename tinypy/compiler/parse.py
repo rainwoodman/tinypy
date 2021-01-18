@@ -145,8 +145,8 @@ def get_led(t,left):
     return r
 def dot_led(t,left):
     r = expression(t.bp)
-    r.type = 'string'
-    t.items = [left,r]
+    r.type = 'name'
+    t.items = [left,r.as_string()]
     return t
 
 def itself(t):
@@ -273,7 +273,7 @@ def from_nud(t):
         else:
             break
 
-    expr = Token(t.pos, 'string', s)
+    expr = Token(t.pos, 'name', s)
     items.append(expr)
 
     advance('import')
@@ -293,7 +293,7 @@ def import_nud(t):
         else:
             break
 
-    expr = Token(t.pos, 'string', s)
+    expr = Token(t.pos, 'name', s)
     items.append(expr)
     if check(P.token, 'as'):
         advance('as')
