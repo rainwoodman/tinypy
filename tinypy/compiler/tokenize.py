@@ -169,9 +169,12 @@ def do_string(s,i,l):
             if c == "\\":
                 i = i+1; c = s[i]
                 if c == "n": c = '\n'
-                if c == "r": c = chr(13)
-                if c == "t": c = "\t"
-                if c == "0": c = "\0"
+                elif c == "r": c = chr(13)
+                elif c == "t": c = "\t"
+                elif c == "0": c = "\0"
+                elif c == "\\": c = "\\"
+                else:
+                    u_error('tokenize',s,T.f)
                 v,i = v+c,i+1
             elif c == q:
                 i += 1
