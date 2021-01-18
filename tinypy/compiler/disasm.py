@@ -54,11 +54,7 @@ def disassemble(bc):
             line = trim(line)
             ip += (int(n / 4) + 1) * 4
         elif i == opcodes.NUMBER:
-            f = unpack(chr(b), text(c,ip,bc))
-            line += " " + str(f)
-            ip += c
-        elif i == opcodes.INTEGER:
-            f = unpack(chr(b), text(c,ip,bc))
+            f = unpack('=' + chr(b), text(c,ip,bc))
             line += " " + str(f)
             ip += c
         asmc.append(line)
