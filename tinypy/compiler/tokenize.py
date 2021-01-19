@@ -1,3 +1,5 @@
+from tinypy.compiler.boot import *
+
 class Token:
     def __init__(self,pos=(0,0),type='symbol',val=None,items=None):
         self.pos,self.type,self.val,self.items=pos,type,val,items
@@ -9,6 +11,12 @@ class Token:
             return str(self.type) + ':' + str(self.val)
     def __repr__(self):
         return self._format()
+
+    def as_string(self):
+        if self.type == 'string':
+            raise
+            return self
+        return Token(self.pos, 'string', self.val.encode(), self.items)
 
     def update(self, other):
         for k in other:
@@ -151,7 +159,7 @@ def do_name(s,i,l):
     return i
 
 def do_string(s,i,l):
-    v,q,i = '',s[i],i+1
+    v,q,i = b'',s[i],i+1
     if (l-i) >= 5 and s[i] == q and s[i+1] == q: # """
         i += 2
         while i<l-2:
@@ -161,24 +169,30 @@ def do_string(s,i,l):
                 T.add('string',v)
                 break
             else:
-                v,i = v+c,i+1
+                v,i = v+c.encode(),i+1
                 if c == '\n': T.y,T.yi = T.y+1,i
     else:
         while i<l:
             c = s[i]
             if c == "\\":
                 i = i+1; c = s[i]
-                if c == "n": c = '\n'
-                if c == "r": c = chr(13)
-                if c == "t": c = "\t"
-                if c == "0": c = "\0"
-                v,i = v+c,i+1
+                if c == "n": c = b'\n'
+                elif c == "r": c = b'\r'
+                elif c == "t": c = b'\t'
+                elif c == "0": c = b'\0'
+                elif c == "x" and i + 3 < l:
+                    c = bytes([int(s[i+1:i+3], 16)])
+                    i = i + 2
+                elif c == "\\": c = b'\\'
+                else:
+                    u_error('tokenize',s,T.f)
+                v,i = v + c,i+1
             elif c == q:
                 i += 1
                 T.add('string',v)
                 break
             else:
-                v,i = v+c,i+1
+                v,i = v+c.encode(),i+1
     return i
 
 def do_comment(s,i,l):

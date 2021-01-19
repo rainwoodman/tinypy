@@ -69,6 +69,16 @@ class StringUnitTests(UnitTest):
         assert j == '\0AB\0'
         assert len(j) == 4
 
+    def test_escape(self):
+        assert ord("\\") == 92
+        assert ord("\n") == 10
+        assert ord("\r") == 13
+        assert ord("\t") == 9
+        assert ord("\0") == 0
+        assert len("\xff") == 1
+        assert ord("\xff") == 255
+        assert ord("\x0f") == 15
+
 if __name__ == '__main__':
     tests = StringUnitTests()
     tests.run()

@@ -15,7 +15,7 @@ def pad(s, n):
     return s + p
 
 def text(x, ip, bc):
-    return bytes(bytearray(bc[ip:ip+x]))
+    return bytes(bc[ip:ip+x])
 
 def trim(x):
     txt = []
@@ -24,7 +24,7 @@ def trim(x):
             txt.append(c)
     return "".join(txt)
 
-def disassemble(bc):    
+def disassemble(bc):
     bc = [x for x in bc]
     asmc = []
     ip = 0
@@ -54,11 +54,7 @@ def disassemble(bc):
             line = trim(line)
             ip += (int(n / 4) + 1) * 4
         elif i == opcodes.NUMBER:
-            f = unpack(chr(b), text(c,ip,bc))
-            line += " " + str(f)
-            ip += c
-        elif i == opcodes.INTEGER:
-            f = unpack(chr(b), text(c,ip,bc))
+            f = unpack('=' + chr(b), text(c,ip,bc))
             line += " " + str(f)
             ip += c
         asmc.append(line)
