@@ -179,6 +179,10 @@ typedef struct tpd_func {
     tp_obj instance;
     tp_obj globals;
     tp_obj code;
+    tp_obj args;
+    tp_obj defaults;
+    tp_obj varargs;
+    tp_obj varkw;
 } tpd_func;
 #define TPD_FUNC(v) ((tpd_func*) (v).info)
 

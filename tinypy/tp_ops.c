@@ -216,6 +216,20 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
             tp_slice_get_indices(tp, k, self, &a, &b);
             return tp_string_view(tp,self,a,b);
         }
+    } else if (type == TP_FUNC) {
+        if (k.type.typeid == TP_STRING) {
+            if(tp_string_equal_atom(k, "__args__")) {
+                return TPD_FUNC(self)->args;
+            } else if(tp_string_equal_atom(k, "__defaults__")) {
+                return TPD_FUNC(self)->defaults;
+            } else if(tp_string_equal_atom(k, "__varargs__")) {
+                return TPD_FUNC(self)->varargs;
+            } else if(tp_string_equal_atom(k, "__varkw__")) {
+                return TPD_FUNC(self)->varkw;
+            }
+        }
+        tp_raise_printf(tp_None, "(tp_get) TypeError: func does not support item get with key %O", k);
+
     }
     /* We use '*' for copy during args handling. See if we can get rid of this after args are fixed. */
     if (k.type.typeid == TP_STRING) {
@@ -314,6 +328,23 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
             tpd_list_append(tp, TPD_LIST(self), v);
             return;
         }
+    } else if (type == TP_FUNC) {
+        if (k.type.typeid == TP_STRING) {
+            if(tp_string_equal_atom(k, "__args__")) {
+                TPD_FUNC(self)->args = v;
+                return;
+            } else if(tp_string_equal_atom(k, "__defaults__")) {
+                TPD_FUNC(self)->defaults = v;
+                return;
+            } else if(tp_string_equal_atom(k, "__varargs__")) {
+                TPD_FUNC(self)->varargs = v;
+                return;
+            } else if(tp_string_equal_atom(k, "__varkw__")) {
+                TPD_FUNC(self)->varkw = v;
+                return;
+            }
+        }
+        tp_raise_printf(,"(tp_set) TypeError: func does not support item assignment with key %O", k);
     }
     tp_raise(,tp_string_atom(tp, "(tp_set) TypeError: object does not support item assignment"));
 }

@@ -505,12 +505,13 @@ def do_def(tok):
     t = get_tag()
     rf = fnc(t,'end')
 
+    p,n,l,d = p_filter(items[1].items)
+
     D.begin()
     setpos(tok.pos)
     lparams = do_local(Token(tok.pos, 'name', '__lparams__'))  # assigns regs[0] to __lparams__.
     dparams = do_local(Token(tok.pos, 'name', '__dparams__'))  # assigns regs[1] to __dparams__.
     do_info(items[0].val)
-    p,n,l,d = p_filter(items[1].items)
     for i in p:
         # pop positional args
         v = do_local(i)
@@ -548,7 +549,36 @@ def do_def(tok):
 
     tag(t,'end')
 
-    if D._globals: do_globals(Token(tok.pos,0,0,[items[0]]))
+    args = Token(tok.pos, 'list', 0,
+        [ i.as_string() for i in p]
+      + [ i.items[0].as_string() for i in n]
+    )
+    defaults = Token(tok.pos, 'list', 0, [ i.items[1] for i in n])
+
+    r = do_list(args)
+    t1 = do_string(Token(tok.pos, 'name', "__args__").as_string())
+    code(SET, rf, t1, r)
+    r = do_list(defaults, r)
+    t1 = do_string(Token(tok.pos, 'name', "__defaults__").as_string(), t1)
+    code(SET, rf, t1, r)
+    if l != None:
+       r = do_string(l.items[0].as_string(), r)
+    else:
+       r = _do_none(r)
+    t1 = do_string(Token(tok.pos, 'name', "__varargs__").as_string(), t1)
+    code(SET, rf, t1, r)
+    if d != None:
+       r = do_string(d.items[0].as_string(), r)
+    else:
+       r = _do_none(r)
+    t1 = do_string(Token(tok.pos, 'name', "__varkw__").as_string(), t1)
+    code(SET, rf, t1, r)
+
+    free_tmp(r)
+    free_tmp(t1)
+
+    if D._globals:
+        do_globals(Token(tok.pos,0,0,[items[0]]))
     free_tmp(do_set_ctx(items[0],Token(tok.pos,'reg',rf)))
 
     free_tmp(rf)
