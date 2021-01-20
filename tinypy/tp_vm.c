@@ -352,7 +352,12 @@ int tp_step(TP) {
             if(tp_string_getptr(f->code)[a] == ';') abort();
             RA = tp_def(tp,
                 tp_string_view(tp, f->code, a, a + (SVBC-1)*4),
-                f->globals);
+                f->globals
+            );
+            TPD_FUNC(RA)->args = *(&RA + 1);
+            TPD_FUNC(RA)->defaults = *(&RA + 2);
+            TPD_FUNC(RA)->varargs = *(&RA + 3);
+            TPD_FUNC(RA)->varkw = *(&RA + 4);
             cur += SVBC; continue;
             }
             break;

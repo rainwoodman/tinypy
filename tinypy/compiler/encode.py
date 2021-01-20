@@ -121,11 +121,36 @@ def jump(*t):
 def setjmp(*t):
     t = D.snum+':'+':'.join([str(v) for v in t])
     insert(('setjmp',t))
-def fnc(*t):
-    t = D.snum+':'+':'.join([str(v) for v in t])
-    r = get_reg(t)
-    insert(('fnc',r,t))
-    return r
+def deffnc(tok, items, end):
+    p,n,l,d = p_filter(items)
+
+    args = Token(tok.pos, 'list', 0,
+        [ i.as_string() for i in p]
+      + [ i.items[0].as_string() for i in n]
+    )
+
+    defaults = Token(tok.pos, 'list', 0, [ i.items[1] for i in n])
+
+    # RA = tp_def( RA+1, ....)
+    rf, rargs,rdefaults,rvarargs,rvarkw = get_tmps(5)
+    un_tmp(rf)
+    do_list(args, rargs)
+    do_list(defaults, rdefaults)
+    if l != None:
+        do_string(l.items[0].as_string(), rvarargs)
+    else:
+        _do_none(rvarargs)
+    if d != None:
+        do_string(d.items[0].as_string(), rvarkw)
+    else:
+        _do_none(rvarkw)
+
+    t = [get_tag(), end]
+    n = D.snum+':'+':'.join([str(v) for v in t])
+
+    insert(('fnc',rf,n))
+    free_tmps([rargs, rdefaults, rvarargs, rvarkw])
+    return rf, t[0]
 
 def map_tags():
     tags = {}
@@ -167,17 +192,17 @@ def map_tags():
 def get_tmp(r=None):
     if r != None: return r
     return get_tmps(1)[0]
-def get_tmps(t):
-    rs = alloc(t)
-    regs = range(rs,rs+t)
+def get_tmps(c):
+    rs = alloc(c)
+    regs = range(rs,rs+c)
     for r in regs:
         set_reg(r,"$"+str(D._tmpi))
         D._tmpi += 1
-    D.tmpc += t #REG
+    D.tmpc += c #REG
     return regs
-def alloc(t):
-    s = ''.join(["01"[r in D.r2n] for r in range(0,min(256,D.mreg+t))])
-    return s.index('0'*t)
+def alloc(c):
+    s = ''.join(["01"[r in D.r2n] for r in range(0,min(256,D.mreg+c))])
+    return s.index('0'*c)
 def is_tmp(r):
     if r is None: return False
     return (D.r2n[r][0] == '$')
@@ -502,16 +527,15 @@ def do_local(t,r=None):
 def do_def(tok):
     items = tok.items
 
-    t = get_tag()
-    rf = fnc(t,'end')
-
-    p,n,l,d = p_filter(items[1].items)
+    rf, t = deffnc(tok, items[1].items, 'end')
 
     D.begin()
     setpos(tok.pos)
     lparams = do_local(Token(tok.pos, 'name', '__lparams__'))  # assigns regs[0] to __lparams__.
     dparams = do_local(Token(tok.pos, 'name', '__dparams__'))  # assigns regs[1] to __dparams__.
     do_info(items[0].val)
+
+    p,n,l,d = p_filter(items[1].items)
     for i in p:
         # pop positional args
         v = do_local(i)
@@ -546,36 +570,7 @@ def do_def(tok):
         code(MOVE, e, dparams)
     free_tmp(do(items[2])) #REG
     D.end()
-
-    tag(t,'end')
-
-    args = Token(tok.pos, 'list', 0,
-        [ i.as_string() for i in p]
-      + [ i.items[0].as_string() for i in n]
-    )
-    defaults = Token(tok.pos, 'list', 0, [ i.items[1] for i in n])
-
-    r = do_list(args)
-    t1 = do_string(Token(tok.pos, 'name', "__args__").as_string())
-    code(SET, rf, t1, r)
-    r = do_list(defaults, r)
-    t1 = do_string(Token(tok.pos, 'name', "__defaults__").as_string(), t1)
-    code(SET, rf, t1, r)
-    if l != None:
-       r = do_string(l.items[0].as_string(), r)
-    else:
-       r = _do_none(r)
-    t1 = do_string(Token(tok.pos, 'name', "__varargs__").as_string(), t1)
-    code(SET, rf, t1, r)
-    if d != None:
-       r = do_string(d.items[0].as_string(), r)
-    else:
-       r = _do_none(r)
-    t1 = do_string(Token(tok.pos, 'name', "__varkw__").as_string(), t1)
-    code(SET, rf, t1, r)
-
-    free_tmp(r)
-    free_tmp(t1)
+    tag(t, 'end')
 
     if D._globals:
         do_globals(Token(tok.pos,0,0,[items[0]]))
@@ -607,8 +602,7 @@ def do_class(tok):
     free_reg(kls) #REG
 
     # define a function for the class body, and call it.
-    t = get_tag()
-    rf = fnc(t,'end')
+    rf, t = deffnc(tok, [], 'end')
 
     D.begin()
     setpos(tok.pos)
