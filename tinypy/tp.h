@@ -319,8 +319,8 @@ void   _tp_raise(TP,tp_obj);
     return r; \
 }
 
-#define tp_raise_printf(r,fmt,...) { \
-    _tp_raise(tp, tp_printf(tp, fmt, ## __VA_ARGS__)); \
+#define tp_raise_printf(r, fmt, ...) { \
+    _tp_raise(tp, tp_printf(tp, fmt, ##__VA_ARGS__)); \
     return r; \
 }
 

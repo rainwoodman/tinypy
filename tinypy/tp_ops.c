@@ -228,8 +228,7 @@ _tp_get(TP, tp_obj self, tp_obj k, int mget)
                 return TPD_FUNC(self)->varkw;
             }
         }
-        tp_raise_printf(tp_None, "(tp_get) TypeError: func does not support item get with key %O", k);
-
+        tp_raise_printf(tp_None, "(tp_get) TypeError: func does not support item get with key %O", &k);
     }
     /* We use '*' for copy during args handling. See if we can get rid of this after args are fixed. */
     if (k.type.typeid == TP_STRING) {
@@ -344,7 +343,7 @@ void tp_set(TP,tp_obj self, tp_obj k, tp_obj v) {
                 return;
             }
         }
-        tp_raise_printf(,"(tp_set) TypeError: func does not support item assignment with key %O", k);
+        tp_raise_printf(,"(tp_set) TypeError: func does not support item assignment with key %O", &k);
     }
     tp_raise(,tp_string_atom(tp, "(tp_set) TypeError: object does not support item assignment"));
 }
