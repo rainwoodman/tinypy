@@ -24,8 +24,14 @@ def trim(x):
             txt.append(c)
     return "".join(txt)
 
+def ord_or_int(x):
+    try:
+        return ord(x)
+    except:
+        return int(x)
+
 def disassemble(bc):
-    bc = [x for x in bc]
+    bc = [ord_or_int(x) for x in bc]
     asmc = []
     ip = 0
     names = opcodes.names
