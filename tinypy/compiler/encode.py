@@ -531,43 +531,27 @@ def do_def(tok):
 
     D.begin()
     setpos(tok.pos)
-    lparams = do_local(Token(tok.pos, 'name', '__lparams__'))  # assigns regs[0] to __lparams__.
-    dparams = do_local(Token(tok.pos, 'name', '__dparams__'))  # assigns regs[1] to __dparams__.
+    p,n,l,d = p_filter(items[1].items)
+    # declare regs from 0
+    for i in p:
+        # positional args
+        do_local(i)
+    for i in n:
+        # positional args with defaults
+        do_local(i.items[0])
+    if l != None:
+        # varargs
+        do_local(l.items[0])
+    else:
+        do_local(Token(tok.pos, 'name', '__varargs__'))
+    if d != None:
+        # varkw
+        do_local(d.items[0])
+    else:
+        do_local(Token(tok.pos, 'name', '__kwargs__'))
+
     do_info(items[0].val)
 
-    p,n,l,d = p_filter(items[1].items)
-    for i in p:
-        # pop positional args
-        v = do_local(i)
-        tmp = do_string(i.as_string())
-        code(IGET, v, dparams, tmp)
-        tmp = _do_none(tmp)
-        code(IGET, v, lparams, tmp)
-        free_tmp(tmp) #REG
-    for i in n:
-        # pop positional args with defaults
-        v = do_local(i.items[0])
-        do(i.items[1], v)
-        tmp = _do_none()
-        code(IGET, v, lparams, tmp)
-        tmp = do_string(i.items[0].as_string(), tmp)
-        code(IGET, v, dparams, tmp)
-        free_tmp(tmp) #REG
-    if l != None:
-        # args = __lparams__[None:None]
-        v = do_local(l.items[0])
-        tmp, tmp1, tmp2 = get_tmps(3)
-        _do_none(tmp1)
-        _do_none(tmp2)
-        code(LIST, tmp, tmp1, 2)
-        code(GET, v, lparams, tmp)
-        free_tmp(tmp2) #REG
-        free_tmp(tmp1) #REG
-        free_tmp(tmp) #REG
-    if d != None:
-        # kwargs = __dparams__
-        e = do_local(d.items[0])
-        code(MOVE, e, dparams)
     free_tmp(do(items[2])) #REG
     D.end()
     tag(t, 'end')
@@ -627,10 +611,14 @@ def do_class(tok):
 
     tag(t,'end')
 
-    tmp = _do_none()
-    code(CALL, tmp, rf, tmp)
+    tmp, lparams, dparams = get_tmps(3)
+    _do_none(lparams)
+    _do_none(dparams)
+    code(CALL, tmp, rf, lparams)
     free_tmp(rf)
     free_tmp(tmp)
+    free_tmp(lparams)
+    free_tmp(dparams)
 
 def do_while(t):
     items = t.items

@@ -67,7 +67,8 @@ class FuncTest(UnitTest):
         assert d['d1'] == 2
         assert d['d2'] == 3
 
-    def test_lparams_overwrites_dparams(self):
+    def known_failure_test_lparams_overwrites_dparams(self):
+        # We are following CPython now.
         def func(a, b):
             return a, b
         # unlikely CPython, we use positional argument

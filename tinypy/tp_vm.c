@@ -96,8 +96,13 @@ tp_vm * tp_create_vm(void) {
     return tp;
 }
 
-void tp_enter_frame(TP, tp_obj lparams, tp_obj dparams, tp_obj globals, tp_obj code, tp_obj * ret_dest) {
-    tpd_list_appendx(tp, tp->frames, tp_frame_t(tp, lparams, dparams, globals, code, ret_dest));
+void tp_enter_frame(TP, tp_obj lparams, tp_obj dparams,
+        tp_obj globals,
+        tp_obj code,
+        tp_obj args,
+        tp_obj defaults,
+        tp_obj * ret_dest) {
+    tpd_list_appendx(tp, tp->frames, tp_frame_t(tp, lparams, dparams, globals, code, args, defaults, ret_dest));
 }
 
 void _tp_raise(TP, tp_obj e) {
@@ -237,10 +242,20 @@ int tp_step(TP) {
     tpd_code e = *cur;
     tpd_code *base = (tpd_code*) tp_string_getptr(f->code);
     /* FIXME: convert this to a flag */
-    // fprintf(stdout,"[%04d] %2d.%4d: %-6s %3d %3d %3d\n",tp->steps, tp->frames->len - 1, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
+#if 0
+    fprintf(stdout,"[%04d] %2d.%4d: %-6s %3d %3d %3d",tp->steps, tp->frames->len - 1, (cur - base) * 4,tp_get_opcode_name(e.i),VA,VB,VC);
+    if(e.i == TP_IFILE || e.i == TP_INAME) {
+        char * t = tp_cstr(tp, RA);
+        fprintf(stdout, "   %s", t);
+        free(t);
+    }
+    if(e.i == TP_ILINE) {
+        fprintf(stdout, "   %d", UVBC);
+    }
+    fprintf(stdout, "\n");
+    fflush(stdout);
 //       int i; for(i=0;i<16;i++) { fprintf(stderr,"%d: %s\n",i,TP_xSTR(f->regs[i])); }
-   
-//    tp_obj tpy_print(TP);
+#endif
     switch (e.i) {
         case TP_ILINE: {
             #ifdef TP_SANDBOX
@@ -352,12 +367,12 @@ int tp_step(TP) {
             if(tp_string_getptr(f->code)[a] == ';') abort();
             RA = tp_def(tp,
                 tp_string_view(tp, f->code, a, a + (SVBC-1)*4),
-                f->globals
+                f->globals,
+                *(&RA + 1),
+                *(&RA + 2),
+                *(&RA + 3),
+                *(&RA + 4)
             );
-            TPD_FUNC(RA)->args = *(&RA + 1);
-            TPD_FUNC(RA)->defaults = *(&RA + 2);
-            TPD_FUNC(RA)->varargs = *(&RA + 3);
-            TPD_FUNC(RA)->varkw = *(&RA + 4);
             cur += SVBC; continue;
             }
             break;
@@ -395,7 +410,7 @@ int tp_step(TP) {
  */
 tp_obj tp_exec(TP, tp_obj code, tp_obj globals) {
     tp_obj r = tp_None;
-    tp_enter_frame(tp, tp_None, tp_None, globals, code, &r);
+    tp_enter_frame(tp, tp_None, tp_None, globals, code, tp_None, tp_None, &r);
     tp_run_frame(tp);
     return r;
 }

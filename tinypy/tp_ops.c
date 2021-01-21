@@ -589,6 +589,8 @@ tp_obj tp_call(TP, tp_obj self, tp_obj lparams, tp_obj dparams) {
             tp_enter_frame(tp, lparams, dparams,
                            TPD_FUNC(self)->globals,
                            TPD_FUNC(self)->code,
+                           TPD_FUNC(self)->args,
+                           TPD_FUNC(self)->defaults,
                            &dest);
             tp_run_frame(tp);
             return dest;
