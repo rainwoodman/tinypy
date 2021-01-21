@@ -179,6 +179,10 @@ typedef struct tpd_func {
     tp_obj instance;
     tp_obj globals;
     tp_obj code;
+    tp_obj args;
+    tp_obj defaults;
+    tp_obj varargs;
+    tp_obj varkw;
 } tpd_func;
 #define TPD_FUNC(v) ((tpd_func*) (v).info)
 
@@ -202,6 +206,8 @@ typedef struct tpd_frame {
     tp_obj globals;
     tp_obj lparams;
     tp_obj dparams;
+    tp_obj args;
+    tp_obj defaults;
     int lineno;
     int cregs;
 } tpd_frame;
@@ -315,8 +321,8 @@ void   _tp_raise(TP,tp_obj);
     return r; \
 }
 
-#define tp_raise_printf(r,fmt,...) { \
-    _tp_raise(tp, tp_printf(tp, fmt, ## __VA_ARGS__)); \
+#define tp_raise_printf(r, fmt, ...) { \
+    _tp_raise(tp, tp_printf(tp, fmt, ##__VA_ARGS__)); \
     return r; \
 }
 
@@ -425,7 +431,7 @@ tp_obj tp_object(TP);
 tp_obj tp_class(TP);
 tp_obj tp_function(TP, tp_obj v(TP));
 tp_obj tp_method(TP, tp_obj self,tp_obj v(TP));
-tp_obj tp_def(TP, tp_obj code, tp_obj g);
+tp_obj tp_def(TP, tp_obj code, tp_obj g, tp_obj args, tp_obj defaults, tp_obj varargs, tp_obj varkw);
 tp_obj tp_bind(TP, tp_obj function, tp_obj self);
 tp_obj tp_staticmethod(TP, tp_obj function);
 void tp_set_meta(TP, tp_obj self, tp_obj meta);

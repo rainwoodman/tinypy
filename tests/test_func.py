@@ -1,6 +1,15 @@
 from tinypy.runtime.testing import UnitTest
 
-class MyTest(UnitTest):
+class FuncTest(UnitTest):
+
+    def test_attrs(self):
+        def func(a, b, c=3, *args, **kwargs):
+            pass
+        assert func.__args__ == ('a', 'b', 'c')
+        assert func.__defaults__ == [3]
+        assert func.__varargs__ == 'args'
+        assert func.__varkw__ == 'kwargs'
+
     def test_pos(self):
         def func(a, b):
             return a, b
@@ -58,7 +67,8 @@ class MyTest(UnitTest):
         assert d['d1'] == 2
         assert d['d2'] == 3
 
-    def test_lparams_overwrites_dparams(self):
+    def known_failure_test_lparams_overwrites_dparams(self):
+        # We are following CPython now.
         def func(a, b):
             return a, b
         # unlikely CPython, we use positional argument
@@ -83,6 +93,7 @@ class MyTest(UnitTest):
         assert a == 2
         assert b == 3
 
-t = MyTest()
 
-t.run()
+if __name__ == '__main__':
+    t = FuncTest()
+    t.run()

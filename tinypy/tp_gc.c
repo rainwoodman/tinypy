@@ -86,6 +86,10 @@ void tp_follow(TP,tp_obj v) {
         tp_grey_trace(tp, v, TPD_FUNC(v)->instance, "instance");
         tp_grey_trace(tp, v, TPD_FUNC(v)->globals, "globals");
         tp_grey_trace(tp, v, TPD_FUNC(v)->code, "code");
+        tp_grey_trace(tp, v, TPD_FUNC(v)->args, "args");
+        tp_grey_trace(tp, v, TPD_FUNC(v)->defaults, "defaults");
+        tp_grey_trace(tp, v, TPD_FUNC(v)->varargs, "varargs");
+        tp_grey_trace(tp, v, TPD_FUNC(v)->varkw, "varkw");
     }
     if (type == TP_FRAME) {
         int i;
@@ -99,6 +103,8 @@ void tp_follow(TP,tp_obj v) {
         tp_grey_trace(tp, v, TPD_FRAME(v)->globals, "globals");
         tp_grey_trace(tp, v, TPD_FRAME(v)->lparams, "lparams");
         tp_grey_trace(tp, v, TPD_FRAME(v)->dparams, "dparams");
+        tp_grey_trace(tp, v, TPD_FRAME(v)->args, "args");
+        tp_grey_trace(tp, v, TPD_FRAME(v)->defaults, "defaults");
     }
 }
 
