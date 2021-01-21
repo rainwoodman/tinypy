@@ -8,7 +8,7 @@ void * _tp_import_modules(TP);
 tp_obj tp_load(TP, const char*);
 
 int main(int argc, char *argv[]) {
-    tp_vm *tp = tp_init(argc, argv);
+    tp_vm *tp = tp_init(argc, argv, 1);
     /* INIT */
     _tp_import_modules(tp);
     

@@ -88,12 +88,11 @@ void tp_module_sys_init (TP, int argc, char * argv[]) {
  * Returns:
  * The newly created tinypy instance.
  */
-tp_vm * tp_init(int argc, char *argv[]) {
+tp_vm * tp_init(int argc, char *argv[], int enable_py_runtime) {
     tp_vm *tp = tp_create_vm();
     tp_module_sys_init(tp, argc, argv);
     tp_module_builtins_init(tp);
-
-    tp_module_corelib_init(tp);
+    tp_module_corelib_init(tp, enable_py_runtime);
     tp_module_compiler_init(tp);
     return tp;
 }

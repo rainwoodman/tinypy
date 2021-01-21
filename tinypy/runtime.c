@@ -96,9 +96,11 @@ void tp_module_os_init (TP) {
     tp_set(tp, tp->modules, tp_string_atom(tp, "os"), os);
 }
 
-void tp_module_corelib_init(TP) {
-    tp_import_from_buffer(tp, 0, "tinypy.runtime.types", _tp_types_tpc,  sizeof(_tp_types_tpc));
-    tp_import_from_buffer(tp, 0, "tinypy.runtime.testing", _tp_testing_tpc,  sizeof(_tp_testing_tpc));
-
+void tp_module_corelib_init(TP, int enable_py_runtime) {
     tp_module_os_init(tp);
+
+    if(enable_py_runtime) {
+        tp_import_from_buffer(tp, 0, "tinypy.runtime.types", _tp_types_tpc,  sizeof(_tp_types_tpc));
+        tp_import_from_buffer(tp, 0, "tinypy.runtime.testing", _tp_testing_tpc,  sizeof(_tp_testing_tpc));
+    }
 }

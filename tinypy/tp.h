@@ -437,13 +437,13 @@ tp_obj tp_format_stack(TP);
 
 tp_obj tp_printf(TP, const char * fmt, ...);
 
-tp_vm * tp_init(int argc, char *argv[]);
+tp_vm * tp_init(int argc, char *argv[], int enable_py_runtime);
 void tp_deinit(TP);
 
 void tp_module_sys_init(TP, int argc, char * argv[]);
 void tp_module_builtins_init(TP);
 void tp_module_compiler_init(TP);
-void tp_module_corelib_init(TP);
+void tp_module_corelib_init(TP, int enable_py_runtime);
 
 #include "tp_number.h"
 
