@@ -1,67 +1,74 @@
-EOF = 0
+# Control flow
+EOF = 0x00
+MOVE = 0x01
+PASS = 0x02
+REGS = 0x03
+JUMP = 0x04
+CALL = 0x05
+PARAMS = 0x06
+RETURN = 0x07
+SETJMP = 0x08
+IF = 0x09
+IFN = 0x0a
+RAISE = 0x0b
 
-ADD = 1
-SUB = 2
-MUL = 3
-DIV = 4
-POW = 5
-MOD = 40
-LSH = 41
-RSH = 42
+# Binary ops
+ADD = 0x10
+SUB = 0x11
+MUL = 0x12
+DIV = 0x13
+POW = 0x14
+MOD = 0x15
+LSH = 0x16
+RSH = 0x17
 
-BITAND = 6
-BITOR = 7
-BITXOR = 46
-NOT = 48
-BITNOT = 49
+BITAND = 0x18
+BITOR = 0x19
+BITXOR = 0x1a
 
-MOVE = 16
-MGET = 9
-GET = 10
-SET = 11
-ITER = 43
+EQ = 0x20
+LE = 0x21
+LT = 0x22
+NE = 0x23
+IN = 0x24
+NOTIN = 0x25
 
-LEN = 30
-GGET = 14
-GSET = 15
-IGET = 33
-DEL = 44
-UPDATE = 50
+# Unary ops
+LEN = 0x30
+NOT = 0x31
+BITNOT = 0x32
 
-DEF = 17
-PASS = 18
+# get set
+GET = 0x40
+MGET = 0x41
+GGET = 0x42
+IGET = 0x43
 
-JUMP = 19
-CALL = 20
-RETURN = 21
-IF = 22
-IFN = 47
-RAISE = 38
-SETJMP = 39
+SET = 0x44
+GSET = 0x45
+DEL = 0x46
 
-ASSERT = 23
+# operation
+UPDATE = 0x47
 
-NOTIN = 8
-EQ = 24
-LE = 25
-LT = 26
-NE = 36
-IN = 37
+# iteration
+ITER = 0x48
 
-PARAMS = 32
-NUMBER = 12
-STRING = 13
-DICT = 27
-LIST = 28
-NONE = 29
-CLASS = 52
+# objects
+NONE = 0x50
+NUMBER = 0x51
+STRING = 0x52
+LIST = 0x53
+DICT = 0x54
+DEF = 0x55
+CLASS = 0x56
 
-LINE = 31
-FILE = 34
-NAME = 35
-
-REGS = 45
-VAR = 51
+# debug
+ASSERT = 0x80
+FILE = 0x81
+NAME = 0x82
+VAR = 0x83
+LINE = 0x84
 
 def _make_dicts():
     names = {}
