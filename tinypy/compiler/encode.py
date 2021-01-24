@@ -485,9 +485,6 @@ def do_call(t,r=None):
             code(UPDATE,e,f)
 
     lparams, dparams = get_tmps(2)
-    # FIXME: for CPython compat we shall change the convention
-    # to always set the two last PARAMS to * and **,
-    # then on the caller side unpack the args.
     manage_seq(LIST, lparams, p)
     if l != None:
         t2 = do(l.items[0])
