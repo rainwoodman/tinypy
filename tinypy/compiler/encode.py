@@ -473,12 +473,12 @@ def do_call(t,r=None):
     p,n,l,d = p_filter(t.items[1:])
     e = None
     if len(n) != 0 or d != None:
-        e = do(Token(t.pos,'dict',None,[])); un_tmp(e);
+        eitems = []
         for i in n:
-            i1, i2 = i.items
-            t1, t2 = do(i1.as_string()), do(i2)
-            code(SET,e,t1,t2)
-            free_tmp(t1); free_tmp(t2) #REG
+            eitems.extend([i.items[0].as_string(), i.items[1]])
+        e = do(Token(t.pos,'dict',None, eitems))
+        # FIXME: why not free_tmp(e)
+        un_tmp(e);
         if d: 
             f = do(d.items[0])
             un_tmp(f)
