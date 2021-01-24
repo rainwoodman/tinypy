@@ -51,6 +51,14 @@ def disassemble(bc):
             n = a * 4
             line += ": " + trim(bytes(bc[ip:ip+n])).decode()
             ip += n
+        elif i == opcodes.FILE:
+            n = b * 256 + c
+            line += ": " + trim(bytes(bc[ip:ip+n])).decode()
+            ip += (int(n / 4) + 1) * 4
+        elif i == opcodes.NAME:
+            n = b * 256 + c
+            line += ": " + trim(bytes(bc[ip:ip+n])).decode()
+            ip += (int(n / 4) + 1) * 4
         elif i == opcodes.VAR:
             n = b * 256 + c
             line += ": " + str(a) + " # " + text(n,ip,bc)

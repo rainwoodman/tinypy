@@ -63,14 +63,15 @@ def code_16(i,a,b):
 def get_code16(i,a,b):
     return ('code',i,a,(b&0xff00)>>8,(b&0xff)>>0)
 
-def _do_string(v,r=None):
+def _do_string(code, v,r=None):
     r = get_tmp(r)
     val = v + b"\0"*(4-len(v)%4)
-    code_16(STRING,r,len(v))
+    code_16(code, r, len(v))
     write(val)
     return r
+
 def do_string(t,r=None):
-    return _do_string(t.val,r)
+    return _do_string(STRING, t.val,r)
 
 def _do_integer(i,r=None):
     if i <= 0x7fffffff:
@@ -753,11 +754,14 @@ def do_pass(t): code(PASS)
 
 def do_info(name='?'):
     if D.nopos: return
-    code(FILE,free_tmp(_do_string(D.fname.encode())))
-    code(NAME,free_tmp(_do_string(name.encode())))
+    r = 0  # unused.
+    _do_string(FILE, D.fname.encode(), r=r)
+    _do_string(NAME, name.encode(), r=r)
+
 def do_module(t):
     do_info()
     free_tmp(do(t.items[0])) #REG
+
 def do_reg(t,r=None): return t.val
 
 fmap = {

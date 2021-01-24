@@ -376,15 +376,24 @@ int tp_step(TP) {
             cur += SVBC; continue;
             }
             break;
-            
         case TP_IRETURN: tp_return(tp,RA); SR(0); break;
         case TP_IRAISE: _tp_raise(tp,RA); SR(0); break;
         case TP_IASSERT:
             tp_assert(tp, RA, RB, RC);
             break;
         case TP_INONE: RA = tp_None; break;
-        case TP_IFILE: f->fname = RA; break;
-        case TP_INAME: f->name = RA; break;
+        case TP_IFILE: {
+            int a = (*(cur+1)).string.val - tp_string_getptr(f->code);
+            f->fname = tp_string_view(tp, f->code, a, a+UVBC);
+            cur += (UVBC/4)+1;
+            break;
+        }
+        case TP_INAME: {
+            int a = (*(cur+1)).string.val - tp_string_getptr(f->code);
+            f->name = tp_string_view(tp, f->code, a, a+UVBC);
+            cur += (UVBC/4)+1;
+            break;
+        }
         case TP_IVAR: {
             cur += (UVBC/4) + 1;
             /* Watch out: crash if continue. */

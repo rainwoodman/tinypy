@@ -35,9 +35,15 @@ def assemble(asmc):
             d = d.encode()
             text = d + b'\0' * (n - len(d))
             bc.append(text)
-        if i == "STRING":
-            d = from_hexform(d)
-            text = d + b"\0"*(4-len(d)%4)
+        elif i == "FILE":
+            n = b * 256 + c
+            d = d.encode()
+            text = d + b"\0"*(n-len(d)%4)
+            bc.append(text)
+        elif i == "NAME":
+            n = b * 256 + c
+            d = d.encode()
+            text = d + b"\0"*(n-len(d)%4)
             bc.append(text)
         elif i == "NUMBER":
             d = from_hexform(d)
