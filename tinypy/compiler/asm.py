@@ -1,63 +1,50 @@
+from tinypy.compiler.boot import *
 from tinypy.compiler import opcodes
 
 def prepare(x):
     """ Prepares the line for processing by breaking it into tokens,
         removing empty tokens and stripping whitespace """
-    try:
-        ind = x.index('"')
-    except:
-        ind = -1
-    if ind != -1:
-        d = x[ind:]
-        x = x[:ind]
-    x = x.split(' ')
-    tmp = []
-    final = []
-    for i in x:
-        if i:
-            if i[0] != ':':
-                tmp.append(i)
-    for i in tmp[:4]:
-        final.append(i)
-    if not d:
-        d = "".join(tmp[4:])
-    final.append(d.strip())
-    return final
+    x = x.split('#', 1)[0]
+    words = [w.strip() for w in x.split(":", 3)]
+    if len(words) == 3:
+        _, i, abc = words
+        d = ""
+    else:
+        _, i, abc, d = words
+    a, b, c = [int(w) for w in abc.split(None, 3)]
+    return i, a, b, c, d
 
-def dequote(x):
+def from_hexform(x):
     """ Removes outermost quotes from a string, if they exist """    
-    if x[0] == '"' and x[len(x)-1] == '"':
-        return x[1:len(x)-1]
-    return x
+    b = []
+    for i in range(0, len(x), 2):
+        b.append(int(x[i:i+2], 16))
+    return bytes(b)
 
-def assemble(asmc):    
+def assemble(asmc):
     asmc = asmc.strip()
     asmc = asmc.split('\n')
     bc = []
-    ops = opcodes.names
+    ops = opcodes.codes
     for line in asmc:
         current = prepare(line)
         i,a,b,c,d = current
-        a = int(a)
-        b = int(b)
-        c = int(c)
-        bc.extend(bytes([ops[i], a, b, c]))
+        bc.append(bytes([ops[i], a, b, c]))
         if i == "LINE":
             n = a * 4
-            d = dequote(d)
-            text = d
-            text += b'\0' * (n - len(d))
+            d = d.encode()
+            text = d + b'\0' * (n - len(d))
             bc.append(text)
         if i == "STRING":
-            d = dequote(d)
+            d = from_hexform(d)
             text = d + b"\0"*(4-len(d)%4)
             bc.append(text)
         elif i == "NUMBER":
-            d = int(d)
-            bc.append(fpack(d))
-    bc = "".join(bc)
+            d = from_hexform(d)
+            bc.append(d)
+    bc = b''.join(bc)
     return bc
-    
+ 
 if __name__ == '__main__':
     asmc = load(ARGV[1])
     bc = assemble(asmc)

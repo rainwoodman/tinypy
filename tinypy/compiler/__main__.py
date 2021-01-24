@@ -1,6 +1,7 @@
 from tinypy.compiler import py2bc
 from tinypy.compiler.boot import *
 from tinypy.compiler import disasm
+from tinypy.compiler import asm
 from tinypy.compiler import opcodes
 
 def do_shorts(opts, optstring, shortopts, args):
@@ -52,43 +53,56 @@ def main(args=None):
 
     opts, args = getopt(args[1:], 'i:f:n:o:dx')
     opts = dict(opts)
-    if len(args) == 1:
-        src = args[0]
-        out = do_compile(src, opts)
-    elif '-x' in opts and len(args) == 0:
+    opts['ifmt'] = opts.get('-i', 'python')
+    opts['ofmt'] = opts.get('-f', 'tpcode')
+
+    if '-x' in opts and len(args) == 0:
         out = do_opcodes(opts)
+    elif len(args) == 0:
+        # fixme: stdin support in tinypy.
+        src = STDIN
+        s = read(src)
+        out = do_compile(s, "<stdin>", opts)
+    elif len(args) == 1:
+        src = args[0]
+        s = read(src)
+        out = do_compile(s, src, opts)
     else:
         print('Usage tinypyc [-i srcformat] [-f outformat] [-n variable] [-o output_file_name] src.py')
         return 
 
-    if '-o' in opts:
-        dest = opts['-o']
-    else:
-        if '-c' in opts:
-            dest = basename(src, False) + '.c'
-        else:
-            dest = basename(src, False) + '.tpc'
+    dest = opts.get('-o', '-')
 
-    if dest == '-':
-        print(out)
-    else:
-        save(dest, out)
+    if dest == '-' and src is not STDIN:
+        if opts['ofmt'] == 'ccode':
+            dest = basename(src, False) + '.c'
+        elif opts['ofmt'] == 'tpasm':
+            dest = basename(src, False) + '.tpa'
+        elif opts['ofmt'] == 'tpcode':
+            dest = basename(src, False) + '.tpc'
+        else:
+            raise 'ofmt not supported; should not reach here'
+    elif dest == '-':
+        dest = STDOUT
+
+    save(dest, out)
 
 def do_opcodes(opts):
     return opcodes.create_ccode().encode()
 
-def do_compile(src, opts):
-    s = read(src)
-    ifmt = opts.get('-i', 'python')
-    ofmt = opts.get('-f', 'bytecode')
+def do_compile(s, src, opts):
+    ifmt = opts['ifmt']
+    ofmt = opts['ofmt']
     if ifmt == 'python':
+        s = s.decode()
         data = py2bc.compile(s, src)
-    elif ifmt == 'bytecode':
+    elif ifmt == 'tpcode':
         data = s
     elif ifmt == 'tpasm':
-        raise
+        s = s.decode()
+        data = asm.assemble(s)
     else:
-        raise "input format must be python, bytecode, or tpasm"
+        raise "input format must be python, tpcode, or tpasm"
 
     if ofmt == 'tpasm':
         out = disasm.disassemble(data).encode()
@@ -108,10 +122,10 @@ def do_compile(src, opts):
 
         out.append(b"""};""")
         out = b'\n'.join(out)
-    elif ofmt == 'bytecode':
+    elif ofmt == 'tpcode':
         out = data
     else:
-        raise "output format must be tpasm, ccode, or bytecode"
+        raise "output format must be tpasm, ccode, or tpcode"
 
     return out
 

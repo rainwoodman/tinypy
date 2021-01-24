@@ -15,14 +15,17 @@ def pad(s, n):
     return s + p
 
 def text(x, ip, bc):
-    return bytes(bc[ip:ip+x])
+    return string_escape(bc[ip:ip+x])
+
+def hexform(x, ip, bc):
+    return ''.join(['%02X' % i for i in bytes(bc[ip:ip+x])])
 
 def trim(x):
     txt = []
     for c in x:
-        if ord(c):
+        if c != 0:
             txt.append(c)
-    return "".join(txt)
+    return bytes(txt)
 
 def ord_or_int(x):
     try:
@@ -38,33 +41,29 @@ def disassemble(bc):
     while ip < len(bc):
         i, a, b, c = bc[ip:ip + 4]
         line = ""
-        line += pad(str(ip), 4) + ":" 
-        line += pad(names[i], 10) + ":" 
+        line += pad(str(ip), 4) + ":"
+        line += pad(names[i], 10) + ":"
         line += " " + pad(str(a), -3)
         line += " " + pad(str(b), -3)
         line += " " + pad(str(c), -3)
         ip += 4
         if i == opcodes.LINE:
             n = a * 4
-            line += " " + str(text(n,ip,bc))
-            line = trim(line)
+            line += ": " + trim(bytes(bc[ip:ip+n])).decode()
             ip += n
         elif i == opcodes.VAR:
             n = b * 256 + c
-            line += " " + str(a) + ": " + str(text(n,ip,bc))
-            line = trim(line)
+            line += ": " + str(a) + " # " + text(n,ip,bc)
             ip += (int(n / 4) + 1) * 4
         elif i == opcodes.STRING:
             n = b * 256 + c
-            line += " " + str(text(n,ip,bc))
-            line = trim(line)
+            line += ": " + hexform(n, ip, bc) + " # " + text(n,ip,bc)
             ip += (int(n / 4) + 1) * 4
         elif i == opcodes.NUMBER:
-            f = unpack('=' + chr(b), text(c,ip,bc))
-            line += " " + str(f)
+            f = unpack('=' + chr(b), bytes(bc[ip:ip+c]))
+            line += ": " + hexform(c, ip, bc) + " # " + str(f)
             ip += c
         asmc.append(line)
-        print(line)
     asmc = "\n".join(asmc)
     return asmc
     

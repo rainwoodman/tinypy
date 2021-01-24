@@ -1,5 +1,8 @@
 import sys
 
+STDIN = object()
+STDOUT = object()
+
 if not "tinypy" in sys.version:
     import struct
     _bytes = bytes
@@ -47,14 +50,26 @@ if not "tinypy" in sys.version:
         return struct.unpack(format, v)[0]
 
     def load(fname):
-        f = open(fname,'rb')
+        if fname is STDIN:
+            if sys.version_info.major == 2:
+                f = sys.stdin
+            else:
+                f = sys.stdin.buffer
+        else:
+            f = open(fname,'rb')
         r = f.read().decode()
         f.close()
         return r
 
     def read(fname):
-        f = open(fname,'rb')
-        r = f.read().decode()
+        if fname is STDIN:
+            if sys.version_info.major == 2:
+                f = sys.stdin
+            else:
+                f = sys.stdin.buffer
+        else:
+            f = open(fname,'rb')
+        r = f.read()
         f.close()
         return r
 
@@ -63,9 +78,25 @@ if not "tinypy" in sys.version:
             return _bytes(bytearray(v))
 
     def save(fname,v):
-        f = open(fname,'wb')
+        if fname is STDOUT:
+            if sys.version_info.major == 2:
+                f = sys.stdout
+            else:
+                f = sys.stdout.buffer
+        else:
+            f = open(fname,'wb')
         f.write(v)
         f.close()
+
+    def string_escape(bytes):
+        s = ''
+        for b in bytes:
+            if b >= 32 and b < 127:
+                s = s + chr(b)
+            else:
+                s = s + '\\x%02X' % b
+        return s
+
 else:
     from tinypy.runtime.builtins import *
     from os import load, read, save
