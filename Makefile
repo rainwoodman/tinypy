@@ -39,7 +39,7 @@ TESTS_PY_FILES=$(wildcard tests/*.py)
 # rule to compile python scripts to bytecodes as c source code.
 %.c : %.py
 	@mkdir -p $(dir $@)
-	$(TINYPYC) -co $@ $^
+	$(TINYPYC) -f ccode -o $@ $^
 
 # rule to make objects for static linkage
 .objs/%.o : %.c

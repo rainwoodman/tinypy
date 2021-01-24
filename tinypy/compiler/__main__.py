@@ -50,7 +50,7 @@ def main(args=None):
     posargs = []
     options = {} 
 
-    opts, args = getopt(args[1:], 'cn:o:dx')
+    opts, args = getopt(args[1:], 'i:f:n:o:dx')
     opts = dict(opts)
     if len(args) == 1:
         src = args[0]
@@ -58,7 +58,7 @@ def main(args=None):
     elif '-x' in opts and len(args) == 0:
         out = do_opcodes(opts)
     else:
-        print('Usage tinypyc [-c] [-n variable] [-o output_file_name] [-d] src.py')
+        print('Usage tinypyc [-i srcformat] [-f outformat] [-n variable] [-o output_file_name] src.py')
         return 
 
     if '-o' in opts:
@@ -79,10 +79,20 @@ def do_opcodes(opts):
 
 def do_compile(src, opts):
     s = read(src)
-    data = py2bc.compile(s, src)
-    if '-d' in opts:
+    ifmt = opts.get('-i', 'python')
+    ofmt = opts.get('-f', 'bytecode')
+    if ifmt == 'python':
+        data = py2bc.compile(s, src)
+    elif ifmt == 'bytecode':
+        data = s
+    elif ifmt == 'tpasm':
+        raise
+    else:
+        raise "input format must be python, bytecode, or tpasm"
+
+    if ofmt == 'tpasm':
         out = disasm.disassemble(data).encode()
-    elif '-c' in opts:
+    elif ofmt == 'ccode':
         out = []
         cols = 16
         name = opts.get('-n', '_tp_' + basename(src) + '_tpc').encode()
@@ -98,8 +108,10 @@ def do_compile(src, opts):
 
         out.append(b"""};""")
         out = b'\n'.join(out)
-    else:
+    elif ofmt == 'bytecode':
         out = data
+    else:
+        raise "output format must be tpasm, ccode, or bytecode"
 
     return out
 
