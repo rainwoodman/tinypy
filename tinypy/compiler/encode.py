@@ -232,11 +232,11 @@ def free_reg(r):
     if is_tmp(r): D.tmpc -= 1
     n = D.r2n[r]; del D.r2n[r]; del D.n2r[n]
 
-def imanage(orig,fnc):
+def imanage(orig, doer):
     items = orig.items
     orig.val = orig.val[:-1]
     t = Token(orig.pos,'symbol','=',[items[0],orig])
-    return fnc(t)
+    return doer(t)
 
 def unary(i,tb,r=None):
     r = get_tmp(r)
@@ -320,6 +320,8 @@ def do_symbol(t,r=None):
     if t.val in ['and','or']:
         return logic_infix(t.val, items[0], items[1], r)
     if t.val in isets:
+        # FIXME: add opcodes for these, as for container types
+        # this shall not create a new instance.
         return imanage(t,do_symbol)
     if t.val == 'not':
         return unary(NOT, items[0], r)
